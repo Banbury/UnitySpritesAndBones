@@ -35,6 +35,7 @@ public class SkeletonEditor : Editor {
             case EventType.KeyUp:
                 if (Event.current.keyCode == KeyCode.Tab) {
                     skeleton.editMode = !skeleton.editMode;
+                    EditorUtility.SetDirty(skeleton);
                 }
                 break;
         }

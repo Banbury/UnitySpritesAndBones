@@ -84,7 +84,7 @@ public class Bone : MonoBehaviour {
             Bone b2 = n2.AddComponent<Bone>();
             b2.length = b.length / 2;
             n2.transform.parent = n1.transform;
-            b2.transform.localRotation = b.transform.localRotation;
+            b2.transform.localRotation = Quaternion.Euler(0, 0, 0);
             n2.transform.position = b1.Head;
 
             var children = (from Transform child in b.transform select child).ToArray<Transform>();
