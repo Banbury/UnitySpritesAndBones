@@ -23,3 +23,8 @@ This is an addon for Unity 3D to create 2D skeletal sprite animations. With the 
 ## Things I'd like to add, but don't know how
 * Onion skinning.
 * Preview for poses.
+
+
+Screenshots: 
+* http://postimg.org/image/r5s36j053
+* http://postimg.org/image/g7dd50agv/
