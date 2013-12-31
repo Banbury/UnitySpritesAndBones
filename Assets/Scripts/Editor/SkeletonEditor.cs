@@ -15,8 +15,26 @@ public class SkeletonEditor : Editor {
     public override void OnInspectorGUI() {
         DrawDefaultInspector();
 
+        EditorGUILayout.Separator();
+
+        EditorGUILayout.LabelField("Poses", EditorStyles.boldLabel);
+
+        GUILayout.BeginHorizontal();
+
         if (GUILayout.Button("Save pose")) {
             skeleton.SavePose();
+        }
+
+        if (GUILayout.Button("Reset pose")) {
+            if (skeleton.basePose != null) {
+                skeleton.RestorePose(skeleton.basePose);
+            }
+        }
+
+        GUILayout.EndHorizontal();
+
+        if (skeleton.basePose == null) {
+            EditorGUILayout.HelpBox("You have not selected a base pose.", MessageType.Error);
         }
     }
 
@@ -34,8 +52,7 @@ public class SkeletonEditor : Editor {
                 break;
             case EventType.KeyUp:
                 if (Event.current.keyCode == KeyCode.Tab) {
-                    skeleton.editMode = !skeleton.editMode;
-                    EditorUtility.SetDirty(skeleton);
+                    skeleton.SetEditMode(!skeleton.editMode);
                 }
                 break;
         }

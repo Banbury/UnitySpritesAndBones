@@ -33,6 +33,11 @@ using System.Reflection;
 public class Skeleton : MonoBehaviour {
     public bool editMode = true;
 
+    //[HideInInspector]
+    public Pose basePose;
+
+    private Pose tempPose;
+
     [MenuItem("GameObject/Create Other/Skeleton")]
     public static void Create() {
         Undo.IncrementCurrentGroup();
@@ -85,7 +90,7 @@ public class Skeleton : MonoBehaviour {
         Gizmos.DrawIcon(transform.position, "man_icon.png", true);
     }
 
-    public void SavePose() {
+    public Pose CreatePose() {
         Pose pose = ScriptableObject.CreateInstance<Pose>();
 
         var bones = GetComponentsInChildren<Bone>();
@@ -107,7 +112,11 @@ public class Skeleton : MonoBehaviour {
         pose.positions = positions.ToArray();
         pose.targets = targets.ToArray();
 
-        ScriptableObjectUtility.CreateAsset(pose);
+        return pose;
+    }
+
+    public void SavePose() {
+        ScriptableObjectUtility.CreateAsset(CreatePose());
     }
 
     public void RestorePose(Pose pose) {
@@ -131,5 +140,32 @@ public class Skeleton : MonoBehaviour {
                 ik.target.transform.localPosition = tv.position;
             }
         }
+    }
+
+    public void SetBasePose(Pose pose) {
+        basePose = pose;
+    }
+
+    public void SetEditMode(bool edit) {
+        if (!editMode && edit) {
+            AnimationMode.StopAnimationMode();
+
+            tempPose = CreatePose();
+
+            if (basePose != null) {
+                RestorePose(basePose);
+            }
+        }
+        else if (editMode && !edit) {
+            if (basePose == null) {
+                SetBasePose(CreatePose());
+            }
+
+            if (tempPose != null) {
+                RestorePose(tempPose);
+            }
+        }
+
+        editMode = edit;
     }
 }
