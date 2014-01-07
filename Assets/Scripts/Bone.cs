@@ -30,9 +30,14 @@ using System.Linq.Expressions;
 
 [ExecuteInEditMode]
 public class Bone : MonoBehaviour {
+    public int index = 0;
     public float length = 1.0f;
     public bool snapToParent = true;
     public bool editMode = true;
+    public bool showInfluence = true;
+    public bool deform = false;
+    public float influenceTail = 0.25f;
+    public float influenceHead = 0.25f;
 
     private Bone parent;
 
@@ -43,7 +48,7 @@ public class Bone : MonoBehaviour {
     }
 
     [MenuItem("GameObject/Create Other/Bone")]
-    public static void Create() {
+    public static Bone Create() {
         GameObject b = new GameObject("Bone");
         Undo.RegisterCreatedObjectUndo(b, "Add child bone");
         b.AddComponent<Bone>();
@@ -55,10 +60,21 @@ public class Bone : MonoBehaviour {
             if (sel.GetComponent<Bone>() != null) {
                 Bone p = sel.GetComponent<Bone>();
                 b.transform.position = p.Head;
+                b.transform.localRotation = Quaternion.Euler(0, 0, 0);
             }
         }
 
+        Skeleton skel = b.transform.root.GetComponent<Skeleton>();
+
+        if (skel != null) {
+            Bone[] bones = skel.GetComponentsInChildren<Bone>();
+            int index = bones.Max(bn => bn.index) + 1;
+            b.GetComponent<Bone>().index = index;
+        }
+
         Selection.activeGameObject = b;
+
+        return b.GetComponent<Bone>();
     }
 
     public static void Split() {
@@ -67,13 +83,14 @@ public class Bone : MonoBehaviour {
             string undo = "Split bone";
 
             GameObject old = Selection.activeGameObject;
-            Undo.RegisterFullObjectHierarchyUndo(old);
+            Undo.RecordObject(old, undo);
             Bone b = old.GetComponent<Bone>();
 
             GameObject n1 = new GameObject(old.name + "1");
             Undo.RegisterCreatedObjectUndo(n1, undo);
             Bone b1 = n1.AddComponent<Bone>();
-            b1.transform.parent = b.parent.transform;
+            b1.index = b.index;
+            b1.transform.parent = b.transform.parent;
             b1.snapToParent = b.snapToParent;
             b1.length = b.length / 2;
             b1.transform.localPosition = b.transform.localPosition;
@@ -82,6 +99,7 @@ public class Bone : MonoBehaviour {
             GameObject n2 = new GameObject(old.name + "2");
             Undo.RegisterCreatedObjectUndo(n2, undo);
             Bone b2 = n2.AddComponent<Bone>();
+            b2.index = b.GetMaxIndex();
             b2.length = b.length / 2;
             n2.transform.parent = n1.transform;
             b2.transform.localRotation = Quaternion.Euler(0, 0, 0);
@@ -97,6 +115,8 @@ public class Bone : MonoBehaviour {
             Undo.DestroyObjectImmediate(old);
 
             Undo.CollapseUndoOperations(Undo.GetCurrentGroup());
+
+            Selection.activeGameObject = b2.gameObject;
         }
     }
 
@@ -112,15 +132,10 @@ public class Bone : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        //transform.position = new Vector2(transform.position.x, transform.position.y);
         transform.rotation = Quaternion.Euler(0, 0, transform.rotation.eulerAngles.z);
 
         if (Application.isEditor && editMode && snapToParent && parent != null) {
             gameObject.transform.position = parent.Head;
-        }
-
-        if (!editMode) {
-
         }
 	}
 
@@ -148,5 +163,65 @@ public class Bone : MonoBehaviour {
         Gizmos.DrawLine(gameObject.transform.position + v, Head);
 
         Gizmos.DrawLine(gameObject.transform.position, Head);
+
+        Gizmos.color = new Color(Gizmos.color.r, Gizmos.color.g, Gizmos.color.b, 0.5f);
+
+        if (editMode && showInfluence) {
+            Gizmos.DrawWireSphere(transform.position, influenceTail);
+            Gizmos.DrawWireSphere(Head, influenceHead);
+        }
+    }
+
+    public float GetInfluence(Vector2 p) {
+        Vector2 wv = Head - (Vector2)transform.position;
+
+        float dist = 0;
+
+        if (length == 0) {
+            dist = (p - (Vector2)transform.position).magnitude;
+            if (dist > influenceTail)
+                return 0;
+            else
+                return influenceTail;
+        }
+        else {
+            float t = Vector2.Dot(p - (Vector2)transform.position, wv) / wv.sqrMagnitude;
+
+            if (t < 0) {
+                dist = (p - (Vector2)transform.position).magnitude;
+                if (dist > influenceTail)
+                    return 0;
+                else
+                    return (influenceTail - dist) / influenceTail;
+            }
+            else if (t > 1.0f) {
+                dist = (p - Head).magnitude;
+                if (dist > influenceHead)
+                    return 0;
+                else
+                    return (influenceHead - dist) / influenceHead;
+            }
+            else {
+                Vector2 proj = (Vector2)transform.position + (wv * t);
+                dist = (proj - p).magnitude;
+
+                float s = (influenceHead - influenceTail);
+                float i = influenceTail + s * t;
+
+                if (dist > i)
+                    return 0;
+                else
+                    return (i - dist) / i;
+            }
+        }
+    }
+
+    internal int GetMaxIndex() {
+        Bone[] bones = transform.root.GetComponentsInChildren<Bone>();
+
+        if (bones == null || bones.Length == 0)
+            return 0;
+
+        return bones.Max(b => b.index) + 1;
     }
 }

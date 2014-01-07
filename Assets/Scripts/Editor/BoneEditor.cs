@@ -56,13 +56,44 @@ public class BoneEditor : Editor {
         Handles.color = Color.green;
 
         if (bone.editMode) {
-            EditorGUI.BeginChangeCheck();
-            Vector3 v = Handles.FreeMoveHandle(bone.Head, Quaternion.identity, 0.1f, Vector3.zero, Handles.RectangleCap);
-            Undo.RecordObject(bone, "Change bone");
-            bone.length = Vector2.Distance(v, bone.transform.position);
-            bone.transform.up = (v - bone.transform.position).normalized;
-            if (EditorGUI.EndChangeCheck()) {
-                EditorUtility.SetDirty(bone);
+            Event current = Event.current;
+
+            if (!current.control) {
+                EditorGUI.BeginChangeCheck();
+                Vector3 v = Handles.FreeMoveHandle(bone.Head, Quaternion.identity, 0.1f, Vector3.zero, Handles.RectangleCap);
+                Undo.RecordObject(bone, "Change bone");
+                bone.length = Vector2.Distance(v, bone.transform.position);
+                bone.transform.up = (v - bone.transform.position).normalized;
+                if (EditorGUI.EndChangeCheck()) {
+                    EditorUtility.SetDirty(bone);
+                }
+            }
+
+            int controlID = GUIUtility.GetControlID(FocusType.Passive);
+
+            if (current.control) {
+                switch (current.GetTypeForControl(controlID)) {
+                    case EventType.MouseDown:
+                        current.Use();
+                        break;
+                    case EventType.MouseUp:
+                        Undo.FlushUndoRecordObjects();
+                        Bone b = Bone.Create();
+                        Selection.activeGameObject = b.gameObject;
+
+                        Vector3 p = HandleUtility.GUIPointToWorldRay(current.mousePosition).origin;
+                        p = new Vector3(p.x, p.y);
+                        b.length = Vector3.Distance(p, bone.Head);
+                        b.transform.up = p - (Vector3)bone.Head;
+
+                        Event.current.Use();
+                        break;
+                    case EventType.Layout:
+                        HandleUtility.AddDefaultControl(controlID);
+                        break;
+                }
+            }
+            if (Event.current.control && Event.current.type == EventType.mouseDown) {
             }
         }
         else {

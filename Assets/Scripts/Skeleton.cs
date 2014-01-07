@@ -24,7 +24,6 @@ THE SOFTWARE.
 
 using UnityEngine;
 using UnityEditor;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -32,6 +31,7 @@ using System.Reflection;
 [ExecuteInEditMode]
 public class Skeleton : MonoBehaviour {
     public bool editMode = true;
+    public bool showBoneInfluence = true;
 
     //[HideInInspector]
     public Pose basePose;
@@ -82,6 +82,7 @@ public class Skeleton : MonoBehaviour {
         if (Application.isEditor) {
             foreach (Bone b in gameObject.GetComponentsInChildren<Bone>()) {
                 b.editMode = editMode;
+                b.showInfluence = showBoneInfluence;
             }
         }
 	}
@@ -124,15 +125,15 @@ public class Skeleton : MonoBehaviour {
         Undo.RegisterCompleteObjectUndo(bones, "Assign Pose");
 
         foreach (RotationValue rv in pose.rotations) {
-            Array.Find<Bone>(bones, b => b.name == rv.name).transform.localRotation = rv.rotation;
+            System.Array.Find<Bone>(bones, b => b.name == rv.name).transform.localRotation = rv.rotation;
         }
 
         foreach (PositionValue pv in pose.positions) {
-            Array.Find<Bone>(bones, b => b.name == pv.name).transform.localPosition = pv.position;
+            System.Array.Find<Bone>(bones, b => b.name == pv.name).transform.localPosition = pv.position;
         }
 
         foreach (PositionValue tv in pose.targets) {
-            Bone bone = Array.Find<Bone>(bones, b => b.name == tv.name);
+            Bone bone = System.Array.Find<Bone>(bones, b => b.name == tv.name);
             InverseKinematics ik = bone.GetComponent<InverseKinematics>();
 
             if (ik != null) {
@@ -151,18 +152,16 @@ public class Skeleton : MonoBehaviour {
             AnimationMode.StopAnimationMode();
 
             tempPose = CreatePose();
+            tempPose.hideFlags = HideFlags.HideAndDontSave;
 
             if (basePose != null) {
                 RestorePose(basePose);
             }
         }
         else if (editMode && !edit) {
-            if (basePose == null) {
-                SetBasePose(CreatePose());
-            }
-
             if (tempPose != null) {
                 RestorePose(tempPose);
+                Object.DestroyImmediate(tempPose);
             }
         }
 
