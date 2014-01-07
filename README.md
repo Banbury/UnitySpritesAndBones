@@ -6,9 +6,11 @@ This is an addon for Unity 3D to create 2D skeletal sprite animations. With the 
 ## Features
 
 * Skeletons and Bones.
+* Mesh deformation
 * Inverse Kinematics with targets.
 * IK Helper objects.
 * Bones and IK are fully animatable.
+* Bones can be added by holding Ctrl and left clicking.
 * Bone splitting (Subdivision).
 * Saving and loading of poses. Poses are saved as assets.
 * Fully integrated in the Unity Editor.
@@ -17,14 +19,15 @@ This is an addon for Unity 3D to create 2D skeletal sprite animations. With the 
 * Did I mention Inverse Kinematics?
 * Free and Opensource
 
-## Planned features
-* Baking IK animations.
-
 ## Things I'd like to add, but don't know how
 * Onion skinning.
 * Preview for poses.
+* Baking IK animations.
 
 
 Screenshots: 
 * http://postimg.org/image/r5s36j053
 * http://postimg.org/image/g7dd50agv/
+
+Tutorials:
+* https://vimeo.com/channels/650373
