@@ -23,8 +23,6 @@ public class Skin2D : MonoBehaviour {
     
 	// Use this for initialization
 	void Start() {
-        meshFilter = GetComponent<MeshFilter>();
-
 #if UNITY_EDITOR
         lineMaterial = new Material(Shader.Find("Lines/Colored Blended"));
         lineMaterial.hideFlags = HideFlags.HideAndDontSave;
@@ -38,13 +36,21 @@ public class Skin2D : MonoBehaviour {
 	void Update () {
 	}
 
+    public MeshFilter MeshFilter {
+        get {
+            if (meshFilter == null)
+                meshFilter = GetComponent<MeshFilter>();
+            return meshFilter;
+        }
+    }
+
     void OnDrawGizmos() {
 #if UNITY_EDITOR
-        if (Application.isEditor && meshFilter.sharedMesh != null) {
+        if (Application.isEditor && MeshFilter.sharedMesh != null) {
             CalculateVertexColors();
             GL.wireframe = true;
             lineMaterial.SetPass(0);
-            Graphics.DrawMeshNow(meshFilter.sharedMesh, transform.position, transform.rotation);
+            Graphics.DrawMeshNow(MeshFilter.sharedMesh, transform.position, transform.rotation);
             GL.wireframe = false;
         }
 #endif
@@ -53,12 +59,12 @@ public class Skin2D : MonoBehaviour {
     public void CalculateBoneWeights() {
         Mesh mesh = new Mesh();
         mesh.name = "Generated Mesh";
-        mesh.vertices = meshFilter.sharedMesh.vertices;
-        mesh.triangles = meshFilter.sharedMesh.triangles;
-        mesh.normals = meshFilter.sharedMesh.normals;
-        mesh.uv = meshFilter.sharedMesh.uv;
-        mesh.uv2 = meshFilter.sharedMesh.uv2;
-        mesh.bounds = meshFilter.sharedMesh.bounds;
+        mesh.vertices = MeshFilter.sharedMesh.vertices;
+        mesh.triangles = MeshFilter.sharedMesh.triangles;
+        mesh.normals = MeshFilter.sharedMesh.normals;
+        mesh.uv = MeshFilter.sharedMesh.uv;
+        mesh.uv2 = MeshFilter.sharedMesh.uv2;
+        mesh.bounds = MeshFilter.sharedMesh.bounds;
 
         if (skeleton != null && mesh != null) {
             boneWeights.weights = new Bone2DWeight[] { };
@@ -97,13 +103,13 @@ public class Skin2D : MonoBehaviour {
     private void CalculateVertexColors() {
         GameObject go = Selection.activeGameObject;
 
-        if (go == lastSelected || meshFilter.sharedMesh == null) {
+        if (go == lastSelected || MeshFilter.sharedMesh == null) {
             return;
         }
 
         lastSelected = go;
 
-        Mesh m = meshFilter.sharedMesh;
+        Mesh m = MeshFilter.sharedMesh;
 
         Color[] colors = new Color[m.vertexCount];
 
@@ -138,5 +144,16 @@ public class Skin2D : MonoBehaviour {
         }
 
         m.colors = colors;
+    }
+
+    public void SaveAsPrefab() {
+        string path = "Assets/" + gameObject.name + ".prefab";
+
+        Object obj = PrefabUtility.CreateEmptyPrefab(path);
+
+        AssetDatabase.AddObjectToAsset(GetComponent<SkinnedMeshRenderer>().sharedMesh, obj);
+
+        PrefabUtility.ReplacePrefab(gameObject, obj, ReplacePrefabOptions.ConnectToPrefab);
+        //PrefabUtility.DisconnectPrefabInstance(gameObject);
     }
 }
