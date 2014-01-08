@@ -1,4 +1,9 @@
-﻿using UnityEngine;
+﻿/**
+ * Source: http://wiki.unity3d.com/index.php/HSBColor
+ * License: CC BY-SA 3.0
+ * Author: Jonathan Czeck (aarku) 
+ **/
+using UnityEngine;
 
 [System.Serializable]
 public struct HSBColor {

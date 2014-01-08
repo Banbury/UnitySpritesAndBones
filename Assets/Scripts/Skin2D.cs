@@ -1,4 +1,27 @@
-﻿using UnityEngine;
+﻿/*
+The MIT License (MIT)
+
+Copyright (c) 2013 Banbury
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+using UnityEngine;
 using UnityEditor;
 using System.Collections;
 using System.Linq;
@@ -24,10 +47,6 @@ public class Skin2D : MonoBehaviour {
 	// Use this for initialization
 	void Start() {
 #if UNITY_EDITOR
-        lineMaterial = new Material(Shader.Find("Lines/Colored Blended"));
-        lineMaterial.hideFlags = HideFlags.HideAndDontSave;
-        lineMaterial.shader.hideFlags = HideFlags.HideAndDontSave;
-
         CalculateVertexColors();
 #endif
     }
@@ -36,11 +55,22 @@ public class Skin2D : MonoBehaviour {
 	void Update () {
 	}
 
-    public MeshFilter MeshFilter {
+    private MeshFilter MeshFilter {
         get {
             if (meshFilter == null)
                 meshFilter = GetComponent<MeshFilter>();
             return meshFilter;
+        }
+    }
+
+    private Material LineMaterial {
+        get {
+            if (lineMaterial == null) {
+                lineMaterial = new Material(Shader.Find("Lines/Colored Blended"));
+                lineMaterial.hideFlags = HideFlags.HideAndDontSave;
+                lineMaterial.shader.hideFlags = HideFlags.HideAndDontSave;
+            }
+            return lineMaterial;
         }
     }
 
@@ -49,7 +79,7 @@ public class Skin2D : MonoBehaviour {
         if (Application.isEditor && MeshFilter.sharedMesh != null) {
             CalculateVertexColors();
             GL.wireframe = true;
-            lineMaterial.SetPass(0);
+            LineMaterial.SetPass(0);
             Graphics.DrawMeshNow(MeshFilter.sharedMesh, transform.position, transform.rotation);
             GL.wireframe = false;
         }

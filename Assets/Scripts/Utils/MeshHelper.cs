@@ -1,4 +1,9 @@
-﻿using UnityEngine;
+﻿/**
+ * Source: http://wiki.unity3d.com/index.php/MeshHelper
+ * License: CC BY-SA 3.0
+ * Author: ?
+ **/
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 

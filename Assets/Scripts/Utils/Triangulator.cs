@@ -1,4 +1,9 @@
-﻿using UnityEngine;
+﻿/**
+ * Source: http://wiki.unity3d.com/index.php?title=Triangulator
+ * License: CC BY-SA 3.0
+ * Author: runevision
+ **/
+using UnityEngine;
 using System.Collections.Generic;
 
 public static class Triangulator {
