@@ -38,6 +38,7 @@ public class Bone : MonoBehaviour {
     public bool deform = false;
     public float influenceTail = 0.25f;
     public float influenceHead = 0.25f;
+    public float zOrder = 0;
 
     private Bone parent;
 
@@ -64,7 +65,7 @@ public class Bone : MonoBehaviour {
             }
         }
 
-        Skeleton skel = b.transform.root.GetComponent<Skeleton>();
+        Skeleton skel = b.transform.root.GetComponentInChildren<Skeleton>();
 
         if (skel != null) {
             Bone[] bones = skel.GetComponentsInChildren<Bone>();

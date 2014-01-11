@@ -53,6 +53,9 @@ public class Skin2D : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
+        if (MeshFilter.sharedMesh != null && GetComponent<SkinnedMeshRenderer>().sharedMesh == null) {
+            GetComponent<SkinnedMeshRenderer>().sharedMesh = MeshFilter.sharedMesh;
+        }
 	}
 
     private MeshFilter MeshFilter {
@@ -103,6 +106,9 @@ public class Skin2D : MonoBehaviour {
 
             foreach (Bone bone in bones) {
                 int i=0;
+
+                Vector3[] vertices = mesh.vertices;
+
                 foreach (Vector3 v in mesh.vertices) {
                     float influence = bone.GetInfluence(v + transform.position);
                     boneWeights.SetWeight(i, bone.name, bone.index, influence);
@@ -184,6 +190,5 @@ public class Skin2D : MonoBehaviour {
         AssetDatabase.AddObjectToAsset(GetComponent<SkinnedMeshRenderer>().sharedMesh, obj);
 
         PrefabUtility.ReplacePrefab(gameObject, obj, ReplacePrefabOptions.ConnectToPrefab);
-        //PrefabUtility.DisconnectPrefabInstance(gameObject);
     }
 }
