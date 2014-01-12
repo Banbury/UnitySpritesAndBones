@@ -110,17 +110,15 @@ public class InverseKinematics : MonoBehaviour {
 
                     float turn = ((dir.z < 0) ? 1 : -1) * Mathf.Acos(cosangle) * Mathf.Rad2Deg;
 
-                    bone.up = (Quaternion.AngleAxis(turn, Vector3.forward) * bone.up).normalized;
+                    float yAngle = Utils.ClampAngle(bone.rotation.eulerAngles.y);
+                    if (yAngle > 90 && yAngle < 270)
+                        turn *= -1;
+
+                    bone.localRotation = Quaternion.Euler(0, 0, bone.localRotation.eulerAngles.z + turn);
                 }
 
                 bone = bone.parent;
             }
         }
-    }
-
-    void OnDrawGizmos() {
-        Gizmos.color = Color.black;
-        
-        //Gizmos.DrawLine(transform.position, RootBone.position);
     }
 }

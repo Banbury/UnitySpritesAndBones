@@ -58,7 +58,7 @@ public class BoneEditor : Editor {
         if (bone.editMode) {
             Event current = Event.current;
 
-            if (!current.control) {
+            if (bone.enabled && !current.control) {
                 EditorGUI.BeginChangeCheck();
                 Vector3 v = Handles.FreeMoveHandle(bone.Head, Quaternion.identity, 0.1f, Vector3.zero, Handles.RectangleCap);
                 Undo.RecordObject(bone, "Change bone");

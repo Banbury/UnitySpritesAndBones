@@ -57,6 +57,9 @@ public class Skeleton : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+        if (Application.isPlaying) {
+            SetEditMode(false);
+        }
 	}
 
     void OnEnable() {

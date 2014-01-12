@@ -133,7 +133,7 @@ public class Bone : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        transform.rotation = Quaternion.Euler(0, 0, transform.rotation.eulerAngles.z);
+        transform.localRotation = Quaternion.Euler(0, 0, transform.localRotation.eulerAngles.z);
 
         if (Application.isEditor && editMode && snapToParent && parent != null) {
             gameObject.transform.position = parent.Head;
