@@ -22,16 +22,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 using UnityEngine;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 
 public static class AnimationWindowUtils {
-    public static Assembly GetUnityEditorAssembly() {
-        return typeof(AnimationUtility).Assembly;
-    }
+    #if UNITY_EDITOR
+		public static Assembly GetUnityEditorAssembly ()
+		{
+				return typeof(AnimationUtility).Assembly;
+		}
+    
 
     public static object GetAnimationWindow() {
         Type animationWindow = GetUnityEditorAssembly().GetType("UnityEditor.AnimationWindow");
@@ -65,4 +70,5 @@ public static class AnimationWindowUtils {
     public static string GetPath(this GameObject gameObject) {
         return gameObject.transform.GetPath();
     }
+	#endif
 }
