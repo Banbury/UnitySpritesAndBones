@@ -23,7 +23,9 @@ THE SOFTWARE.
 */
 
 using UnityEngine;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -38,38 +40,42 @@ public class Skeleton : MonoBehaviour {
 
     private Pose tempPose;
 
-    [MenuItem("GameObject/Create Other/Skeleton")]
-    public static void Create() {
-        Undo.IncrementCurrentGroup();
+    #if UNITY_EDITOR
+		[MenuItem("GameObject/Create Other/Skeleton")]
+		public static void Create ()
+		{
+				Undo.IncrementCurrentGroup ();
 
-        GameObject o = new GameObject("Skeleton");
-        Undo.RegisterCreatedObjectUndo(o, "Create skeleton");
-        o.AddComponent<Skeleton>();
+				GameObject o = new GameObject ("Skeleton");
+				Undo.RegisterCreatedObjectUndo (o, "Create skeleton");
+				o.AddComponent<Skeleton> ();
 
-        GameObject b = new GameObject("Bone");
-        Undo.RegisterCreatedObjectUndo(b, "Create Skeleton");
-        b.AddComponent<Bone>();
+				GameObject b = new GameObject ("Bone");
+				Undo.RegisterCreatedObjectUndo (b, "Create Skeleton");
+				b.AddComponent<Bone> ();
 
-        b.transform.parent = o.transform;
+				b.transform.parent = o.transform;
 
-        Undo.CollapseUndoOperations(Undo.GetCurrentGroup());
-    }
+				Undo.CollapseUndoOperations (Undo.GetCurrentGroup ());
+		}
 
 	// Use this for initialization
 	void Start () {
         if (Application.isPlaying) {
+
             SetEditMode(false);
+
         }
 	}
 
     void OnEnable() {
-        EditorApplication.update += EditorUpdate;
+			EditorApplication.update += EditorUpdate;
     }
 
     void OnDisable() {
-        EditorApplication.update -= EditorUpdate;
+			EditorApplication.update -= EditorUpdate;
     }
-
+	#endif
     private void EditorUpdate() {
         foreach (Bone b in gameObject.GetComponentsInChildren<Bone>()) {
             InverseKinematics ik = b.GetComponent<InverseKinematics>();
@@ -82,6 +88,7 @@ public class Skeleton : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+		EditorUpdate();
         if (Application.isEditor) {
             foreach (Bone b in gameObject.GetComponentsInChildren<Bone>()) {
                 b.editMode = editMode;
@@ -118,7 +125,7 @@ public class Skeleton : MonoBehaviour {
 
         return pose;
     }
-
+#if UNITY_EDITOR
     public void SavePose() {
         ScriptableObjectUtility.CreateAsset(CreatePose());
     }
@@ -170,4 +177,5 @@ public class Skeleton : MonoBehaviour {
 
         editMode = edit;
     }
+#endif
 }

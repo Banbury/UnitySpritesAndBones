@@ -23,42 +23,47 @@ THE SOFTWARE.
 */
 
 using UnityEngine;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using System.Collections;
 
 public class Helper : MonoBehaviour {
     public HelperType type = HelperType.WireCube;
 
-    [MenuItem("GameObject/Create Other/Helper")]
-    public static void Create() {
-        GameObject o = new GameObject("Helper");
-        Undo.RegisterCreatedObjectUndo(o, "Create helper");
-        o.AddComponent<Helper>();
-    }
+    #if UNITY_EDITOR
+		[MenuItem("GameObject/Create Other/Helper")]
+		public static void Create ()
+		{
+				GameObject o = new GameObject ("Helper");
+				Undo.RegisterCreatedObjectUndo (o, "Create helper");
+				o.AddComponent<Helper> ();
+		}
 
-    void OnDrawGizmos() {
-        if (gameObject.Equals(Selection.activeGameObject)) {
-            Gizmos.color = Color.yellow;
-        }
-        else {
-            Gizmos.color = Color.green;
-        }
+		void OnDrawGizmos ()
+		{
+				if (gameObject.Equals (Selection.activeGameObject)) {
+						Gizmos.color = Color.yellow;
+				} else {
+						Gizmos.color = Color.green;
+				}
 
-        switch (type) {
-            case HelperType.Cube:
-                Gizmos.DrawCube(transform.position, transform.localScale);
-                break;
-            case HelperType.Sphere:
-                Gizmos.DrawSphere(transform.position, transform.localScale.x);
-                break;
-            case HelperType.WireCube:
-                Gizmos.DrawWireCube(transform.position, transform.localScale);
-                break;
-            case HelperType.WireSphere:
-                Gizmos.DrawWireSphere(transform.position, transform.localScale.x);
-                break;
-        }
-    }
+				switch (type) {
+				case HelperType.Cube:
+						Gizmos.DrawCube (transform.position, transform.localScale);
+						break;
+				case HelperType.Sphere:
+						Gizmos.DrawSphere (transform.position, transform.localScale.x);
+						break;
+				case HelperType.WireCube:
+						Gizmos.DrawWireCube (transform.position, transform.localScale);
+						break;
+				case HelperType.WireSphere:
+						Gizmos.DrawWireSphere (transform.position, transform.localScale.x);
+						break;
+				}
+		}
+    #endif
 }
 
 public enum HelperType {

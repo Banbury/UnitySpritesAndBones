@@ -22,28 +22,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 using UnityEngine;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using System.IO;
 
 public static class ScriptableObjectUtility {
     /// <summary>
     //	This makes it easy to create, name and place unique new ScriptableObject asset files.
     /// </summary>
-    public static void CreateAsset(Object asset) {
-        string path = AssetDatabase.GetAssetPath(Selection.activeObject);
-        if (path == "") {
-            path = "Assets";
-        }
-        else if (Path.GetExtension(path) != "") {
-            path = path.Replace(Path.GetFileName(AssetDatabase.GetAssetPath(Selection.activeObject)), "");
-        }
+   #if UNITY_EDITOR
+		public static void CreateAsset (Object asset)
+		{
+				string path = AssetDatabase.GetAssetPath (Selection.activeObject);
+				if (path == "") {
+						path = "Assets";
+				} else if (Path.GetExtension (path) != "") {
+						path = path.Replace (Path.GetFileName (AssetDatabase.GetAssetPath (Selection.activeObject)), "");
+				}
 
-        string assetPathAndName = AssetDatabase.GenerateUniqueAssetPath(path + "/New " + asset.GetType().ToString() + ".asset");
+				string assetPathAndName = AssetDatabase.GenerateUniqueAssetPath (path + "/New " + asset.GetType ().ToString () + ".asset");
 
-        AssetDatabase.CreateAsset(asset, assetPathAndName);
+				AssetDatabase.CreateAsset (asset, assetPathAndName);
 
-        AssetDatabase.SaveAssets();
+				AssetDatabase.SaveAssets ();
 
-        Selection.activeObject = asset;
-    }
+				Selection.activeObject = asset;
+		}
+   #endif
 }
