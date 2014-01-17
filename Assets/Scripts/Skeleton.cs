@@ -40,7 +40,7 @@ public class Skeleton : MonoBehaviour {
 
     private Pose tempPose;
 
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
 		[MenuItem("GameObject/Create Other/Skeleton")]
 		public static void Create ()
 		{
@@ -58,16 +58,16 @@ public class Skeleton : MonoBehaviour {
 
 				Undo.CollapseUndoOperations (Undo.GetCurrentGroup ());
 		}
+#endif
 
-	// Use this for initialization
+    // Use this for initialization
 	void Start () {
         if (Application.isPlaying) {
-
             SetEditMode(false);
-
         }
 	}
 
+#if UNITY_EDITOR
     void OnEnable() {
 			EditorApplication.update += EditorUpdate;
     }
@@ -75,7 +75,8 @@ public class Skeleton : MonoBehaviour {
     void OnDisable() {
 			EditorApplication.update -= EditorUpdate;
     }
-	#endif
+#endif
+
     private void EditorUpdate() {
         foreach (Bone b in gameObject.GetComponentsInChildren<Bone>()) {
             InverseKinematics ik = b.GetComponent<InverseKinematics>();
@@ -88,15 +89,19 @@ public class Skeleton : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+#if !UNITY_EDITOR
 		EditorUpdate();
+#else
         if (Application.isEditor) {
             foreach (Bone b in gameObject.GetComponentsInChildren<Bone>()) {
                 b.editMode = editMode;
                 b.showInfluence = showBoneInfluence;
             }
         }
-	}
+#endif
+    }
 
+#if UNITY_EDITOR
     void OnDrawGizmos() {
         Gizmos.DrawIcon(transform.position, "man_icon.png", true);
     }
@@ -125,7 +130,7 @@ public class Skeleton : MonoBehaviour {
 
         return pose;
     }
-#if UNITY_EDITOR
+
     public void SavePose() {
         ScriptableObjectUtility.CreateAsset(CreatePose());
     }
@@ -156,8 +161,10 @@ public class Skeleton : MonoBehaviour {
     public void SetBasePose(Pose pose) {
         basePose = pose;
     }
+#endif
 
     public void SetEditMode(bool edit) {
+#if UNITY_EDITOR
         if (!editMode && edit) {
             AnimationMode.StopAnimationMode();
 
@@ -174,8 +181,8 @@ public class Skeleton : MonoBehaviour {
                 Object.DestroyImmediate(tempPose);
             }
         }
+#endif
 
         editMode = edit;
     }
-#endif
 }

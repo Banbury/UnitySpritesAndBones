@@ -31,7 +31,7 @@ using System.Collections.Generic;
 using System.Reflection;
 
 public static class AnimationWindowUtils {
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
 		public static Assembly GetUnityEditorAssembly ()
 		{
 				return typeof(AnimationUtility).Assembly;
@@ -70,5 +70,5 @@ public static class AnimationWindowUtils {
     public static string GetPath(this GameObject gameObject) {
         return gameObject.transform.GetPath();
     }
-	#endif
+#endif
 }

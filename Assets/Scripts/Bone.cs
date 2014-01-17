@@ -128,6 +128,7 @@ public class Bone : MonoBehaviour {
         Undo.AddComponent<InverseKinematics>(gameObject);
     }
     #endif
+
     // Use this for initialization
 	void Start () {
         if (gameObject.transform.parent != null)
@@ -138,12 +139,14 @@ public class Bone : MonoBehaviour {
 	void Update () {
         transform.localRotation = Quaternion.Euler(0, 0, transform.localRotation.eulerAngles.z);
 
+#if UNITY_EDITOR
         if (Application.isEditor && editMode && snapToParent && parent != null) {
             gameObject.transform.position = parent.Head;
         }
+#endif
 	}
 
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
     void OnDrawGizmos() {
         if (gameObject.Equals(Selection.activeGameObject)) {
             Gizmos.color = Color.yellow;
@@ -176,7 +179,7 @@ public class Bone : MonoBehaviour {
             Gizmos.DrawWireSphere(Head, influenceHead);
         }
     }
-    #endif
+#endif
 
     public float GetInfluence(Vector2 p) {
         Vector2 wv = Head - (Vector2)transform.position;

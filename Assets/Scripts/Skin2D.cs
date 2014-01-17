@@ -81,7 +81,8 @@ public class Skin2D : MonoBehaviour {
             return lineMaterial;
         }
     }
-	#if UNITY_EDITOR
+	
+#if UNITY_EDITOR
     void OnDrawGizmos() {
 
         if (Application.isEditor && MeshFilter.sharedMesh != null) {
@@ -194,5 +195,5 @@ public class Skin2D : MonoBehaviour {
 
         PrefabUtility.ReplacePrefab(gameObject, obj, ReplacePrefabOptions.ConnectToPrefab);
     }
-	#endif
+#endif
 }
