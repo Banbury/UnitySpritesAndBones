@@ -22,7 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 using UnityEngine;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using System.Collections;
 using System.Linq;
 
@@ -37,12 +39,15 @@ public class Skin2D : MonoBehaviour {
     private MeshFilter meshFilter;
     private GameObject lastSelected = null;
 
-    [MenuItem("GameObject/Create Other/Skin 2D")]
-    public static void Create() {
-        GameObject o = new GameObject("Skin2D");
-        Undo.RegisterCreatedObjectUndo(o, "Create Skin2D");
-        o.AddComponent<Skin2D>();
-    }
+    #if UNITY_EDITOR
+		[MenuItem("GameObject/Create Other/Skin 2D")]
+		public static void Create ()
+		{
+				GameObject o = new GameObject ("Skin2D");
+				Undo.RegisterCreatedObjectUndo (o, "Create Skin2D");
+				o.AddComponent<Skin2D> ();
+		}
+    #endif
     
 	// Use this for initialization
 	void Start() {
@@ -76,9 +81,9 @@ public class Skin2D : MonoBehaviour {
             return lineMaterial;
         }
     }
-
+	#if UNITY_EDITOR
     void OnDrawGizmos() {
-#if UNITY_EDITOR
+
         if (Application.isEditor && MeshFilter.sharedMesh != null) {
             CalculateVertexColors();
             GL.wireframe = true;
@@ -86,7 +91,7 @@ public class Skin2D : MonoBehaviour {
             Graphics.DrawMeshNow(MeshFilter.sharedMesh, transform.position, transform.rotation);
             GL.wireframe = false;
         }
-#endif
+
     }
 
     public void CalculateBoneWeights() {
@@ -189,4 +194,5 @@ public class Skin2D : MonoBehaviour {
 
         PrefabUtility.ReplacePrefab(gameObject, obj, ReplacePrefabOptions.ConnectToPrefab);
     }
+	#endif
 }

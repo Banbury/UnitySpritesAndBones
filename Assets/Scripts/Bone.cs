@@ -23,7 +23,9 @@ THE SOFTWARE.
 */
 
 using UnityEngine;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using System.Collections;
 using System.Linq;
 using System.Linq.Expressions;
@@ -48,6 +50,7 @@ public class Bone : MonoBehaviour {
         }
     }
 
+    #if UNITY_EDITOR
     [MenuItem("GameObject/Create Other/Bone")]
     public static Bone Create() {
         GameObject b = new GameObject("Bone");
@@ -124,7 +127,7 @@ public class Bone : MonoBehaviour {
     public void AddIK() {
         Undo.AddComponent<InverseKinematics>(gameObject);
     }
-
+    #endif
     // Use this for initialization
 	void Start () {
         if (gameObject.transform.parent != null)
@@ -140,6 +143,7 @@ public class Bone : MonoBehaviour {
         }
 	}
 
+    #if UNITY_EDITOR
     void OnDrawGizmos() {
         if (gameObject.Equals(Selection.activeGameObject)) {
             Gizmos.color = Color.yellow;
@@ -172,6 +176,7 @@ public class Bone : MonoBehaviour {
             Gizmos.DrawWireSphere(Head, influenceHead);
         }
     }
+    #endif
 
     public float GetInfluence(Vector2 p) {
         Vector2 wv = Head - (Vector2)transform.position;
