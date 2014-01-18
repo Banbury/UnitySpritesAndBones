@@ -31,3 +31,6 @@ Screenshots:
 
 Tutorials:
 * https://vimeo.com/channels/650373
+
+## Installation
+After importing the Unity package into a new project, the Gizmo folder has to be moved to the Asset folder. Otherwise some icons won't show up in the editor and the hierarchy.
