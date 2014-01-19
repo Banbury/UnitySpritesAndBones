@@ -42,17 +42,21 @@ public interface IBitmap {
 }
 
 public sealed class ArrayBitmap : IBitmap {
-    bool[,] bitmap;
+    private bool[,] bitmap;
+
     public ArrayBitmap(bool[,] bitmap) {
         if (bitmap == null) { throw new ArgumentNullException("bitmap"); }
         this.bitmap = bitmap;
     }
+
     public int Width {
         get { return bitmap.GetLength(0); }
     }
+
     public int Height {
         get { return bitmap.GetLength(1); }
     }
+
     public bool this[int x, int y] {
         get {
             return
@@ -61,9 +65,28 @@ public sealed class ArrayBitmap : IBitmap {
                 bitmap[x, y];
         }
     }
+
+    public static IBitmap CreateFromTexture(Texture2D texture, Rect rect) {
+        var bmp = new bool[texture.width, texture.height];
+
+        Color[] pixels = texture.GetPixels((int)rect.x, (int)rect.y, (int)rect.width, (int)rect.height);
+
+        int x = 0;
+        int y = 0;
+        int w = (int)rect.width;
+
+        for (int i = 0; i < pixels.Length; i++) {
+            y = Mathf.FloorToInt(i / w);
+            x = (i - y * w);
+            bmp[x, y] = (pixels[i].a != 0);
+        }
+
+        return new ArrayBitmap(bmp);
+    }
+
 }
 
-static class BitmapHelper {
+public static class BitmapHelper {
     class BitMapSkipper {
         float xMin;
         float xMax;
@@ -133,6 +156,7 @@ static class BitmapHelper {
             //if (newScan.Count % 2 != 0) { throw new Exception(); }
             scans[x] = newScan;
         }
+
         public bool TryGetSkip(Vector2 point, out float nextY) {
             int scanIndex = (int)(point.y - xMin);
             if (scanIndex < 0 || scanIndex >= scans.Length) {
@@ -165,6 +189,7 @@ static class BitmapHelper {
     public static Vector2[] CreateFromBitmap(IBitmap bitmap) {
         return Reduce(CreateFromBitmap(bitmap, GetFirst(bitmap)));
     }
+
     public static Vector2[][] CreateManyFromBitmap(IBitmap bitmap) {
         List<BitMapSkipper> skippers = new List<BitMapSkipper>();
         List<Vector2[]> result = new List<Vector2[]>();
@@ -176,18 +201,25 @@ static class BitmapHelper {
         }
         return result.ToArray();
     }
+
     private static List<Vector2> CreateFromBitmap(IBitmap bitmap, Vector2 first) {
         Vector2 current = first;
         Vector2 last = first - new Vector2(0, 1);
         List<Vector2> result = new List<Vector2>();
+        
         do {
             result.Add(current);
             current = GetNextVertex(bitmap, current, last);
             last = result[result.Count - 1];
         } while (current != first);
-        if (result.Count < 3) { throw new ArgumentException("The image has an area with less then 3 pixels (possibly an artifact).", "bitmap"); }
+
+        if (result.Count < 3) { 
+            throw new ArgumentException("The image has an area with less then 3 pixels (possibly an artifact).", "bitmap"); 
+        }
+
         return result;
     }
+
     private static Vector2 GetFirst(IBitmap bitmap) {
         for (int x = bitmap.Width - 1; x > -1; --x) {
             for (int y = 0; y < bitmap.Height; ++y) {
@@ -198,6 +230,7 @@ static class BitmapHelper {
         }
         throw new ArgumentException("TODO", "bitmap");
     }
+
     private static IEnumerable<Vector2> GetFirsts(IBitmap bitmap, List<BitMapSkipper> skippers) {
         for (int x = bitmap.Width - 1; x > -1; --x) {
             for (int y = 0; y < bitmap.Height; ++y) {
@@ -219,9 +252,11 @@ static class BitmapHelper {
             }
         }
     }
+
     private static Vector2 GetNextVertex(IBitmap bitmap, Vector2 current, Vector2 last) {
         int offset = 0;
         Vector2 point;
+
         for (int index = 0; index < bitmapPoints.Length; ++index) {
             point = current + bitmapPoints[index];
             if (point == last) {
@@ -229,15 +264,16 @@ static class BitmapHelper {
                 break;
             }
         }
+
         for (int index = 0; index < bitmapPoints.Length; ++index) {
             point = current + bitmapPoints[(index + offset) % bitmapPoints.Length];
-
             if (point.x >= 0 && point.x < bitmap.Width &&
                 point.y >= 0 && point.y < bitmap.Height &&
                 bitmap[(int)point.x, (int)point.y]) {
                 return point;
             }
         }
+
         throw new ArgumentException("The image has an area with less then 3 pixels (possibly an artifact).", "bitmap");
     }
 
@@ -253,7 +289,7 @@ static class BitmapHelper {
                 p3.y = (int)result[0].y;
             }
             else { p3 = list[index]; }
-            if (!IsInLine(ref p1, ref p2, ref p3)) {
+            if (!IsInLine(p1, p2, p3)) {
                 result.Add(new Vector2(p2.x, p2.y));
                 p1 = p2;
             }
@@ -261,7 +297,7 @@ static class BitmapHelper {
         return result.ToArray();
     }
 
-    private static bool IsInLine(ref Vector2 p1, ref Vector2 p2, ref Vector2 p3) {
+    private static bool IsInLine(Vector2 p1, Vector2 p2, Vector2 p3) {
         float slope1 = (p1.y - p2.y);
         float slope2 = (p2.y - p3.y);
         return 0 == slope1 && 0 == slope2 ||

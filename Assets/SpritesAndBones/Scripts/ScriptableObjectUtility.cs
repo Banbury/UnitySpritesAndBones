@@ -49,5 +49,23 @@ public static class ScriptableObjectUtility {
 
 				Selection.activeObject = asset;
 		}
+
+        public static void CreatePrefab(GameObject asset) {
+            string path = AssetDatabase.GetAssetPath(Selection.activeObject);
+            if (path == "") {
+                path = "Assets";
+            }
+            else if (Path.GetExtension(path) != "") {
+                path = path.Replace(Path.GetFileName(AssetDatabase.GetAssetPath(Selection.activeObject)), "");
+            }
+
+            string assetPathAndName = AssetDatabase.GenerateUniqueAssetPath(path + "/New " + asset.GetType().ToString() + ".prefab");
+
+            var prefab = PrefabUtility.CreateEmptyPrefab(assetPathAndName);
+            PrefabUtility.ReplacePrefab(asset, prefab, ReplacePrefabOptions.ConnectToPrefab);
+
+            Selection.activeObject = asset;
+        }
+
    #endif
 }
