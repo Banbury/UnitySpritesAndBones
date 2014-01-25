@@ -1,27 +1,4 @@
-﻿/*
-The MIT License (MIT)
-
-Copyright (c) 2013 Banbury
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-*/
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
@@ -62,9 +39,7 @@ public class SkinMesh : EditorWindow {
 
             if (GUILayout.Button("Generate Polygon")) {
                 Rect r = spriteRenderer.sprite.rect;
-                Debug.Log(r);
                 Texture2D tex = spriteRenderer.sprite.texture;
-                Debug.Log(tex.width + "," + tex.height);
                 IBitmap bmp = ArrayBitmap.CreateFromTexture(tex, new Rect(r.x, r.y, r.width, r.height));
                 polygon = BitmapHelper.CreateFromBitmap(bmp);
                 polygon = SimplifyTools.DouglasPeuckerSimplify(new Vertices(polygon), simplify).ToArray();
@@ -110,6 +85,8 @@ public class SkinMesh : EditorWindow {
         Vector3 lower = new Vector3(bounds.x, bounds.y);
         Vector3 size = new Vector3(bounds.xMax, bounds.yMax) - lower;
 
+        Rect uv_bounds = new Rect(sprite.rect.x / sprite.texture.width, sprite.rect.y / sprite.texture.height, sprite.rect.width / sprite.texture.width, sprite.rect.height / sprite.texture.height);
+
         float scalex = sprite.bounds.size.x / bounds.width;
         float scaley = sprite.bounds.size.y / bounds.height;
 
@@ -118,7 +95,7 @@ public class SkinMesh : EditorWindow {
         for (int i = 0; i < mesh.vertices.Length; i++) {
             Vector3 v = scaled[i];
             Vector3 rel = v - lower;
-            uv.Add(new Vector2(rel.x / size.x, rel.y / size.y));
+            uv.Add(new Vector2(rel.x / size.x * uv_bounds.width, rel.y / size.y * uv_bounds.height) + new Vector2(uv_bounds.x, uv_bounds.y));
 
             scaled[i] = new Vector3(v.x * scalex, v.y * scaley, v.z) - ((Vector3)bounds.center * scalex) + sprite.bounds.center;
         }
