@@ -32,5 +32,8 @@ Screenshots:
 Tutorials:
 * https://vimeo.com/channels/650373
 
+Forum thread:
+* http://forum.unity3d.com/threads/219915-Release-Free-Unity-Sprites-And-Bones-2D-skeleton-animation
+
 ## Installation
 After importing the Unity package into a new project, the Gizmo folder has to be moved to the Asset folder. Otherwise some icons won't show up in the editor and the hierarchy.
