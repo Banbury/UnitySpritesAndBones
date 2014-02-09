@@ -37,6 +37,7 @@ public class Skin2D : MonoBehaviour {
 
     private Material lineMaterial;
     private MeshFilter meshFilter;
+    private SkinnedMeshRenderer skinnedMeshRenderer;
     private GameObject lastSelected = null;
 
     #if UNITY_EDITOR
@@ -68,6 +69,14 @@ public class Skin2D : MonoBehaviour {
             if (meshFilter == null)
                 meshFilter = GetComponent<MeshFilter>();
             return meshFilter;
+        }
+    }
+
+    private SkinnedMeshRenderer SkinnedMeshRenderer {
+        get {
+            if (skinnedMeshRenderer == null)
+                skinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
+            return skinnedMeshRenderer;
         }
     }
 
@@ -149,7 +158,7 @@ public class Skin2D : MonoBehaviour {
 
         lastSelected = go;
 
-        Mesh m = MeshFilter.sharedMesh;
+        Mesh m = SkinnedMeshRenderer.sharedMesh;
 
         Color[] colors = new Color[m.vertexCount];
 
@@ -161,9 +170,7 @@ public class Skin2D : MonoBehaviour {
             Bone bone = go.GetComponent<Bone>();
 
             if (bone != null) {
-                SkinnedMeshRenderer renderer = GetComponent<SkinnedMeshRenderer>();
-
-                if (renderer.bones.Any(b => b.gameObject.GetInstanceID() == bone.gameObject.GetInstanceID())) {
+                if (SkinnedMeshRenderer.bones.Any(b => b.gameObject.GetInstanceID() == bone.gameObject.GetInstanceID())) {
                     for (int i = 0; i < colors.Length; i++) {
                         float value = 0;
 
@@ -183,7 +190,7 @@ public class Skin2D : MonoBehaviour {
             }
         }
 
-        m.colors = colors;
+        MeshFilter.sharedMesh.colors = colors;
     }
 
     public void SaveAsPrefab() {
