@@ -79,4 +79,18 @@ public static class Utils {
 
         return copy;
     }
+
+    public static BoneWeight Clone(this BoneWeight bw) {
+        BoneWeight ret = new BoneWeight();
+        ret.boneIndex0 = bw.boneIndex0;
+        ret.boneIndex1 = bw.boneIndex1;
+        ret.boneIndex2 = bw.boneIndex2;
+        ret.boneIndex3 = bw.boneIndex3;
+        ret.weight0 = bw.weight0;
+        ret.weight1 = bw.weight1;
+        ret.weight2 = bw.weight2;
+        ret.weight3 = bw.weight3;
+
+        return ret;
+    }
 }
