@@ -130,9 +130,14 @@ public class Skeleton : MonoBehaviour {
 
         return pose;
     }
-
-    public void SavePose() {
-        ScriptableObjectUtility.CreateAsset(CreatePose());
+		
+    public void SavePose(string poseFileName) {
+		if(poseFileName!=null && poseFileName.Trim()!=""){
+        	ScriptableObjectUtility.CreateAsset(CreatePose(),poseFileName);
+		}
+		else{
+			ScriptableObjectUtility.CreateAsset(CreatePose());
+		}
     }
 
     public void RestorePose(Pose pose) {
