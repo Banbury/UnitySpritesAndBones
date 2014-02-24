@@ -45,9 +45,29 @@ public static class ScriptableObjectUtility {
 
 				AssetDatabase.CreateAsset (asset, assetPathAndName);
 
+
 				AssetDatabase.SaveAssets ();
 
 				Selection.activeObject = asset;
+		}
+
+		public static void CreateAsset (Object asset, string filename)
+		{
+			string path = AssetDatabase.GetAssetPath (Selection.activeObject);
+			if (path == "") {
+				path = "Assets";
+			} else if (Path.GetExtension (path) != "") {
+				path = path.Replace (Path.GetFileName (AssetDatabase.GetAssetPath (Selection.activeObject)), "");
+			}
+			
+			string assetPathAndName = AssetDatabase.GenerateUniqueAssetPath (path + "/" + filename + ".asset");
+			
+			AssetDatabase.CreateAsset (asset, assetPathAndName);
+			
+			
+			AssetDatabase.SaveAssets ();
+			
+			Selection.activeObject = asset;
 		}
    #endif
 }

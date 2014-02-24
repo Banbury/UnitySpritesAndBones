@@ -28,8 +28,19 @@ using System.Collections;
 
 [CustomEditor(typeof(InverseKinematics))]
 public class InverseKinematicsEditor : Editor {
+
+	private InverseKinematics ik; 
+
+	void OnEnable() {
+		ik = (InverseKinematics)target;
+	}
+
     public override void OnInspectorGUI() {
         DrawDefaultInspector();
+
+		if (GUILayout.Button("Create Helper")) {
+			CreateHelper();
+		}
 
         if (((InverseKinematics)target).target == null) {
             EditorGUILayout.HelpBox("Please select a target.", MessageType.Error);
@@ -40,4 +51,24 @@ public class InverseKinematicsEditor : Editor {
     static void DrawIKGizmo(InverseKinematics ik, GizmoType gizmoType) {
         Handles.Label(ik.transform.position + new Vector3(0.1f, 0), "IK");
     }
+
+	//Create a Helper for the IK Component and sets it as the IK's Target
+	private void CreateHelper(){
+		//Create the Helper GameObject named after the bone
+		GameObject o = new GameObject ("Helper_"+ik.name);
+		Undo.RegisterCreatedObjectUndo (o, "Create helper");
+		o.AddComponent<Helper> ();
+
+		//set the helpers position to match the bones position
+		o.transform.position = ik.transform.position;
+
+		//set the helper as a child of the skeleton
+		o.transform.parent = ik.transform.root.GetComponentInChildren<Skeleton>().transform;
+
+		//set the helper as the target
+		ik.target = o.transform;
+
+		//selects the transform of the Helper
+		Selection.activeTransform = o.transform;
+	}
 }

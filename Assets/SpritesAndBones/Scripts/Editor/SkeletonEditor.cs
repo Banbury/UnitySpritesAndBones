@@ -7,7 +7,7 @@ using System.Collections;
 [CustomEditor(typeof(Skeleton))]
 public class SkeletonEditor : Editor {
     private Skeleton skeleton;
-
+	private string poseFileName = "";
     void OnEnable() {
         skeleton = (Skeleton)target;
     }
@@ -19,10 +19,12 @@ public class SkeletonEditor : Editor {
 
         EditorGUILayout.LabelField("Poses", EditorStyles.boldLabel);
 
+		poseFileName = EditorGUILayout.TextField("Pose Filename",poseFileName);
+
         GUILayout.BeginHorizontal();
 
         if (GUILayout.Button("Save pose")) {
-            skeleton.SavePose();
+			skeleton.SavePose(poseFileName);
         }
 
         if (GUILayout.Button("Reset pose")) {
@@ -32,7 +34,9 @@ public class SkeletonEditor : Editor {
         }
 
         GUILayout.EndHorizontal();
-
+		if (poseFileName==null || poseFileName.Trim ()==""){
+			EditorGUILayout.HelpBox("Give your pose a valid filename before saving", MessageType.Warning);
+		}
         if (skeleton.basePose == null) {
             EditorGUILayout.HelpBox("You have not selected a base pose.", MessageType.Error);
         }

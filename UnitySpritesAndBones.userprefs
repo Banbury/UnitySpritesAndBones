@@ -1,0 +1,14 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\SpritesAndBones\Scripts\ScriptableObjectUtility.cs">
+    <Files>
+      <File FileName="Assets\SpritesAndBones\Scripts\Skeleton.cs" Line="140" Column="4" />
+      <File FileName="Assets\SpritesAndBones\Scripts\Editor\SkeletonEditor.cs" Line="27" Column="36" />
+      <File FileName="Assets\SpritesAndBones\Scripts\ScriptableObjectUtility.cs" Line="63" Column="103" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
