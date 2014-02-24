@@ -34,21 +34,7 @@ public static class ScriptableObjectUtility {
    #if UNITY_EDITOR
 		public static void CreateAsset (Object asset)
 		{
-				string path = AssetDatabase.GetAssetPath (Selection.activeObject);
-				if (path == "") {
-						path = "Assets";
-				} else if (Path.GetExtension (path) != "") {
-						path = path.Replace (Path.GetFileName (AssetDatabase.GetAssetPath (Selection.activeObject)), "");
-				}
-
-				string assetPathAndName = AssetDatabase.GenerateUniqueAssetPath (path + "/New " + asset.GetType ().ToString () + ".asset");
-
-				AssetDatabase.CreateAsset (asset, assetPathAndName);
-
-
-				AssetDatabase.SaveAssets ();
-
-				Selection.activeObject = asset;
+            CreateAsset(asset, "/New " + asset.GetType().ToString());
 		}
 
 		public static void CreateAsset (Object asset, string filename)
