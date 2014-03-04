@@ -184,7 +184,7 @@ public class Skin2D : MonoBehaviour {
                         else if (bw.boneIndex3 == bone.index)
                             value = bw.weight3;
 
-                        colors[i] = HSBColor.ToColor(new HSBColor(0.7f - value, 1.0f, 0.5f));
+                        colors[i] = Util.HSBColor.ToColor(new Util.HSBColor(0.7f - value, 1.0f, 0.5f));
                     }
                 }
             }
