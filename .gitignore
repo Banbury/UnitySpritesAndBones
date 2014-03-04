@@ -8,3 +8,4 @@ Library/
 Assets/AssetStoreTools/
 Gizmos/
 Assets/GitSharp/
+.gradle/
