@@ -28,19 +28,41 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-// AnimationToPNG is based on Twinfox and bitbutter's Render Particle to Animated Texture Scripts, this script will render out an animation that is played when "Play" is pressed in the editor.
+// AnimationToPNG is based on Twinfox and bitbutter's Render Particle to Animated Texture Scripts, 
+// this script will render out an animation that is played when "Play" is pressed in the editor.
 
-/* Basically this is a script you can attach to any gameobject in the scene, but you have to reference a Black Camera and White Camera both of which should be set to orthographic, but this script should have it covered.  There is a prefab called AnimationToPNG which should include everything needed to run the script.
+/* 
+Basically this is a script you can attach to any gameobject in the 
+scene, but you have to reference a Black Camera and White Camera both of 
+which should be set to orthographic, but this script should have it 
+covered. There is a prefab called AnimationToPNG which should include 
+everything needed to run the script. 
 
-If you have Unity Pro, you can use Render Texture, which can accurately render the transparent background for your animations easily in full resolution of the camera.  Just check the box for the variable "useRenderTexture" to use RenderTextures instead.  If you are using Unity Free, then leave this unchecked and you will have a split area using half of the screen width to render the animations.
+If you have Unity Pro, you can use Render Texture, which can accurately 
+render the transparent background for your animations easily in full 
+resolution of the camera. Just check the box for the variable 
+"useRenderTexture" to use RenderTextures instead. If you are using Unity 
+Free, then leave this unchecked and you will have a split area using 
+half of the screen width to render the animations. 
 
-You can change the "animationName" to a string of your choice for a prefix for the output file names, if it is left empty then no filename will be added.
+You can change the "animationName" to a string of your choice for a 
+prefix for the output file names, if it is left empty then no filename 
+will be added. 
 
-The destination folder is relative to the Project Folder root, so you can change the string to a folder name of your choice and it will be created.  If it already exists, it will simply create a new folder with a number incremented as to how many of those named folders exist.
+The destination folder is relative to the Project Folder root, so you 
+can change the string to a folder name of your choice and it will be 
+created. If it already exists, it will simply create a new folder with a 
+number incremented as to how many of those named folders exist. 
 
-Choose how many frames per second the animation will run by changing the "frameRate" variable, and how many frames of the animation you wish to capture by changing the "framesToCapture" variable.
+Choose how many frames per second the animation will run by changing the 
+"frameRate" variable, and how many frames of the animation you wish to 
+capture by changing the "framesToCapture" variable. 
 
-Once "Play" is pressed in the Unity Editor, it should output all the animation frames to PNGs output in the folder you have chosen, and will stop capturing after the number of frames you wish to capture is completed. */
+Once "Play" is pressed in the Unity Editor, it should output all the 
+animation frames to PNGs output in the folder you have chosen, and will 
+stop capturing after the number of frames you wish to capture is 
+completed. 
+ */ 
 
 public class AnimationToPNG : MonoBehaviour {
 
@@ -57,16 +79,16 @@ public class AnimationToPNG : MonoBehaviour {
 	public int framesToCapture = 25;
 
 	// White Camera
-	public Camera whiteCam;
+	private Camera whiteCam;
 
 	// Black Camera
-	public Camera blackCam;
+	private Camera blackCam;
 
 	// Pixels to World Unit size
 	public float pixelsToWorldUnit = 74.48275862068966f;
 
 	// If you have Unity Pro you can use a RenderTexture which will render the full camera width, otherwise it will only render half
-	public bool useRenderTexture = false;
+	private bool useRenderTexture = false;
 
 	private int videoframe = 0; // how many frames we've rendered
 
@@ -90,23 +112,9 @@ public class AnimationToPNG : MonoBehaviour {
 
 	private RenderTexture whiteCamRenderTexture; // white camera render texure
 
-	// Get the texture from the screen, render all or only half of the camera
-	public Texture2D GetTex2D( bool renderAll ) {
-		// Create a texture the size of the screen, RGB24 format
-		int width = Screen.width;
-		int height = Screen.height; 
-		if (!renderAll){
-			width = width / 2;
-		}
-
-		Texture2D tex = new Texture2D(width, height, TextureFormat.ARGB32, false);
-		// Read screen contents into the texture
-		tex.ReadPixels(new Rect(0, 0, width, height), 0, 0);
-		tex.Apply();
-		return tex;
-	}
-
 	public void Start () {
+	    useRenderTexture = Application.HasProLicense();
+
 		// Set the playback framerate!
 		// (real time doesn't influence time anymore)
 		Time.captureFramerate = frameRate;
@@ -114,21 +122,31 @@ public class AnimationToPNG : MonoBehaviour {
 		// Create a folder that doesn't exist yet. Append number if necessary.
 		realFolder = folder;
 		int count = 1;
-		while (System.IO.Directory.Exists(realFolder)) {
+		while (Directory.Exists(realFolder)) {
 			realFolder = folder + count;
 			count++;
 		}
 		// Create the folder
-		System.IO.Directory.CreateDirectory(realFolder);  
+		Directory.CreateDirectory(realFolder);  
 
 		originaltimescaleTime = Time.timeScale;
 
 		// Force orthographic camera to render out sprites per pixel size designated by pixels to world unit
 		cameraSize = Screen.width / ((( Screen.width / Screen.height ) * 2 ) * pixelsToWorldUnit );
+
+        GameObject bc = new GameObject("Black Camera");
+        bc.transform.localPosition = new Vector3(0, 0, -1);
+	    blackCam = bc.AddComponent<Camera>();
+	    blackCam.backgroundColor = Color.black;
 		blackCam.orthographic = true;
 		blackCam.orthographicSize = cameraSize;
+	    blackCam.tag = "MainCamera";
 
-		whiteCam.orthographic = true;
+        GameObject wc = new GameObject("White Camera");
+        wc.transform.localPosition = new Vector3(0, 0, -1);
+        whiteCam = wc.AddComponent<Camera>();
+        whiteCam.backgroundColor = Color.white;
+        whiteCam.orthographic = true;
 		whiteCam.orthographicSize = cameraSize;
 
 		// If not using a Render Texture then set the cameras to split the screen to ensure we have an accurate image with alpha
@@ -149,15 +167,14 @@ public class AnimationToPNG : MonoBehaviour {
 		}
 	}
 
-	void LateUpdate(){
+	void LateUpdate() {
 		// When we are all done capturing, clean up all the textures and RenderTextures from the scene
-		if (done){
-			
+		if (done) {
 			DestroyImmediate(texb);
 			DestroyImmediate(texw);
 			DestroyImmediate(outputtex);
 
-			if (useRenderTexture){
+			if (useRenderTexture) {
 				//Clean Up
 				whiteCam.targetTexture = null;
 				RenderTexture.active = null;
@@ -174,7 +191,7 @@ public class AnimationToPNG : MonoBehaviour {
 		if(videoframe < framesToCapture) {
 			// name is "realFolder/animationName0000.png"
 			// string name = realFolder + "/" + animationName + Time.frameCount.ToString("0000") + ".png";
-			string name = String.Format("{0}/" + animationName + "{1:D04}.png", realFolder, Time.frameCount);
+			string filename = String.Format("{0}/" + animationName + "{1:D04}.png", realFolder, Time.frameCount);
 
 			// Stop time
 			Time.timeScale = 0;
@@ -199,7 +216,7 @@ public class AnimationToPNG : MonoBehaviour {
 				texw = GetTex2D(true);
 			}
 			// If not using render textures then simply get the images from both cameras
-			else{
+			else {
 				// store 'black background' image
 				texb = GetTex2D(true);
 
@@ -208,7 +225,7 @@ public class AnimationToPNG : MonoBehaviour {
 			}
 
 			// If we have both textures then create final output texture
-			if (texw && texb){
+			if (texw && texb) {
 
 				int width = Screen.width;
 				int height = Screen.height;
@@ -224,10 +241,10 @@ public class AnimationToPNG : MonoBehaviour {
 					for (int x = 0; x < outputtex.width; ++x) { // each column
 						float alpha;
 						if (useRenderTexture){
-							alpha = (float)(texw.GetPixel(x, y).r - texb.GetPixel(x, y).r);
+							alpha = texw.GetPixel(x, y).r - texb.GetPixel(x, y).r;
 						}
 						else {
-							alpha = (float)(texb.GetPixel(x + width, y).r - texb.GetPixel(x, y).r);
+							alpha = texb.GetPixel(x + width, y).r - texb.GetPixel(x, y).r;
 						}
 						alpha = 1.0f - alpha;
 						Color color;
@@ -244,7 +261,7 @@ public class AnimationToPNG : MonoBehaviour {
 
 				// Encode the resulting output texture to a byte array then write to the file
 				byte[] pngShot = outputtex.EncodeToPNG();
-				File.WriteAllBytes(name, pngShot);
+				File.WriteAllBytes(filename, pngShot);
 
 				// Reset the time scale, then move on to the next frame.
 				Time.timeScale = originaltimescaleTime;
@@ -254,9 +271,25 @@ public class AnimationToPNG : MonoBehaviour {
 			// Debug.Log("Frame " + name + " " + videoframe);
 		}
 		else {
-			Debug.Log("Complete! "+videoframe+" videoframes rendered (0 indexed)");
+			Debug.Log("Complete! " + videoframe + " videoframes rendered (0 indexed)");
 			done = true;
 		}
 	}
+
+    // Get the texture from the screen, render all or only half of the camera
+    private Texture2D GetTex2D(bool renderAll) {
+        // Create a texture the size of the screen, RGB24 format
+        int width = Screen.width;
+        int height = Screen.height;
+        if (!renderAll) {
+            width = width / 2;
+        }
+
+        Texture2D tex = new Texture2D(width, height, TextureFormat.ARGB32, false);
+        // Read screen contents into the texture
+        tex.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+        tex.Apply();
+        return tex;
+    }
 }
  
