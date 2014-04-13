@@ -34,7 +34,7 @@ public class Skin2DEditor : Editor {
 
         EditorGUILayout.Separator();
 
-        if (skin.skeleton != null && skin.GetComponent<MeshFilter>().sharedMesh != null && GUILayout.Button("Calculate weights")) {
+        if (skin.selectedBones != null && skin.GetComponent<MeshFilter>().sharedMesh != null && GUILayout.Button("Calculate weights")) {
             skin.CalculateBoneWeights();
         }
 
