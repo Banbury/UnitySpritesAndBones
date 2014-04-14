@@ -176,7 +176,7 @@ public class Bone : MonoBehaviour {
 
         Gizmos.color = new Color(Gizmos.color.r, Gizmos.color.g, Gizmos.color.b, 0.5f);
 
-        if (editMode && showInfluence) {
+        if (deform && editMode && showInfluence) {
             Gizmos.DrawWireSphere(transform.position, influenceTail);
             Gizmos.DrawWireSphere(Head, influenceHead);
         }

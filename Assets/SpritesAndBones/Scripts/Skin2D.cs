@@ -122,10 +122,12 @@ public class Skin2D : MonoBehaviour {
             foreach (Bone bone in selectedBones) {
                 int i=0;
 
-                foreach (Vector3 v in mesh.vertices) {
-                    float influence = bone.GetInfluence(v + transform.position);
-                    boneWeights.SetWeight(i, bone.name, index, influence);
-                    i++;
+                if (bone.deform) {
+                    foreach (Vector3 v in mesh.vertices) {
+                        float influence = bone.GetInfluence(v + transform.position);
+                        boneWeights.SetWeight(i, bone.name, bone.index, influence);
+                        i++;
+                    }
                 }
                 index++;
             }
