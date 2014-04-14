@@ -33,10 +33,10 @@ public class Skin2DEditor : Editor {
         DrawDefaultInspector();
 
         EditorGUILayout.Separator();
-
+		/* Moved to skeleton for multiple Skin2D
         if (skin.selectedBones != null && skin.GetComponent<MeshFilter>().sharedMesh != null && GUILayout.Button("Calculate weights")) {
             skin.CalculateBoneWeights();
-        }
+        }*/
 
         if (skin.GetComponent<SkinnedMeshRenderer>().sharedMesh != null && GUILayout.Button("Save as Prefab")) {
             skin.SaveAsPrefab();

@@ -29,6 +29,7 @@ using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Linq;
 
 [ExecuteInEditMode]
 public class Skeleton : MonoBehaviour {
@@ -190,4 +191,20 @@ public class Skeleton : MonoBehaviour {
 
         editMode = edit;
     }
+
+	public void CalculateWeights ()
+	{
+		//find all Skin2D elements
+		Skin2D[] skins = transform.GetComponentsInChildren<Skin2D>();
+		Bone[] bones = transform.GetComponentsInChildren<Bone>();
+		//filter to find all deforming bones.
+		Bone[] bonesArr = bones.Where(b => b.deform).ToArray();
+		if(bonesArr.Length == 0) {
+			Debug.Log("No deform bones in skeleton");
+			return;
+		}
+		foreach(Skin2D skin in skins) {
+			skin.CalculateBoneWeights(bonesArr);
+		}
+	}
 }

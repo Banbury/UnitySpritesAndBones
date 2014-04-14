@@ -33,7 +33,7 @@ using System.Linq;
 [ExecuteInEditMode()]
 public class Skin2D : MonoBehaviour {
 
-    public Bone[] selectedBones;
+	[HideInInspector]
     public Bone2DWeights boneWeights;
 
     private Material lineMaterial;
@@ -105,7 +105,11 @@ public class Skin2D : MonoBehaviour {
 
     }
 
-    public void CalculateBoneWeights() {
+    public void CalculateBoneWeights(Bone[] bones) {
+		if(MeshFilter.sharedMesh == null)
+		{
+			return;
+		}
         Mesh mesh = new Mesh();
         mesh.name = "Generated Mesh";
         mesh.vertices = MeshFilter.sharedMesh.vertices;
@@ -115,27 +119,27 @@ public class Skin2D : MonoBehaviour {
         mesh.uv2 = MeshFilter.sharedMesh.uv2;
         mesh.bounds = MeshFilter.sharedMesh.bounds;
 
-        if (selectedBones != null && selectedBones.Count() > 0 && mesh != null) {
+		if (bones != null && mesh != null) {
             boneWeights.weights = new Bone2DWeight[] { };
-            //Bone[] bones = skeleton.GetComponentsInChildren<Bone>();
+            
             int index = 0;
-            foreach (Bone bone in selectedBones) {
+            foreach (Bone bone in bones) {
                 int i=0;
 
-                if (bone.deform) {
-                    foreach (Vector3 v in mesh.vertices) {
-                        float influence = bone.GetInfluence(v + transform.position);
-                        boneWeights.SetWeight(i, bone.name, bone.index, influence);
-                        i++;
-                    }
-                }
+                
+	            foreach (Vector3 v in mesh.vertices) {
+	                float influence = bone.GetInfluence(v + transform.position);
+	                boneWeights.SetWeight(i, bone.name, index, influence);
+	                i++;
+	            }
+                
                 index++;
             }
 
             BoneWeight[] unitweights = boneWeights.GetUnityBoneWeights();
             mesh.boneWeights = unitweights;
 
-            Transform[] bonesArr = selectedBones.Select(b => b.transform).ToArray();
+			Transform[] bonesArr = bones.Select(b => b.transform).ToArray();
             Matrix4x4[] bindPoses = new Matrix4x4[bonesArr.Length];
 
             for (int i = 0; i < bonesArr.Length; i++) {
