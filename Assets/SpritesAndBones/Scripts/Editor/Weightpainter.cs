@@ -132,9 +132,9 @@ public class Weightpainter : EditorWindow {
 
                         if (d <= brushSize) {
                             BoneWeight bw = weights[i];
-							float vw = bw.GetWeight(bn.index);
+							float vw = bw.GetWeight(boneIndex);
                             vw = Mathf.Clamp(vw + (1 - d / brushSize) * w, 0, 1);
-							bw = bw.SetWeight(bn.index, vw);
+							bw = bw.SetWeight(boneIndex, vw);
                             weights[i] = bw.Clone();
                         }
                     }
@@ -163,13 +163,13 @@ public class Weightpainter : EditorWindow {
                 float value = 0;
 
                 BoneWeight bw = m.boneWeights[i];
-				if (bw.boneIndex0 == bone.index)
-					value = bw.weight0;
-				else if (bw.boneIndex1 == bone.index)
+				if (bw.boneIndex0 == boneIndex)
+                    value = bw.weight0;
+				else if (bw.boneIndex1 == boneIndex)
                     value = bw.weight1;
-				else if (bw.boneIndex2 == bone.index)
+				else if (bw.boneIndex2 == boneIndex)
                     value = bw.weight2;
-				else if (bw.boneIndex3 == bone.index)
+				else if (bw.boneIndex3 == boneIndex)
                     value = bw.weight3;
 
                 colors[i] = Util.HSBColor.ToColor(new Util.HSBColor(0.7f - value, 1.0f, 0.5f));

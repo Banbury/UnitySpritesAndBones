@@ -122,24 +122,24 @@ public class Skin2D : MonoBehaviour {
 		if (bones != null && mesh != null) {
             boneWeights.weights = new Bone2DWeight[] { };
             
-            
+            int index = 0;
             foreach (Bone bone in bones) {
                 int i=0;
-			
+
+                
 	            foreach (Vector3 v in mesh.vertices) {
-					float influence = 0;
-					if(bone.deform) {
-						influence = bone.GetInfluence(v + transform.position);
-					}
-	                boneWeights.SetWeight(i, bone.name, bone.index, influence);
+	                float influence = bone.GetInfluence(v + transform.position);
+	                boneWeights.SetWeight(i, bone.name, index, influence);
 	                i++;
-	            }                
+	            }
+                
+                index++;
             }
 
             BoneWeight[] unitweights = boneWeights.GetUnityBoneWeights();
             mesh.boneWeights = unitweights;
 
-			Transform[] bonesArr = bones.OrderBy(b => b.index).Select(b => b.transform).ToArray();
+			Transform[] bonesArr = bones.Select(b => b.transform).ToArray();
             Matrix4x4[] bindPoses = new Matrix4x4[bonesArr.Length];
 
             for (int i = 0; i < bonesArr.Length; i++) {
