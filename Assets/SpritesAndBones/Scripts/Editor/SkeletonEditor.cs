@@ -34,6 +34,9 @@ public class SkeletonEditor : Editor {
         }
 
         GUILayout.EndHorizontal();
+		if(GUILayout.Button("Calculate weights")) {
+			skeleton.CalculateWeights();
+		}
         if (skeleton.basePose == null) {
             EditorGUILayout.HelpBox("You have not selected a base pose.", MessageType.Error);
         }

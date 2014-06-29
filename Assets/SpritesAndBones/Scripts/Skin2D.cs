@@ -32,7 +32,8 @@ using System.Linq;
 [RequireComponent(typeof(SkinnedMeshRenderer))]
 [ExecuteInEditMode()]
 public class Skin2D : MonoBehaviour {
-    public Skeleton skeleton;
+
+	[HideInInspector]
     public Bone2DWeights boneWeights;
 
     private Material lineMaterial;
@@ -41,28 +42,28 @@ public class Skin2D : MonoBehaviour {
     private GameObject lastSelected = null;
 
     #if UNITY_EDITOR
-		[MenuItem("GameObject/Create Other/Skin 2D")]
-		public static void Create ()
-		{
-				GameObject o = new GameObject ("Skin2D");
-				Undo.RegisterCreatedObjectUndo (o, "Create Skin2D");
-				o.AddComponent<Skin2D> ();
-		}
+        [MenuItem("GameObject/Create Other/Skin 2D")]
+        public static void Create ()
+        {
+                GameObject o = new GameObject ("Skin2D");
+                Undo.RegisterCreatedObjectUndo (o, "Create Skin2D");
+                o.AddComponent<Skin2D> ();
+        }
     #endif
     
-	// Use this for initialization
-	void Start() {
+    // Use this for initialization
+    void Start() {
 #if UNITY_EDITOR
         CalculateVertexColors();
 #endif
     }
 
-	// Update is called once per frame
-	void Update () {
+    // Update is called once per frame
+    void Update () {
         if (MeshFilter.sharedMesh != null && GetComponent<SkinnedMeshRenderer>().sharedMesh == null) {
             GetComponent<SkinnedMeshRenderer>().sharedMesh = MeshFilter.sharedMesh;
         }
-	}
+    }
 
     private MeshFilter MeshFilter {
         get {
@@ -90,7 +91,7 @@ public class Skin2D : MonoBehaviour {
             return lineMaterial;
         }
     }
-	
+    
 #if UNITY_EDITOR
     void OnDrawGizmos() {
 
@@ -104,7 +105,11 @@ public class Skin2D : MonoBehaviour {
 
     }
 
-    public void CalculateBoneWeights() {
+    public void CalculateBoneWeights(Bone[] bones) {
+		if(MeshFilter.sharedMesh == null)
+		{
+			return;
+		}
         Mesh mesh = new Mesh();
         mesh.name = "Generated Mesh";
         mesh.vertices = MeshFilter.sharedMesh.vertices;
@@ -114,27 +119,27 @@ public class Skin2D : MonoBehaviour {
         mesh.uv2 = MeshFilter.sharedMesh.uv2;
         mesh.bounds = MeshFilter.sharedMesh.bounds;
 
-        if (skeleton != null && mesh != null) {
+		if (bones != null && mesh != null) {
             boneWeights.weights = new Bone2DWeight[] { };
-
-            Bone[] bones = skeleton.GetComponentsInChildren<Bone>();
-
+            
+            int index = 0;
             foreach (Bone bone in bones) {
                 int i=0;
 
-                if (bone.deform) {
-                    foreach (Vector3 v in mesh.vertices) {
-                        float influence = bone.GetInfluence(v + transform.position);
-                        boneWeights.SetWeight(i, bone.name, bone.index, influence);
-                        i++;
-                    }
-                }
+                
+	            foreach (Vector3 v in mesh.vertices) {
+	                float influence = bone.GetInfluence(v + transform.position);
+	                boneWeights.SetWeight(i, bone.name, index, influence);
+	                i++;
+	            }
+                
+                index++;
             }
 
-            var unitweights = boneWeights.GetUnityBoneWeights();
+            BoneWeight[] unitweights = boneWeights.GetUnityBoneWeights();
             mesh.boneWeights = unitweights;
 
-            Transform[] bonesArr = bones.OrderBy(b => b.index).Select(b => b.transform).ToArray();
+			Transform[] bonesArr = bones.Select(b => b.transform).ToArray();
             Matrix4x4[] bindPoses = new Matrix4x4[bonesArr.Length];
 
             for (int i = 0; i < bonesArr.Length; i++) {
