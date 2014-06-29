@@ -32,14 +32,17 @@ THE SOFTWARE.
 // this script will render out an animation that is played when "Play" is pressed in the editor.
 
 /* 
-Basically this is a script you can attach to any gameobject in the scene. 
+Basically this is a script you can attach to any gameobject in the 
+scene, but you have to reference a Black Camera and White Camera both of 
+which should be set to orthographic, but this script should have it 
+covered. There is a prefab called AnimationToPNG which should include 
+everything needed to run the script. 
 
-If you have Unity Pro, you can use Render Textures, which can accurately 
-render the transparent background for your animations easily in full resolution 
-of the camera. The script will autodetect if you have Unity Pro and use 
-Render Textures automatically. 
-
-If you are using Unity Free, then the screen will have a split area using 
+If you have Unity Pro, you can use Render Texture, which can accurately 
+render the transparent background for your animations easily in full 
+resolution of the camera. Just check the box for the variable 
+"useRenderTexture" to use RenderTextures instead. If you are using Unity 
+Free, then leave this unchecked and you will have a split area using 
 half of the screen width to render the animations. 
 
 You can change the "animationName" to a string of your choice for a 
