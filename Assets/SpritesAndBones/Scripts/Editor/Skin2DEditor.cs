@@ -41,5 +41,9 @@ public class Skin2DEditor : Editor {
         if (skin.GetComponent<SkinnedMeshRenderer>().sharedMesh != null && GUILayout.Button("Save as Prefab")) {
             skin.SaveAsPrefab();
         }
+
+        if (skin.GetComponent<SkinnedMeshRenderer>().sharedMesh != null && GUILayout.Button("Recalculate Bone Weights")) {
+            skin.RecalculateBoneWeights();
+        }
     }
 }

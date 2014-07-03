@@ -26,12 +26,15 @@ using UnityEngine;
 using UnityEditor;
 #endif
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 
 [RequireComponent(typeof(MeshFilter))]
 [RequireComponent(typeof(SkinnedMeshRenderer))]
 [ExecuteInEditMode()]
 public class Skin2D : MonoBehaviour {
+
+	public Sprite sprite;
 
 	[HideInInspector]
     public Bone2DWeights boneWeights;
@@ -42,12 +45,75 @@ public class Skin2D : MonoBehaviour {
     private GameObject lastSelected = null;
 
     #if UNITY_EDITOR
-        [MenuItem("GameObject/Create Other/Skin 2D")]
+        [MenuItem("Window/Sprites/Skin 2D")]
         public static void Create ()
         {
-                GameObject o = new GameObject ("Skin2D");
+			if (Selection.activeGameObject != null) {
+				GameObject o = Selection.activeGameObject;
+				SkinnedMeshRenderer skin = o.GetComponent<SkinnedMeshRenderer>();
+				SpriteRenderer spriteRenderer = o.GetComponent<SpriteRenderer>();
+				if (skin == null && spriteRenderer != null) {
+					Sprite thisSprite = spriteRenderer.sprite;
+					SpriteMesh spriteMesh = new SpriteMesh();
+					spriteMesh.spriteRenderer = spriteRenderer;
+					spriteMesh.CreateSpriteMesh();
+					Texture2D spriteTexture = UnityEditor.Sprites.DataUtility.GetSpriteTexture(spriteRenderer.sprite, false);
+					Material spriteMaterial = new Material(spriteRenderer.sharedMaterial);
+					spriteMaterial.CopyPropertiesFromMaterial(spriteRenderer.sharedMaterial);
+					spriteMaterial.mainTexture = spriteTexture;
+					DestroyImmediate(spriteRenderer);
+					Skin2D skin2D = o.AddComponent<Skin2D>();
+					skin2D.sprite = thisSprite;
+					skin = o.GetComponent<SkinnedMeshRenderer>();
+					MeshFilter filter = o.GetComponent<MeshFilter>();
+					skin.material = spriteMaterial;
+					filter.mesh = (Mesh)Selection.activeObject;
+					if (filter.sharedMesh != null && skin.sharedMesh == null) {
+						skin.sharedMesh = filter.sharedMesh;
+					}
+					Skeleton skeleton = o.transform.root.GetComponent<Skeleton>();
+					if (skeleton != null)
+					{
+						// Try to initialize the parent bone to this skin
+						Bone bone = o.transform.parent.GetComponent<Bone>();
+						if (bone != null)
+						{
+							List<BoneWeight> weights = new List<BoneWeight>();
+							float w = 1;
+
+							for (int i = 0; i < filter.sharedMesh.vertices.Length; i++) {
+								Vector3 v = filter.sharedMesh.vertices[i];
+								BoneWeight bw;
+								float vw = bw.GetWeight(bone.index);
+								vw = Mathf.Clamp(vw * w, 0, 1);
+								bw = bw.SetWeight(bone.index, vw);
+								weights.Add(bw.Clone());
+							}
+
+							skin.sharedMesh.boneWeights = weights.ToArray();
+							EditorUtility.SetDirty(skin.gameObject);
+							if (PrefabUtility.GetPrefabType(skin.gameObject) != PrefabType.None) {
+								AssetDatabase.SaveAssets();
+							}
+						}
+						// Generate the mesh and calculate the weights if the root transform has a skeleton
+						skeleton.CalculateWeights();
+						Debug.Log("Calculated weights for " + o.name);
+					}
+				}
+				else
+				{
+					o = new GameObject ("Skin2D");
+					Undo.RegisterCreatedObjectUndo (o, "Create Skin2D");
+					o.AddComponent<Skin2D> ();
+				}
+			}
+			else
+			{
+				GameObject o = new GameObject ("Skin2D");
                 Undo.RegisterCreatedObjectUndo (o, "Create Skin2D");
                 o.AddComponent<Skin2D> ();
+			}
         }
     #endif
     
@@ -108,6 +174,7 @@ public class Skin2D : MonoBehaviour {
     public void CalculateBoneWeights(Bone[] bones) {
 		if(MeshFilter.sharedMesh == null)
 		{
+			Debug.Log("No Shared Mesh.");
 			return;
 		}
         Mesh mesh = new Mesh();
@@ -120,7 +187,8 @@ public class Skin2D : MonoBehaviour {
         mesh.bounds = MeshFilter.sharedMesh.bounds;
 
 		if (bones != null && mesh != null) {
-            boneWeights.weights = new Bone2DWeight[] { };
+            boneWeights = new Bone2DWeights();
+			boneWeights.weights = new Bone2DWeight[] { };
             
             int index = 0;
             foreach (Bone bone in bones) {
@@ -208,6 +276,15 @@ public class Skin2D : MonoBehaviour {
         AssetDatabase.AddObjectToAsset(GetComponent<SkinnedMeshRenderer>().sharedMesh, obj);
 
         PrefabUtility.ReplacePrefab(gameObject, obj, ReplacePrefabOptions.ConnectToPrefab);
+    }
+
+	public void RecalculateBoneWeights() {
+		Skeleton skeleton = gameObject.transform.root.GetComponent<Skeleton>();
+		if (skeleton != null)
+		{
+			skeleton.CalculateWeights();
+			Debug.Log("Calculated weights for " + gameObject.name);
+		}
     }
 #endif
 }
