@@ -41,6 +41,7 @@ public class Bone : MonoBehaviour {
     public float influenceTail = 0.25f;
     public float influenceHead = 0.25f;
     public float zOrder = 0;
+	public Color color = Color.cyan;
 
     private Bone parent;
 
@@ -155,10 +156,32 @@ public class Bone : MonoBehaviour {
         }
         else {
             if (editMode) {
-                Gizmos.color = Color.gray;
+				if (gameObject.name.ToUpper().EndsWith("R") || gameObject.name.ToUpper().EndsWith("RIGHT"))
+				{
+					Gizmos.color = new Color(185.0f/255.0f, 128.0f/255.0f, 0f, 255.0f/255.0f);
+				}
+				else if (gameObject.name.ToUpper().EndsWith("L") || gameObject.name.ToUpper().EndsWith("LEFT"))
+				{
+					Gizmos.color = new Color(185.0f/255.0f, 128.0f/255.0f, 255.0f/255.0f, 255.0f/255.0f);
+				}
+				else
+				{
+					Gizmos.color = new Color(color.r * 0.75f, color.g * 0.75f, color.b * 0.75f, color.a);
+				}
             }
             else {
-                Gizmos.color = Color.blue;
+				if (gameObject.name.ToUpper().EndsWith("R") || gameObject.name.ToUpper().EndsWith("RIGHT"))
+				{
+					Gizmos.color = new Color(255.0f/255.0f, 128.0f/255.0f, 0f, 255.0f/255.0f);
+				}
+				else if (gameObject.name.ToUpper().EndsWith("L") || gameObject.name.ToUpper().EndsWith("LEFT"))
+				{
+					Gizmos.color = Color.magenta;
+				}
+				else
+				{
+					Gizmos.color = color;
+				}
             }
         }
 
