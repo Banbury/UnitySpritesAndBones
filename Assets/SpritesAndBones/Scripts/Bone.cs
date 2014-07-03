@@ -1,7 +1,7 @@
 ﻿/*
 The MIT License (MIT)
 
-Copyright (c) 2013 Banbury
+Copyright (c) 2014 Banbury & Play-Em
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -77,6 +77,7 @@ public class Bone : MonoBehaviour {
             Bone[] bones = skel.GetComponentsInChildren<Bone>();
             int index = bones.Max(bn => bn.index) + 1;
             b.GetComponent<Bone>().index = index;
+			skel.CalculateWeights();
         }
 
         Selection.activeGameObject = b;
@@ -152,7 +153,7 @@ public class Bone : MonoBehaviour {
 #if UNITY_EDITOR
     void OnDrawGizmos() {
         if (gameObject.Equals(Selection.activeGameObject)) {
-            Gizmos.color = Color.yellow;
+			Gizmos.color = Color.yellow;
         }
         else {
             if (editMode) {
@@ -185,24 +186,24 @@ public class Bone : MonoBehaviour {
             }
         }
 
-        int div = 5; 
+		int div = 5; 
 
-        Vector3 v = Quaternion.AngleAxis(45, Vector3.forward) * (((Vector3)Head - gameObject.transform.position) / div);
-        Gizmos.DrawLine(gameObject.transform.position, gameObject.transform.position + v);
-        Gizmos.DrawLine(gameObject.transform.position + v, Head);
+		Vector3 v = Quaternion.AngleAxis(45, Vector3.forward) * (((Vector3)Head - gameObject.transform.position) / div);
+		Gizmos.DrawLine(gameObject.transform.position, gameObject.transform.position + v);
+		Gizmos.DrawLine(gameObject.transform.position + v, Head);
 
-        v = Quaternion.AngleAxis(-45, Vector3.forward) * (((Vector3)Head - gameObject.transform.position) / div);
-        Gizmos.DrawLine(gameObject.transform.position, gameObject.transform.position + v);
-        Gizmos.DrawLine(gameObject.transform.position + v, Head);
+		v = Quaternion.AngleAxis(-45, Vector3.forward) * (((Vector3)Head - gameObject.transform.position) / div);
+		Gizmos.DrawLine(gameObject.transform.position, gameObject.transform.position + v);
+		Gizmos.DrawLine(gameObject.transform.position + v, Head);
 
-        Gizmos.DrawLine(gameObject.transform.position, Head);
+		Gizmos.DrawLine(gameObject.transform.position, Head);
 
-        Gizmos.color = new Color(Gizmos.color.r, Gizmos.color.g, Gizmos.color.b, 0.5f);
+		Gizmos.color = new Color(Gizmos.color.r, Gizmos.color.g, Gizmos.color.b, 0.5f);
 
-        if (deform && editMode && showInfluence) {
-            Gizmos.DrawWireSphere(transform.position, influenceTail);
-            Gizmos.DrawWireSphere(Head, influenceHead);
-        }
+		if (deform && editMode && showInfluence) {
+			Gizmos.DrawWireSphere(transform.position, influenceTail);
+			Gizmos.DrawWireSphere(Head, influenceHead);
+		}
     }
 #endif
 

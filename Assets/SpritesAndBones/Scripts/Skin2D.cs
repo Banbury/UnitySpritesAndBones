@@ -283,7 +283,19 @@ public class Skin2D : MonoBehaviour {
 		if (skeleton != null)
 		{
 			skeleton.CalculateWeights();
-			Debug.Log("Calculated weights for " + gameObject.name);
+			// Debug.Log("Calculated weights for " + gameObject.name);
+		}
+    }
+
+	public void ResetControlPointPositions() {
+		ControlPoint[] controlPoints = GetComponentsInChildren<ControlPoint>();
+		if (controlPoints != null)
+		{
+			foreach (ControlPoint controlPoint in controlPoints)
+			{
+				controlPoint.ResetPosition();
+				// Debug.Log("Reset Control Point Positions for " + gameObject.name);
+			}
 		}
     }
 #endif
