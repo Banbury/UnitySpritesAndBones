@@ -82,7 +82,6 @@ public class Skin2D : MonoBehaviour {
 							float w = 1;
 
 							for (int i = 0; i < filter.sharedMesh.vertices.Length; i++) {
-								Vector3 v = filter.sharedMesh.vertices[i];
 								BoneWeight bw;
 								float vw = bw.GetWeight(bone.index);
 								vw = Mathf.Clamp(vw * w, 0, 1);
@@ -98,7 +97,7 @@ public class Skin2D : MonoBehaviour {
 						}
 						// Generate the mesh and calculate the weights if the root transform has a skeleton
 						skeleton.CalculateWeights();
-						Debug.Log("Calculated weights for " + o.name);
+						// Debug.Log("Calculated weights for " + o.name);
 					}
 				}
 				else

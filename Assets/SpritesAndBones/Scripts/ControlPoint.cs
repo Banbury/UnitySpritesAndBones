@@ -53,14 +53,9 @@ public class ControlPoint : MonoBehaviour {
 				b.transform.localRotation = Quaternion.Euler(0, 0, 0);
 				b.transform.parent = skin.transform;
 				ControlPoint[] points = b.transform.parent.transform.GetComponentsInChildren<ControlPoint>();
-				int pointNum = 0;
-				foreach (ControlPoint point in points)
+				if (points != null && points.Length > 0)
 				{
-					pointNum++;
-				}
-				if (pointNum > 0)
-				{
-					b.gameObject.name = b.gameObject.name + pointNum;
+					b.gameObject.name = b.gameObject.name + points.Length;
 				}
 				Undo.RegisterCreatedObjectUndo(b, "Add control point");
 				ControlPoint controlPoint = b.AddComponent<ControlPoint>();
