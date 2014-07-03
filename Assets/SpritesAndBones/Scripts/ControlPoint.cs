@@ -49,7 +49,7 @@ public class ControlPoint : MonoBehaviour {
 			for (int i = 0; i < skin.sharedMesh.vertices.Length; i++)
 			{
 				GameObject b = new GameObject("Control Point");
-				b.transform.position = skin.transform.position + (Vector3)skin.sharedMesh.vertices[i];
+				b.transform.position = new Vector3(skin.transform.position.x + (skin.sharedMesh.vertices[i].x * skin.transform.localScale.x), skin.transform.position.y + (skin.sharedMesh.vertices[i].y * skin.transform.localScale.y), skin.transform.position.z + (skin.sharedMesh.vertices[i].z * skin.transform.localScale.z));
 				b.transform.localRotation = Quaternion.Euler(0, 0, 0);
 				b.transform.parent = skin.transform;
 				ControlPoint[] points = b.transform.parent.transform.GetComponentsInChildren<ControlPoint>();
@@ -80,12 +80,14 @@ public class ControlPoint : MonoBehaviour {
 	void Update () {
 		if (skin != null && skin.sharedMesh != null)
 		{
+
 			if (skin.sharedMesh.vertices[index] != transform.localPosition)
 			{
 				Vector3[] vertices = new Vector3[skin.sharedMesh.vertices.Length];
 				System.Array.Copy(skin.sharedMesh.vertices, vertices, skin.sharedMesh.vertices.Length);
 				vertices[index] = transform.localPosition;
 				skin.sharedMesh.vertices = vertices;
+				skin.sharedMesh.RecalculateBounds();
 			}
 		}
 	}
