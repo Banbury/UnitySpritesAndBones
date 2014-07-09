@@ -32,8 +32,8 @@ using System.Linq.Expressions;
 
 [ExecuteInEditMode]
 public class ControlPoint : MonoBehaviour {
-	public Color color = Color.red;
-	public float size = 0.01f;
+	[SerializeField] public Color color = Color.red;
+	[SerializeField] public float size = 0.01f;
 
 	[HideInInspector]
     public Vector3 originalPosition;
@@ -50,7 +50,6 @@ public class ControlPoint : MonoBehaviour {
 			{
 				GameObject b = new GameObject("Control Point");
 				b.transform.position = new Vector3(skin.transform.position.x + (skin.sharedMesh.vertices[i].x * skin.transform.localScale.x), skin.transform.position.y + (skin.sharedMesh.vertices[i].y * skin.transform.localScale.y), skin.transform.position.z + (skin.sharedMesh.vertices[i].z * skin.transform.localScale.z));
-				b.transform.localRotation = Quaternion.Euler(0, 0, 0);
 				b.transform.parent = skin.transform;
 				ControlPoint[] points = b.transform.parent.transform.GetComponentsInChildren<ControlPoint>();
 				if (points != null && points.Length > 0)

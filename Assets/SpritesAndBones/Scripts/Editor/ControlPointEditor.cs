@@ -26,6 +26,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections;
 
+[CanEditMultipleObjects]
 [CustomEditor(typeof(ControlPoint))]
 public class ControlPointEditor : Editor {
     public override void OnInspectorGUI() {
