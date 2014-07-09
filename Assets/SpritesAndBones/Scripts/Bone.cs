@@ -54,7 +54,7 @@ public class Bone : MonoBehaviour {
     }
 
     #if UNITY_EDITOR
-    [MenuItem("GameObject/Create Other/Bone")]
+    [MenuItem("Sprites/Bone")]
     public static Bone Create() {
         GameObject b = new GameObject("Bone");
         Undo.RegisterCreatedObjectUndo(b, "Add child bone");

@@ -1,7 +1,7 @@
 ﻿/*
 The MIT License (MIT)
 
-Copyright (c) 2014 Play-Em
+Copyright (c) 2014 Banbury & Play-Em
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -38,8 +38,9 @@ public class SkinMesh : EditorWindow {
 
     private Vector2[] polygon = new Vector2[0];
     private float simplify = 1.0f;
+    private float pixelsToUnits = 100.0f;
 
-    [MenuItem("Window/Sprites/Create Mesh")]
+    [MenuItem("Sprites/Create Mesh")]
     protected static void ShowSkinMeshEditor() {
         var wnd = GetWindow<SkinMesh>();
         wnd.title = "Create Mesh From Sprite";
@@ -51,7 +52,11 @@ public class SkinMesh : EditorWindow {
 
         EditorGUI.BeginChangeCheck();
         spriteRenderer = (SpriteRenderer)EditorGUILayout.ObjectField(spriteRenderer, typeof(SpriteRenderer), true);
-        if (EditorGUI.EndChangeCheck()) {
+        if (Selection.activeGameObject != null) {
+			GameObject o = Selection.activeGameObject;
+			spriteRenderer = o.GetComponent<SpriteRenderer>();
+		}
+		if (EditorGUI.EndChangeCheck()) {
             polygon = new Vector2[0]; 
         }
 
@@ -84,13 +89,20 @@ public class SkinMesh : EditorWindow {
 				spriteMesh.CreateSpriteMesh();
 			}
 
+			EditorGUILayout.Separator();
+
+			GUILayout.Label("Make sure to use the Sprite's Pixels To Units", EditorStyles.boldLabel);
+
+			pixelsToUnits = EditorGUILayout.FloatField("Pixels To Units", pixelsToUnits);
+
 			if (GUILayout.Button("Create Mesh from Polygon2D Collider")) {
 				polygonCollider = spriteRenderer.transform.GetComponent<PolygonCollider2D>();
 				if (polygonCollider != null)
 				{
 					PolygonMesh polygonMesh = new PolygonMesh();
+					polygonMesh.pixelsToUnits = pixelsToUnits;
 					polygonMesh.polygonCollider = polygonCollider;
-					polygonMesh.sprite = spriteRenderer.sprite;
+					polygonMesh.spriteRenderer = spriteRenderer;
 					polygonMesh.CreatePolygonMesh();
 				}
 			}

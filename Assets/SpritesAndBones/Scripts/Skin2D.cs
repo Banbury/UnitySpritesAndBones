@@ -1,7 +1,7 @@
 ﻿/*
 The MIT License (MIT)
 
-Copyright (c) 2013 Banbury
+Copyright (c) 2014 Banbury & Play-Em
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -45,7 +45,7 @@ public class Skin2D : MonoBehaviour {
     private GameObject lastSelected = null;
 
     #if UNITY_EDITOR
-        [MenuItem("Window/Sprites/Skin 2D")]
+        [MenuItem("Sprites/Skin 2D")]
         public static void Create ()
         {
 			if (Selection.activeGameObject != null) {

@@ -42,7 +42,7 @@ public class Skeleton : MonoBehaviour {
     private Pose tempPose;
 
 #if UNITY_EDITOR
-		[MenuItem("GameObject/Create Other/Skeleton")]
+		[MenuItem("Sprites/Skeleton")]
 		public static void Create ()
 		{
 				Undo.IncrementCurrentGroup ();

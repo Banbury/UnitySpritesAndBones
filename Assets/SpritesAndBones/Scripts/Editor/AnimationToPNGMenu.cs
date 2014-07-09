@@ -3,7 +3,7 @@ using UnityEditor;
 using System.Collections;
 
 public class AnimationToPNGMenu  {
-    [MenuItem("GameObject/Create Other/AnimationToPNG")]
+    [MenuItem("Sprites/Animation To PNG")]
     public static void Create() {
         GameObject o = new GameObject("Animation To PNG");
         Undo.RegisterCreatedObjectUndo(o, "Create skeleton");
