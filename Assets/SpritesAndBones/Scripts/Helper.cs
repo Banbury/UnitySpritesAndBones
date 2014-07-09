@@ -32,7 +32,7 @@ public class Helper : MonoBehaviour {
     public HelperType type = HelperType.WireCube;
 
     #if UNITY_EDITOR
-		[MenuItem("Sprites/Helper")]
+		[MenuItem("Sprites and Bones/Helper")]
 		public static void Create ()
 		{
 				GameObject o = new GameObject ("Helper");
