@@ -45,7 +45,7 @@ public class Skin2D : MonoBehaviour {
     private GameObject lastSelected = null;
 
     #if UNITY_EDITOR
-        [MenuItem("Sprites and Bones/Skin 2D")]
+        [MenuItem("Sprites And Bones/Skin 2D")]
         public static void Create ()
         {
 			if (Selection.activeGameObject != null) {

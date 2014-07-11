@@ -41,40 +41,69 @@ public class Skeleton : MonoBehaviour {
 
     private Pose tempPose;
 
+	[SerializeField] private bool _flip;
+
+	public bool flip
+	{
+		get { return _flip; }
+		set
+		{
+			_flip = value;
+			Flip();
+		}
+	}
+
+	[SerializeField] private bool _useShadows;
+
+	public bool useShadows
+	{
+		get { return _useShadows; }
+		set
+		{
+			_useShadows = value;
+			UseShadows();
+		}
+	}
+
+	private Shader spriteShader;
+	private Shader spriteShadowsShader;
+
 #if UNITY_EDITOR
-		[MenuItem("Sprites and Bones/Skeleton")]
+		[MenuItem("Sprites And Bones/Skeleton")]
 		public static void Create ()
 		{
-				Undo.IncrementCurrentGroup ();
+			Undo.IncrementCurrentGroup ();
 
-				GameObject o = new GameObject ("Skeleton");
-				Undo.RegisterCreatedObjectUndo (o, "Create skeleton");
-				o.AddComponent<Skeleton> ();
+			GameObject o = new GameObject ("Skeleton");
+			Undo.RegisterCreatedObjectUndo (o, "Create skeleton");
+			o.AddComponent<Skeleton> ();
 
-				GameObject b = new GameObject ("Bone");
-				Undo.RegisterCreatedObjectUndo (b, "Create Skeleton");
-				b.AddComponent<Bone> ();
+			GameObject b = new GameObject ("Bone");
+			Undo.RegisterCreatedObjectUndo (b, "Create Skeleton");
+			b.AddComponent<Bone> ();
 
-				b.transform.parent = o.transform;
+			b.transform.parent = o.transform;
 
-				Undo.CollapseUndoOperations (Undo.GetCurrentGroup ());
+			Undo.CollapseUndoOperations (Undo.GetCurrentGroup ());
 		}
 #endif
 
     // Use this for initialization
 	void Start () {
-        if (Application.isPlaying) {
+		spriteShader = Shader.Find("Sprites/Default");
+		spriteShadowsShader = Shader.Find("Sprites/Skeleton-Diffuse");
+		if (Application.isPlaying) {
             SetEditMode(false);
         }
 	}
 
 #if UNITY_EDITOR
     void OnEnable() {
-			EditorApplication.update += EditorUpdate;
+		EditorApplication.update += EditorUpdate;
     }
 
     void OnDisable() {
-			EditorApplication.update -= EditorUpdate;
+		EditorApplication.update -= EditorUpdate;
     }
 #endif
 
@@ -90,6 +119,16 @@ public class Skeleton : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+		// Get Shaders if they are null
+		if (spriteShader == null)
+		{
+			spriteShader = Shader.Find("Sprites/Default");
+		}
+		if (spriteShadowsShader == null)
+		{
+			spriteShadowsShader = Shader.Find("Sprites/Skeleton-Diffuse");
+		}
+
 #if !UNITY_EDITOR
 		EditorUpdate();
 #else
@@ -203,6 +242,91 @@ public class Skeleton : MonoBehaviour {
 		}
 		foreach(Skin2D skin in skins) {
 			skin.CalculateBoneWeights(bones);
+		}
+	}
+
+	public void Flip ()
+	{
+		int normal = -1;
+		// Rotate the skeleton's local transform
+		if (!flip)
+		{
+			transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, 0.0f, transform.localEulerAngles.z);
+		}
+		else
+		{
+			transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, 180.0f, transform.localEulerAngles.z);
+			normal = 1;
+		}
+
+		if (useShadows)
+		{
+			//find all SkinnedMeshRenderer elements
+			SkinnedMeshRenderer[] skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
+			foreach(SkinnedMeshRenderer skin in skins) {
+				if (skin.sharedMaterial != null)
+				{
+					if (spriteShadowsShader != null && skin.sharedMaterial.shader == spriteShadowsShader)
+					{
+						skin.sharedMaterial.SetVector("_Normal", new Vector3(0, 0, normal));
+					}
+				}
+			}
+
+			//find all SpriteRenderer elements
+			SpriteRenderer[] spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>();
+			foreach(SpriteRenderer spriteRenderer in spriteRenderers) {
+				if (spriteRenderer.sharedMaterial != null)
+				{
+					if (spriteShadowsShader != null && spriteRenderer.sharedMaterial.shader == spriteShadowsShader)
+					{
+						spriteRenderer.sharedMaterial.SetVector("_Normal", new Vector3(0, 0, normal));
+					}
+				}
+			}
+		}
+	}
+
+	public void UseShadows ()
+	{
+		//find all SpriteRenderer elements
+		SkinnedMeshRenderer[] skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
+		
+		foreach(SkinnedMeshRenderer skin in skins) {
+			if (skin.sharedMaterial != null)
+			{
+				if (useShadows && spriteShadowsShader != null)
+				{
+					skin.sharedMaterial.shader = spriteShadowsShader;
+				}
+				else
+				{
+					skin.sharedMaterial.shader = spriteShader;
+				}
+
+				skin.castShadows = useShadows;
+				skin.receiveShadows = useShadows;
+			}
+		}
+
+		//find all SpriteRenderer elements
+		SpriteRenderer[] spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>();
+		
+		foreach(SpriteRenderer spriteRenderer in spriteRenderers) {
+			if (spriteRenderer.sharedMaterial != null)
+			{
+				if (useShadows && spriteShadowsShader != null)
+				{
+					spriteRenderer.sharedMaterial.shader = spriteShadowsShader;
+				}
+				else
+				{
+					spriteRenderer.sharedMaterial.shader = spriteShader;
+				}
+
+				spriteRenderer.castShadows = useShadows;
+				spriteRenderer.receiveShadows = useShadows;
+			}
 		}
 	}
 }

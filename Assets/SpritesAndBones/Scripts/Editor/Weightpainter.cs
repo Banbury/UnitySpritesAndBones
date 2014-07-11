@@ -40,7 +40,7 @@ public class Weightpainter : EditorWindow {
     private PaintingMode mode = PaintingMode.Add;
     private int boneIndex = 0;
 
-    [MenuItem("Sprites and Bones/Weight painting")]
+    [MenuItem("Sprites And Bones/Weight painting")]
     protected static void ShowWeightpainterWindow() {
         var wnd = GetWindow<Weightpainter>();
         wnd.title = "Weight painting";

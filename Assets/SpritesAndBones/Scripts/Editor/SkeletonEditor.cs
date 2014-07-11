@@ -17,6 +17,14 @@ public class SkeletonEditor : Editor {
 
         EditorGUILayout.Separator();
 
+		if (GUILayout.Button("Flip")) {
+			skeleton.flip = !skeleton.flip;
+        }
+
+		if (GUILayout.Button("Use Shadows")) {
+			skeleton.useShadows = !skeleton.useShadows;
+        }
+
         EditorGUILayout.LabelField("Poses", EditorStyles.boldLabel);
 
 		poseFileName = EditorGUILayout.TextField("Pose Filename",poseFileName);

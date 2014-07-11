@@ -40,7 +40,7 @@ public class SkinMesh : EditorWindow {
     private float simplify = 1.0f;
     private float pixelsToUnits = 100.0f;
 
-    [MenuItem("Sprites and Bones/Create Mesh")]
+    [MenuItem("Sprites And Bones/Create Mesh")]
     protected static void ShowSkinMeshEditor() {
         var wnd = GetWindow<SkinMesh>();
         wnd.title = "Create Mesh From Sprite";
