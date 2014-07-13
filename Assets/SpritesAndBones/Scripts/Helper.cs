@@ -70,7 +70,7 @@ public class Helper : MonoBehaviour
 	private float cameraSize = 0;
 
 #if UNITY_EDITOR
-	[MenuItem("GameObject/Create Other/Helper")]
+	[MenuItem("Sprite And Bones/Helper")]
 	public static void Create()
 	{
 		GameObject o = new GameObject("Helper");
