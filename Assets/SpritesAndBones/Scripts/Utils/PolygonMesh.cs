@@ -33,18 +33,18 @@ public class PolygonMesh {
 	public PolygonCollider2D polygonCollider;
 	public SpriteRenderer spriteRenderer;
 	public float pixelsToUnits = 100f;
-	private Quaternion localRotation;
-	private Quaternion parentRotation;
 
 	public void CreatePolygonMesh() 
 	{
 		if (polygonCollider != null)
 		{
+			// Unparent the skin temporarily before adding the mesh
+			Transform polygonParent = polygonCollider.transform.parent;
+			polygonCollider.transform.parent = null;
+
 			// Reset the rotation before creating the mesh so the UV's will align properly
-			localRotation = polygonCollider.transform.localRotation;
-			parentRotation = polygonCollider.transform.parent.localRotation;
+			Quaternion localRotation = polygonCollider.transform.localRotation;
 			polygonCollider.transform.localRotation = Quaternion.identity;
-			polygonCollider.transform.parent.localRotation = Quaternion.identity;
 
 			Vector2[] vertices2D = polygonCollider.points;
 
@@ -89,7 +89,7 @@ public class PolygonMesh {
 
 			// Reset the rotations of the object
 			polygonCollider.transform.localRotation = localRotation;
-			polygonCollider.transform.parent.localRotation = parentRotation;
+			polygonCollider.transform.parent = polygonParent;
 		}
 	}
 

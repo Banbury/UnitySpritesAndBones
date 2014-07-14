@@ -35,6 +35,14 @@ public class SpriteMesh {
 	{
 		if (spriteRenderer != null && spriteRenderer.sprite != null)
 		{
+			// Unparent the skin temporarily before adding the mesh
+			Transform spriteRendererParent = spriteRenderer.transform.parent;
+			spriteRenderer.transform.parent = null;
+
+			// Reset the rotation before creating the mesh so the UV's will align properly
+			Quaternion localRotation = spriteRenderer.transform.localRotation;
+			spriteRenderer.transform.localRotation = Quaternion.identity;
+
 			Vector2[] vertices2D = UnityEditor.Sprites.DataUtility.GetSpriteMesh(spriteRenderer.sprite, false);
 			int[] indices = Array.ConvertAll<ushort, int>(UnityEditor.Sprites.DataUtility.GetSpriteIndices(spriteRenderer.sprite, false),  element => (int)element);
 
@@ -53,6 +61,10 @@ public class SpriteMesh {
 			mesh.RecalculateBounds();
 
 			ScriptableObjectUtility.CreateAsset(mesh);
+
+			// Reset the rotations of the object
+			spriteRenderer.transform.localRotation = localRotation;
+			spriteRenderer.transform.parent = spriteRendererParent;
 		}
 	}
 }

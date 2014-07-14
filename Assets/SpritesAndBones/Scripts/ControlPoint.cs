@@ -49,6 +49,14 @@ public class ControlPoint : MonoBehaviour {
 			for (int i = 0; i < skin.sharedMesh.vertices.Length; i++)
 			{
 				GameObject b = new GameObject("Control Point");
+				// Unparent the skin temporarily before adding the control point
+				Transform skinParent = skin.transform.parent;
+				skin.transform.parent = null;
+
+				// Reset the rotation before creating the mesh so the UV's will align properly
+				Quaternion localRotation = skin.transform.localRotation;
+				skin.transform.localRotation = Quaternion.identity;
+
 				b.transform.position = new Vector3(skin.transform.position.x + (skin.sharedMesh.vertices[i].x * skin.transform.localScale.x), skin.transform.position.y + (skin.sharedMesh.vertices[i].y * skin.transform.localScale.y), skin.transform.position.z + (skin.sharedMesh.vertices[i].z * skin.transform.localScale.z));
 				b.transform.parent = skin.transform;
 				ControlPoint[] points = b.transform.parent.transform.GetComponentsInChildren<ControlPoint>();
@@ -61,6 +69,10 @@ public class ControlPoint : MonoBehaviour {
 				controlPoint.index = i;
 				controlPoint.skin = skin;
 				controlPoint.originalPosition = b.transform.localPosition;
+
+				// Reset the rotations of the object
+				skin.transform.localRotation = localRotation;
+				skin.transform.parent = skinParent;
 			}
 		}
     }
