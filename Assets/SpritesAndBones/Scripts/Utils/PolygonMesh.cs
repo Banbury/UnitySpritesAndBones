@@ -32,7 +32,7 @@ public class PolygonMesh {
 
 	public PolygonCollider2D polygonCollider;
 	public SpriteRenderer spriteRenderer;
-	public float pixelsToUnits = 100f;
+	private float pixelsToUnits = 100f;
 
 	public void CreatePolygonMesh() 
 	{
@@ -123,10 +123,12 @@ public class PolygonMesh {
 			spriteTextureOrigin.x = (float)spriteRenderer.sprite.rect.x;
 			spriteTextureOrigin.y = (float)spriteRenderer.sprite.rect.y;
 
+			// Calculate Pixels to Units using the current sprite rect width and the sprite bounds
+			pixelsToUnits = spriteRenderer.sprite.rect.width / spriteRenderer.sprite.bounds.size.x;
+
 			Vector2[] uv = new Vector2[vertices.Length];
 			for (int i = 0; i<vertices.Length; i++) {
 				// Apply the bottom left and lower left offset values to the vertices before applying the pixels to units 
-				//NOTE: IF ORIGINAL TEXTURE IS SCALED, PIXELS TO UNITS IS SCALED AS WELL!!!!!
 				// to get the pixel value
 				float x = ((vertices [i].x - botLeft.x) - lowerLeftOffset.x) * pixelsToUnits;
 				float y = ((vertices [i].y - botLeft.y) - lowerLeftOffset.y) * pixelsToUnits;

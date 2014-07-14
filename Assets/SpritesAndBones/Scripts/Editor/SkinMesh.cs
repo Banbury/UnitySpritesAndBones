@@ -38,7 +38,6 @@ public class SkinMesh : EditorWindow {
 
     private Vector2[] polygon = new Vector2[0];
     private float simplify = 1.0f;
-    private float pixelsToUnits = 100.0f;
 
     [MenuItem("Sprites And Bones/Create Mesh")]
     protected static void ShowSkinMeshEditor() {
@@ -91,16 +90,11 @@ public class SkinMesh : EditorWindow {
 
 			EditorGUILayout.Separator();
 
-			GUILayout.Label("Make sure to use the Sprite's Pixels To Units", EditorStyles.boldLabel);
-
-			pixelsToUnits = EditorGUILayout.FloatField("Pixels To Units", pixelsToUnits);
-
 			if (GUILayout.Button("Create Mesh from Polygon2D Collider")) {
 				polygonCollider = spriteRenderer.transform.GetComponent<PolygonCollider2D>();
 				if (polygonCollider != null)
 				{
 					PolygonMesh polygonMesh = new PolygonMesh();
-					polygonMesh.pixelsToUnits = pixelsToUnits;
 					polygonMesh.polygonCollider = polygonCollider;
 					polygonMesh.spriteRenderer = spriteRenderer;
 					polygonMesh.CreatePolygonMesh();
