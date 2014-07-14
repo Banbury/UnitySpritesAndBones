@@ -46,6 +46,10 @@ public class PolygonMesh {
 			Quaternion localRotation = polygonCollider.transform.localRotation;
 			polygonCollider.transform.localRotation = Quaternion.identity;
 
+			// Reset the scale before creating the mesh so the UV's will align properly
+			Vector3 localScale = polygonCollider.transform.localScale;
+			polygonCollider.transform.localScale = Vector3.one;
+
 			Vector2[] vertices2D = polygonCollider.points;
 
 			// Use the triangulator to get indices for creating triangles
@@ -89,6 +93,7 @@ public class PolygonMesh {
 
 			// Reset the rotations of the object
 			polygonCollider.transform.localRotation = localRotation;
+			polygonCollider.transform.localScale = localScale;
 			polygonCollider.transform.parent = polygonParent;
 		}
 	}
@@ -121,6 +126,7 @@ public class PolygonMesh {
 			Vector2[] uv = new Vector2[vertices.Length];
 			for (int i = 0; i<vertices.Length; i++) {
 				// Apply the bottom left and lower left offset values to the vertices before applying the pixels to units 
+				//NOTE: IF ORIGINAL TEXTURE IS SCALED, PIXELS TO UNITS IS SCALED AS WELL!!!!!
 				// to get the pixel value
 				float x = ((vertices [i].x - botLeft.x) - lowerLeftOffset.x) * pixelsToUnits;
 				float y = ((vertices [i].y - botLeft.y) - lowerLeftOffset.y) * pixelsToUnits;

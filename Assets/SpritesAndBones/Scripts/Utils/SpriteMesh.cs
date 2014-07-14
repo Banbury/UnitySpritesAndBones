@@ -43,6 +43,10 @@ public class SpriteMesh {
 			Quaternion localRotation = spriteRenderer.transform.localRotation;
 			spriteRenderer.transform.localRotation = Quaternion.identity;
 
+			// Reset the scale before creating the mesh so the UV's will align properly
+			Vector3 localScale = spriteRenderer.transform.localScale;
+			spriteRenderer.transform.localScale = Vector3.one;
+
 			Vector2[] vertices2D = UnityEditor.Sprites.DataUtility.GetSpriteMesh(spriteRenderer.sprite, false);
 			int[] indices = Array.ConvertAll<ushort, int>(UnityEditor.Sprites.DataUtility.GetSpriteIndices(spriteRenderer.sprite, false),  element => (int)element);
 
@@ -64,6 +68,7 @@ public class SpriteMesh {
 
 			// Reset the rotations of the object
 			spriteRenderer.transform.localRotation = localRotation;
+			spriteRenderer.transform.localScale = localScale;
 			spriteRenderer.transform.parent = spriteRendererParent;
 		}
 	}
