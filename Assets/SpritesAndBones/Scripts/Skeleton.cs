@@ -32,6 +32,7 @@ using System.Reflection;
 using System.Linq;
 
 [ExecuteInEditMode]
+[SelectionBase]
 public class Skeleton : MonoBehaviour {
     public bool editMode = true;
     public bool showBoneInfluence = true;
@@ -41,7 +42,13 @@ public class Skeleton : MonoBehaviour {
 
     private Pose tempPose;
 
-	[SerializeField] private bool _flip;
+	[SerializeField]
+    [HideInInspector]
+    private bool _flip;
+    [SerializeField]
+    [HideInInspector]
+    private bool _useShadows;
+
 
 	public bool flip
 	{
@@ -52,8 +59,6 @@ public class Skeleton : MonoBehaviour {
 			Flip();
 		}
 	}
-
-	[SerializeField] private bool _useShadows;
 
 	public bool useShadows
 	{
