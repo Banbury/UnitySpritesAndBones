@@ -41,7 +41,7 @@ public class Bone : MonoBehaviour {
     public float influenceTail = 0.25f;
     public float influenceHead = 0.25f;
     public float zOrder = 0;
-	public Color color = Color.cyan;
+    public Color color = Color.cyan;
 
     private Bone parent;
 
@@ -53,7 +53,7 @@ public class Bone : MonoBehaviour {
         }
     }
 
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
     [MenuItem("Sprites And Bones/Bone")]
     public static Bone Create() {
         GameObject b = new GameObject("Bone");
@@ -77,7 +77,7 @@ public class Bone : MonoBehaviour {
             Bone[] bones = skel.GetComponentsInChildren<Bone>();
             int index = bones.Max(bn => bn.index) + 1;
             b.GetComponent<Bone>().index = index;
-			skel.CalculateWeights();
+            skel.CalculateWeights();
         }
 
         Selection.activeGameObject = b;
@@ -131,16 +131,16 @@ public class Bone : MonoBehaviour {
     public void AddIK() {
         Undo.AddComponent<InverseKinematics>(gameObject);
     }
-    #endif
+#endif
 
     // Use this for initialization
-	void Start () {
+    void Start() {
         if (gameObject.transform.parent != null)
             parent = gameObject.transform.parent.GetComponent<Bone>();
-	}
-	
-	// Update is called once per frame
-	void Update () {
+    }
+
+    // Update is called once per frame
+    void Update() {
         transform.localRotation = Quaternion.Euler(0, 0, transform.localRotation.eulerAngles.z);
 
 #if UNITY_EDITOR
@@ -148,45 +148,32 @@ public class Bone : MonoBehaviour {
             gameObject.transform.position = parent.Head;
         }
 #endif
-	}
+    }
 
 #if UNITY_EDITOR
     void OnDrawGizmos() {
         if (gameObject.Equals(Selection.activeGameObject)) {
-			Gizmos.color = Color.yellow;
+            Gizmos.color = Color.yellow;
         }
         else {
+            Color c = this.color;
+            if (gameObject.name.ToUpper().EndsWith(".R") || gameObject.name.ToUpper().EndsWith("RIGHT")) {
+                c = Utils.ColorFromInt(EditorPrefs.GetInt("BoneRightColor", Color.red.AsInt()));
+            }
+            else if (gameObject.name.ToUpper().EndsWith(".L") || gameObject.name.ToUpper().EndsWith("LEFT")) {
+                c = Utils.ColorFromInt(EditorPrefs.GetInt("BoneLeftColor", Color.green.AsInt()));
+            }
+            c.a = 1;
+
             if (editMode) {
-				if (gameObject.name.ToUpper().EndsWith("R") || gameObject.name.ToUpper().EndsWith("RIGHT"))
-				{
-					Gizmos.color = new Color(185.0f/255.0f, 128.0f/255.0f, 0f, 255.0f/255.0f);
-				}
-				else if (gameObject.name.ToUpper().EndsWith("L") || gameObject.name.ToUpper().EndsWith("LEFT"))
-				{
-					Gizmos.color = new Color(185.0f/255.0f, 128.0f/255.0f, 255.0f/255.0f, 255.0f/255.0f);
-				}
-				else
-				{
-					Gizmos.color = new Color(color.r * 0.75f, color.g * 0.75f, color.b * 0.75f, color.a);
-				}
+                Gizmos.color = new Color(c.r * 0.75f, c.g * 0.75f, c.b * 0.75f, c.a);
             }
             else {
-				if (gameObject.name.ToUpper().EndsWith("R") || gameObject.name.ToUpper().EndsWith("RIGHT"))
-				{
-					Gizmos.color = new Color(255.0f/255.0f, 128.0f/255.0f, 0f, 255.0f/255.0f);
-				}
-				else if (gameObject.name.ToUpper().EndsWith("L") || gameObject.name.ToUpper().EndsWith("LEFT"))
-				{
-					Gizmos.color = Color.magenta;
-				}
-				else
-				{
-					Gizmos.color = color;
-				}
+                Gizmos.color = c;
             }
         }
 
-		int div = 5; 
+        int div = 5; 
 
 		Vector3 v = Quaternion.AngleAxis(45, Vector3.forward) * (((Vector3)Head - gameObject.transform.position) / div);
 		Gizmos.DrawLine(gameObject.transform.position, gameObject.transform.position + v);
@@ -218,8 +205,7 @@ public class Bone : MonoBehaviour {
                 return 0;
             else
                 return influenceTail;
-        }
-        else {
+        } else {
             float t = Vector2.Dot(p - (Vector2)transform.position, wv) / wv.sqrMagnitude;
 
             if (t < 0) {
@@ -228,15 +214,13 @@ public class Bone : MonoBehaviour {
                     return 0;
                 else
                     return (influenceTail - dist) / influenceTail;
-            }
-            else if (t > 1.0f) {
+            } else if (t > 1.0f) {
                 dist = (p - Head).magnitude;
                 if (dist > influenceHead)
                     return 0;
                 else
                     return (influenceHead - dist) / influenceHead;
-            }
-            else {
+            } else {
                 Vector2 proj = (Vector2)transform.position + (wv * t);
                 dist = (proj - p).magnitude;
 
