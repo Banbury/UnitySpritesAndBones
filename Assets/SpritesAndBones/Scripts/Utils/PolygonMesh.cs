@@ -102,13 +102,6 @@ public class PolygonMesh {
 	{
 		if (spriteRenderer != null && polygonCollider != null)
 		{
-			// Get lower left offset of polygon collider in local space
-			Vector3 polygonBounds = polygonCollider.transform.InverseTransformPoint(polygonCollider.bounds.min);
-			Vector3 spriteBounds = polygonCollider.transform.InverseTransformPoint(spriteRenderer.bounds.min);
-			Vector3 lowerLeftOffset = new Vector3((spriteBounds.x - polygonBounds.x), (spriteBounds.y - polygonBounds.y), 0);
-			// Debug.Log(lowerLeftOffset.x);
-			// Debug.Log(lowerLeftOffset.y);
-
 			// Get the sprite's texture dimensions as float values
 			float texHeight = (float)(spriteRenderer.sprite.texture.height);
 			// Debug.Log(texHeight);
@@ -130,8 +123,8 @@ public class PolygonMesh {
 			for (int i = 0; i<vertices.Length; i++) {
 				// Apply the bottom left and lower left offset values to the vertices before applying the pixels to units 
 				// to get the pixel value
-				float x = ((vertices [i].x - botLeft.x) - lowerLeftOffset.x) * pixelsToUnits;
-				float y = ((vertices [i].y - botLeft.y) - lowerLeftOffset.y) * pixelsToUnits;
+				float x = (vertices [i].x - botLeft.x) * pixelsToUnits;
+				float y = (vertices [i].y - botLeft.y) * pixelsToUnits;
 
 				// Add the sprite's origin on the texture to the vertices and divide by the dimensions to get the UV
 				uv [i] = new Vector2 (((x + spriteTextureOrigin.x) / texWidth), ((y + spriteTextureOrigin.y) / texHeight));
