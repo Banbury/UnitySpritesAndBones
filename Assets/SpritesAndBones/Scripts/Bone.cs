@@ -45,6 +45,8 @@ public class Bone : MonoBehaviour {
 
     private Bone parent;
 
+	private Skeleton skeleton;
+
     public Vector2 Head {
         get {
             Vector3 v = gameObject.transform.up * length;
@@ -156,14 +158,22 @@ public class Bone : MonoBehaviour {
 			Gizmos.color = Color.yellow;
         }
         else {
-            if (editMode) {
-				if (gameObject.name.ToUpper().EndsWith("R") || gameObject.name.ToUpper().EndsWith("RIGHT"))
+            skeleton = transform.root.GetComponentInChildren<Skeleton>();
+			if (editMode) {
+				if (skeleton != null)
 				{
-					Gizmos.color = new Color(185.0f/255.0f, 128.0f/255.0f, 0f, 255.0f/255.0f);
-				}
-				else if (gameObject.name.ToUpper().EndsWith("L") || gameObject.name.ToUpper().EndsWith("LEFT"))
-				{
-					Gizmos.color = new Color(185.0f/255.0f, 128.0f/255.0f, 255.0f/255.0f, 255.0f/255.0f);
+					if (gameObject.name.ToUpper().EndsWith("R") || gameObject.name.ToUpper().EndsWith("RIGHT"))
+					{
+						Gizmos.color = new Color(skeleton.colorRight.r * 0.75f, skeleton.colorRight.g * 0.75f, skeleton.colorRight.b * 0.75f, skeleton.colorRight.a);
+					}
+					else if (gameObject.name.ToUpper().EndsWith("L") || gameObject.name.ToUpper().EndsWith("LEFT"))
+					{
+						Gizmos.color = new Color(skeleton.colorLeft.r * 0.75f, skeleton.colorLeft.g * 0.75f, skeleton.colorLeft.b * 0.75f, skeleton.colorLeft.a);
+					}
+					else
+					{
+						Gizmos.color = new Color(color.r * 0.75f, color.g * 0.75f, color.b * 0.75f, color.a);
+					}
 				}
 				else
 				{
@@ -171,13 +181,20 @@ public class Bone : MonoBehaviour {
 				}
             }
             else {
-				if (gameObject.name.ToUpper().EndsWith("R") || gameObject.name.ToUpper().EndsWith("RIGHT"))
+				if (skeleton != null)
 				{
-					Gizmos.color = new Color(255.0f/255.0f, 128.0f/255.0f, 0f, 255.0f/255.0f);
-				}
-				else if (gameObject.name.ToUpper().EndsWith("L") || gameObject.name.ToUpper().EndsWith("LEFT"))
-				{
-					Gizmos.color = Color.magenta;
+					if (gameObject.name.ToUpper().EndsWith("R") || gameObject.name.ToUpper().EndsWith("RIGHT"))
+					{
+						Gizmos.color = skeleton.colorRight;
+					}
+					else if (gameObject.name.ToUpper().EndsWith("L") || gameObject.name.ToUpper().EndsWith("LEFT"))
+					{
+						Gizmos.color = skeleton.colorLeft;
+					}
+					else
+					{
+						Gizmos.color = color;
+					}
 				}
 				else
 				{

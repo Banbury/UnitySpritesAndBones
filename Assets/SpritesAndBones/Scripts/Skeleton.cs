@@ -1,7 +1,7 @@
 ﻿/*
 The MIT License (MIT)
 
-Copyright (c) 2013 Banbury
+Copyright (c) 2014 Banbury & Play-Em
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@ using System.Reflection;
 using System.Linq;
 
 [ExecuteInEditMode]
+[SelectionBase]
 public class Skeleton : MonoBehaviour {
     public bool editMode = true;
     public bool showBoneInfluence = true;
@@ -41,7 +42,9 @@ public class Skeleton : MonoBehaviour {
 
     private Pose tempPose;
 
-	[SerializeField] private bool _flip;
+	[SerializeField] 
+	[HideInInspector]
+	private bool _flip;
 
 	public bool flip
 	{
@@ -53,7 +56,9 @@ public class Skeleton : MonoBehaviour {
 		}
 	}
 
-	[SerializeField] private bool _useShadows;
+	[SerializeField] 
+	[HideInInspector]
+	private bool _useShadows;
 
 	public bool useShadows
 	{
@@ -67,6 +72,8 @@ public class Skeleton : MonoBehaviour {
 
 	private Shader spriteShader;
 	private Shader spriteShadowsShader;
+	public Color colorRight = new Color(255.0f/255.0f, 128.0f/255.0f, 0f, 255.0f/255.0f);
+	public Color colorLeft = Color.magenta;
 
 #if UNITY_EDITOR
 		[MenuItem("Sprites And Bones/Skeleton")]
@@ -151,11 +158,15 @@ public class Skeleton : MonoBehaviour {
 
         var bones = GetComponentsInChildren<Bone>();
 
+        var cps = GetComponentsInChildren<ControlPoint>();
+
         List<RotationValue> rotations = new List<RotationValue>();
         List<PositionValue> positions = new List<PositionValue>();
+        List<PositionValue> controlPoints = new List<PositionValue>();
         List<PositionValue> targets = new List<PositionValue>();
 
-        foreach (Bone b in bones) {
+        // Make sure all bones have unique names!!!
+		foreach (Bone b in bones) {
             rotations.Add(new RotationValue(b.name, b.transform.localRotation));
             positions.Add(new PositionValue(b.name, b.transform.localPosition));
 
@@ -164,8 +175,14 @@ public class Skeleton : MonoBehaviour {
             }
         }
 
+        // Use bone parent name + control point name for the search
+		foreach (ControlPoint cp in cps) {
+            controlPoints.Add(new PositionValue(cp.transform.parent.name + cp.name, cp.transform.localPosition));
+        }
+
         pose.rotations = rotations.ToArray();
         pose.positions = positions.ToArray();
+        pose.controlPoints = controlPoints.ToArray();
         pose.targets = targets.ToArray();
 
         return pose;
@@ -182,7 +199,9 @@ public class Skeleton : MonoBehaviour {
 
     public void RestorePose(Pose pose) {
         var bones = GetComponentsInChildren<Bone>();
+        var cps = GetComponentsInChildren<ControlPoint>();
         Undo.RegisterCompleteObjectUndo(bones, "Assign Pose");
+        Undo.RegisterCompleteObjectUndo(cps, "Assign Pose");
 
         foreach (RotationValue rv in pose.rotations) {
             System.Array.Find<Bone>(bones, b => b.name == rv.name).transform.localRotation = rv.rotation;
@@ -190,6 +209,10 @@ public class Skeleton : MonoBehaviour {
 
         foreach (PositionValue pv in pose.positions) {
             System.Array.Find<Bone>(bones, b => b.name == pv.name).transform.localPosition = pv.position;
+        }
+
+        foreach (PositionValue cpv in pose.controlPoints) {
+            System.Array.Find<ControlPoint>(cps, cp => (cp.transform.parent.name + cp.name) == cpv.name).transform.localPosition = cpv.position;
         }
 
         foreach (PositionValue tv in pose.targets) {
@@ -233,6 +256,11 @@ public class Skeleton : MonoBehaviour {
 
 	public void CalculateWeights ()
 	{
+		CalculateWeights(false);
+	}
+
+	public void CalculateWeights (bool weightToParent)
+	{
 		//find all Skin2D elements
 		Skin2D[] skins = transform.GetComponentsInChildren<Skin2D>();
 		Bone[] bones = transform.GetComponentsInChildren<Bone>();
@@ -241,7 +269,7 @@ public class Skeleton : MonoBehaviour {
 			return;
 		}
 		foreach(Skin2D skin in skins) {
-			skin.CalculateBoneWeights(bones);
+			skin.CalculateBoneWeights(bones, weightToParent);
 		}
 	}
 

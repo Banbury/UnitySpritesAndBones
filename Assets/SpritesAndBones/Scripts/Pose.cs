@@ -1,7 +1,7 @@
 ﻿/*
 The MIT License (MIT)
 
-Copyright (c) 2013 Banbury
+Copyright (c) 2014 Banbury & Play-Em
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,7 @@ using System.Collections.Generic;
 public class Pose : ScriptableObject {
     public RotationValue[] rotations = {};
     public PositionValue[] positions = {};
+    public PositionValue[] controlPoints = {};
     public PositionValue[] targets = {};
 }
 

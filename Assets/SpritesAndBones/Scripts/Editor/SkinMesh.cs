@@ -34,7 +34,6 @@ using System.IO;
 
 public class SkinMesh : EditorWindow {
     private SpriteRenderer spriteRenderer;
-    private PolygonCollider2D polygonCollider;
 
     private Vector2[] polygon = new Vector2[0];
     private float simplify = 1.0f;
@@ -91,14 +90,15 @@ public class SkinMesh : EditorWindow {
 			EditorGUILayout.Separator();
 
 			if (GUILayout.Button("Create Mesh from Polygon2D Collider")) {
-				polygonCollider = spriteRenderer.transform.GetComponent<PolygonCollider2D>();
-				if (polygonCollider != null)
-				{
-					PolygonMesh polygonMesh = new PolygonMesh();
-					polygonMesh.polygonCollider = polygonCollider;
-					polygonMesh.spriteRenderer = spriteRenderer;
-					polygonMesh.CreatePolygonMesh();
+				PolygonCollider2D polygonCollider = spriteRenderer.GetComponent<PolygonCollider2D>();
+				if (polygonCollider == null) {
+					polygonCollider = spriteRenderer.gameObject.AddComponent<PolygonCollider2D>();
 				}
+
+				PolygonMesh polygonMesh = new PolygonMesh();
+				polygonMesh.polygonCollider = polygonCollider;
+				polygonMesh.spriteRenderer = spriteRenderer;
+				polygonMesh.CreatePolygonMesh();
 			}
         }
     }
