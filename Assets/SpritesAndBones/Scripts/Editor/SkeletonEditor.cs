@@ -17,12 +17,10 @@ public class SkeletonEditor : Editor {
 
         EditorGUILayout.Separator();
 
-		if (GUILayout.Button("Flip")) {
-			skeleton.flip = !skeleton.flip;
-        }
+        skeleton.useShadows = EditorGUILayout.Toggle("Use Shadows", skeleton.useShadows);
 
-		if (GUILayout.Button("Use Shadows")) {
-			skeleton.useShadows = !skeleton.useShadows;
+        if (GUILayout.Button("Flip")) {
+			skeleton.flip = !skeleton.flip;
         }
 
         EditorGUILayout.LabelField("Poses", EditorStyles.boldLabel);
@@ -42,7 +40,8 @@ public class SkeletonEditor : Editor {
         }
 
         GUILayout.EndHorizontal();
-		if(GUILayout.Button("Calculate weights")) {
+
+		if(skeleton.GetComponentInChildren<Skin2D>() != null && GUILayout.Button("Calculate weights")) {
 			skeleton.CalculateWeights();
 		}
         if (skeleton.basePose == null) {
