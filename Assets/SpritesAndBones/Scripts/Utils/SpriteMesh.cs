@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+using System.Linq;
 using UnityEngine;
 using UnityEditor;
 using System;
@@ -48,7 +49,7 @@ public class SpriteMesh {
 			spriteRenderer.transform.localScale = Vector3.one;
 
 			Vector2[] vertices2D = UnityEditor.Sprites.DataUtility.GetSpriteMesh(spriteRenderer.sprite, false);
-			int[] indices = Array.ConvertAll<ushort, int>(UnityEditor.Sprites.DataUtility.GetSpriteIndices(spriteRenderer.sprite, false),  element => (int)element);
+            int[] indices = UnityEditor.Sprites.DataUtility.GetSpriteIndices(spriteRenderer.sprite, false).Select(element => (int)element).ToArray();
 
 			// Create the Vector3 vertices
 			Vector3[] vertices = new Vector3[vertices2D.Length];

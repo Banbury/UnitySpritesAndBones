@@ -42,7 +42,7 @@ public class Skeleton : MonoBehaviour {
 
     private Pose tempPose;
 
-	[SerializeField]
+    [SerializeField]
     [HideInInspector]
     private bool _flip;
     [SerializeField]
@@ -50,65 +50,60 @@ public class Skeleton : MonoBehaviour {
     private bool _useShadows;
 
 
-	public bool flip
-	{
-		get { return _flip; }
-		set
-		{
-			_flip = value;
-			Flip();
-		}
-	}
+    public bool flip {
+        get { return _flip; }
+        set {
+            _flip = value;
+            Flip();
+        }
+    }
 
-	public bool useShadows
-	{
-		get { return _useShadows; }
-		set
-		{
-			_useShadows = value;
-			UseShadows();
-		}
-	}
+    public bool useShadows {
+        get { return _useShadows; }
+        set {
+            _useShadows = value;
+            UseShadows();
+        }
+    }
 
-	private Shader spriteShader;
-	private Shader spriteShadowsShader;
+    private Shader spriteShader;
+    private Shader spriteShadowsShader;
 
 #if UNITY_EDITOR
-		[MenuItem("Sprites And Bones/Skeleton")]
-		public static void Create ()
-		{
-			Undo.IncrementCurrentGroup ();
+    [MenuItem("Sprites And Bones/Skeleton")]
+    public static void Create() {
+        Undo.IncrementCurrentGroup();
 
-			GameObject o = new GameObject ("Skeleton");
-			Undo.RegisterCreatedObjectUndo (o, "Create skeleton");
-			o.AddComponent<Skeleton> ();
+        GameObject o = new GameObject("Skeleton");
+        Undo.RegisterCreatedObjectUndo(o, "Create skeleton");
+        o.AddComponent<Skeleton>();
 
-			GameObject b = new GameObject ("Bone");
-			Undo.RegisterCreatedObjectUndo (b, "Create Skeleton");
-			b.AddComponent<Bone> ();
+        GameObject b = new GameObject("Bone");
+        Undo.RegisterCreatedObjectUndo(b, "Create Skeleton");
+        b.AddComponent<Bone>();
 
-			b.transform.parent = o.transform;
+        b.transform.parent = o.transform;
 
-			Undo.CollapseUndoOperations (Undo.GetCurrentGroup ());
-		}
+        Undo.CollapseUndoOperations(Undo.GetCurrentGroup());
+    }
 #endif
 
     // Use this for initialization
-	void Start () {
-		spriteShader = Shader.Find("Sprites/Default");
-		spriteShadowsShader = Shader.Find("Sprites/Skeleton-Diffuse");
-		if (Application.isPlaying) {
+    void Start() {
+        spriteShader = Shader.Find("Sprites/Default");
+        spriteShadowsShader = Shader.Find("Sprites/Skeleton-Diffuse");
+        if (Application.isPlaying) {
             SetEditMode(false);
         }
-	}
+    }
 
 #if UNITY_EDITOR
     void OnEnable() {
-		EditorApplication.update += EditorUpdate;
+        EditorApplication.update += EditorUpdate;
     }
 
     void OnDisable() {
-		EditorApplication.update -= EditorUpdate;
+        EditorApplication.update -= EditorUpdate;
     }
 #endif
 
@@ -121,18 +116,16 @@ public class Skeleton : MonoBehaviour {
             }
         }
     }
-	
-	// Update is called once per frame
-	void Update () {
-		// Get Shaders if they are null
-		if (spriteShader == null)
-		{
-			spriteShader = Shader.Find("Sprites/Default");
-		}
-		if (spriteShadowsShader == null)
-		{
-			spriteShadowsShader = Shader.Find("Sprites/Skeleton-Diffuse");
-		}
+
+    // Update is called once per frame
+    void Update() {
+        // Get Shaders if they are null
+        if (spriteShader == null) {
+            spriteShader = Shader.Find("Sprites/Default");
+        }
+        if (spriteShadowsShader == null) {
+            spriteShadowsShader = Shader.Find("Sprites/Skeleton-Diffuse");
+        }
 
 #if !UNITY_EDITOR
 		EditorUpdate();
@@ -175,14 +168,13 @@ public class Skeleton : MonoBehaviour {
 
         return pose;
     }
-		
+
     public void SavePose(string poseFileName) {
-		if(poseFileName!=null && poseFileName.Trim()!=""){
-        	ScriptableObjectUtility.CreateAsset(CreatePose(),poseFileName);
-		}
-		else{
-			ScriptableObjectUtility.CreateAsset(CreatePose());
-		}
+        if (poseFileName != null && poseFileName.Trim() != "") {
+            ScriptableObjectUtility.CreateAsset(CreatePose(), poseFileName);
+        } else {
+            ScriptableObjectUtility.CreateAsset(CreatePose());
+        }
     }
 
     public void RestorePose(Pose pose) {
@@ -190,20 +182,35 @@ public class Skeleton : MonoBehaviour {
         Undo.RegisterCompleteObjectUndo(bones, "Assign Pose");
 
         foreach (RotationValue rv in pose.rotations) {
-            System.Array.Find<Bone>(bones, b => b.name == rv.name).transform.localRotation = rv.rotation;
+            Bone bone = bones.First(b => b.name == rv.name);
+            if (bone != null) {
+                bone.transform.localRotation = rv.rotation;
+            } else {
+                Debug.Log("This skeleton has no bone '" + bone.name + "'");
+            }
         }
 
         foreach (PositionValue pv in pose.positions) {
-            System.Array.Find<Bone>(bones, b => b.name == pv.name).transform.localPosition = pv.position;
+            Bone bone = bones.First(b => b.name == pv.name);
+            if (bone != null) {
+                bone.transform.localPosition = pv.position;
+            } else {
+                Debug.Log("This skeleton has no bone '" + bone.name + "'");
+            }
         }
 
         foreach (PositionValue tv in pose.targets) {
-            Bone bone = System.Array.Find<Bone>(bones, b => b.name == tv.name);
-            InverseKinematics ik = bone.GetComponent<InverseKinematics>();
+            Bone bone = bones.First(b => b.name == tv.name);
 
-            if (ik != null) {
-                Undo.RecordObject(ik.target, "Assign Pose");
-                ik.target.transform.localPosition = tv.position;
+            if (bone != null) {
+                InverseKinematics ik = bone.GetComponent<InverseKinematics>();
+
+                if (ik != null) {
+                    Undo.RecordObject(ik.target, "Assign Pose");
+                    ik.target.transform.localPosition = tv.position;
+                }
+            } else {
+                Debug.Log("This skeleton has no bone '" + bone.name + "'");
             }
         }
     }
@@ -224,8 +231,7 @@ public class Skeleton : MonoBehaviour {
             if (basePose != null) {
                 RestorePose(basePose);
             }
-        }
-        else if (editMode && !edit) {
+        } else if (editMode && !edit) {
             if (tempPose != null) {
                 RestorePose(tempPose);
                 Object.DestroyImmediate(tempPose);
@@ -236,102 +242,83 @@ public class Skeleton : MonoBehaviour {
         editMode = edit;
     }
 
-	public void CalculateWeights ()
-	{
-		//find all Skin2D elements
-		Skin2D[] skins = transform.GetComponentsInChildren<Skin2D>();
-		Bone[] bones = transform.GetComponentsInChildren<Bone>();
-		if(bones.Length == 0) {
-			Debug.Log("No bones in skeleton");
-			return;
-		}
-		foreach(Skin2D skin in skins) {
-			skin.CalculateBoneWeights(bones);
-		}
-	}
+    public void CalculateWeights() {
+        //find all Skin2D elements
+        Skin2D[] skins = transform.GetComponentsInChildren<Skin2D>();
+        Bone[] bones = transform.GetComponentsInChildren<Bone>();
+        if (bones.Length == 0) {
+            Debug.Log("No bones in skeleton");
+            return;
+        }
+        foreach (Skin2D skin in skins) {
+            skin.CalculateBoneWeights(bones);
+        }
+    }
 
-	public void Flip ()
-	{
-		int normal = -1;
-		// Rotate the skeleton's local transform
-		if (!flip)
-		{
-			transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, 0.0f, transform.localEulerAngles.z);
-		}
-		else
-		{
-			transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, 180.0f, transform.localEulerAngles.z);
-			normal = 1;
-		}
+    public void Flip() {
+        int normal = -1;
+        // Rotate the skeleton's local transform
+        if (!flip) {
+            transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, 0.0f, transform.localEulerAngles.z);
+        } else {
+            transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, 180.0f, transform.localEulerAngles.z);
+            normal = 1;
+        }
 
-		if (useShadows)
-		{
-			//find all SkinnedMeshRenderer elements
-			SkinnedMeshRenderer[] skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
-			foreach(SkinnedMeshRenderer skin in skins) {
-				if (skin.sharedMaterial != null)
-				{
-					if (spriteShadowsShader != null && skin.sharedMaterial.shader == spriteShadowsShader)
-					{
-						skin.sharedMaterial.SetVector("_Normal", new Vector3(0, 0, normal));
-					}
-				}
-			}
+        if (useShadows) {
+            //find all SkinnedMeshRenderer elements
+            SkinnedMeshRenderer[] skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
+            foreach (SkinnedMeshRenderer skin in skins) {
+                if (skin.sharedMaterial != null) {
+                    if (spriteShadowsShader != null && skin.sharedMaterial.shader == spriteShadowsShader) {
+                        skin.sharedMaterial.SetVector("_Normal", new Vector3(0, 0, normal));
+                    }
+                }
+            }
 
-			//find all SpriteRenderer elements
-			SpriteRenderer[] spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>();
-			foreach(SpriteRenderer spriteRenderer in spriteRenderers) {
-				if (spriteRenderer.sharedMaterial != null)
-				{
-					if (spriteShadowsShader != null && spriteRenderer.sharedMaterial.shader == spriteShadowsShader)
-					{
-						spriteRenderer.sharedMaterial.SetVector("_Normal", new Vector3(0, 0, normal));
-					}
-				}
-			}
-		}
-	}
+            //find all SpriteRenderer elements
+            SpriteRenderer[] spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>();
+            foreach (SpriteRenderer spriteRenderer in spriteRenderers) {
+                if (spriteRenderer.sharedMaterial != null) {
+                    if (spriteShadowsShader != null && spriteRenderer.sharedMaterial.shader == spriteShadowsShader) {
+                        spriteRenderer.sharedMaterial.SetVector("_Normal", new Vector3(0, 0, normal));
+                    }
+                }
+            }
+        }
+    }
 
-	public void UseShadows ()
-	{
-		//find all SpriteRenderer elements
-		SkinnedMeshRenderer[] skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
-		
-		foreach(SkinnedMeshRenderer skin in skins) {
-			if (skin.sharedMaterial != null)
-			{
-				if (useShadows && spriteShadowsShader != null)
-				{
-					skin.sharedMaterial.shader = spriteShadowsShader;
-				}
-				else
-				{
-					skin.sharedMaterial.shader = spriteShader;
-				}
+    public void UseShadows() {
+        //find all SpriteRenderer elements
+        SkinnedMeshRenderer[] skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
 
-				skin.castShadows = useShadows;
-				skin.receiveShadows = useShadows;
-			}
-		}
+        foreach (SkinnedMeshRenderer skin in skins) {
+            if (skin.sharedMaterial != null) {
+                if (useShadows && spriteShadowsShader != null) {
+                    skin.sharedMaterial.shader = spriteShadowsShader;
+                } else {
+                    skin.sharedMaterial.shader = spriteShader;
+                }
 
-		//find all SpriteRenderer elements
-		SpriteRenderer[] spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>();
-		
-		foreach(SpriteRenderer spriteRenderer in spriteRenderers) {
-			if (spriteRenderer.sharedMaterial != null)
-			{
-				if (useShadows && spriteShadowsShader != null)
-				{
-					spriteRenderer.sharedMaterial.shader = spriteShadowsShader;
-				}
-				else
-				{
-					spriteRenderer.sharedMaterial.shader = spriteShader;
-				}
+                skin.castShadows = useShadows;
+                skin.receiveShadows = useShadows;
+            }
+        }
 
-				spriteRenderer.castShadows = useShadows;
-				spriteRenderer.receiveShadows = useShadows;
-			}
-		}
-	}
+        //find all SpriteRenderer elements
+        SpriteRenderer[] spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>();
+
+        foreach (SpriteRenderer spriteRenderer in spriteRenderers) {
+            if (spriteRenderer.sharedMaterial != null) {
+                if (useShadows && spriteShadowsShader != null) {
+                    spriteRenderer.sharedMaterial.shader = spriteShadowsShader;
+                } else {
+                    spriteRenderer.sharedMaterial.shader = spriteShader;
+                }
+
+                spriteRenderer.castShadows = useShadows;
+                spriteRenderer.receiveShadows = useShadows;
+            }
+        }
+    }
 }
