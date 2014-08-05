@@ -68,4 +68,29 @@ public class SkeletonEditor : Editor {
                 break;
         }
     }
+
+    [MenuItem("Sprites And Bones/Create Ragdoll")]
+    protected static void ShowSkinMeshEditor() {
+        if (Selection.activeGameObject != null && Selection.activeGameObject.GetComponent<Skeleton>() != null) {
+            Bone[] bones = Selection.activeGameObject.GetComponentsInChildren<Bone>();
+
+            foreach (Bone bone in bones) {
+                BoxCollider2D coll = bone.gameObject.AddComponent<BoxCollider2D>();
+                coll.size = new Vector2(bone.length / 2, bone.length);
+                coll.center = new Vector2(0, bone.length / 2);
+
+                bone.gameObject.AddComponent<Rigidbody2D>();
+
+                if (bone.transform.parent != null && bone.transform.parent.GetComponent<Bone>() != null) {
+                    Bone parentBone = bone.transform.parent.GetComponent<Bone>();
+                    HingeJoint2D hinge = bone.gameObject.AddComponent<HingeJoint2D>();
+                    hinge.connectedBody = parentBone.GetComponent<Rigidbody2D>();
+                    hinge.connectedAnchor = bone.transform.localPosition;
+                }
+            }
+        }
+        else {
+            Debug.LogError("No Skeleton selected.");
+        }
+    }
 }
