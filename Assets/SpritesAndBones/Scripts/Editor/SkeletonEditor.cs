@@ -42,7 +42,7 @@ public class SkeletonEditor : Editor {
         GUILayout.EndHorizontal();
 
 		if(skeleton.GetComponentInChildren<Skin2D>() != null && GUILayout.Button("Calculate weights")) {
-			skeleton.CalculateWeights();
+			skeleton.CalculateWeights(false);
 		}
         if (skeleton.basePose == null) {
             EditorGUILayout.HelpBox("You have not selected a base pose.", MessageType.Error);

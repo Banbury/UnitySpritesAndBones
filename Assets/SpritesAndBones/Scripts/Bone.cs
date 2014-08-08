@@ -77,7 +77,7 @@ public class Bone : MonoBehaviour {
             Bone[] bones = skel.GetComponentsInChildren<Bone>();
             int index = bones.Max(bn => bn.index) + 1;
             b.GetComponent<Bone>().index = index;
-            skel.CalculateWeights();
+            skel.CalculateWeights(true);
         }
 
         Selection.activeGameObject = b;

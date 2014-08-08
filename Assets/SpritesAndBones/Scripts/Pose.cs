@@ -31,6 +31,7 @@ public class Pose : ScriptableObject {
     public RotationValue[] rotations = {};
     public PositionValue[] positions = {};
     public PositionValue[] targets = {};
+    public PositionValue[] controlPoints = {};
 }
 
 [Serializable]

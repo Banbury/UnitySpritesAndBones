@@ -148,10 +148,12 @@ public class Skeleton : MonoBehaviour {
         Pose pose = ScriptableObject.CreateInstance<Pose>();
 
         var bones = GetComponentsInChildren<Bone>();
+        var cps = GetComponentsInChildren<ControlPoint>();
 
         List<RotationValue> rotations = new List<RotationValue>();
         List<PositionValue> positions = new List<PositionValue>();
         List<PositionValue> targets = new List<PositionValue>();
+        List<PositionValue> controlPoints = new List<PositionValue>();
 
         foreach (Bone b in bones) {
             rotations.Add(new RotationValue(b.name, b.transform.localRotation));
@@ -162,9 +164,15 @@ public class Skeleton : MonoBehaviour {
             }
         }
 
+        // Use bone parent name + control point name for the search
+        foreach (ControlPoint cp in cps) {
+            controlPoints.Add(new PositionValue(cp.transform.parent.name + cp.name, cp.transform.localPosition));
+        }
+
         pose.rotations = rotations.ToArray();
         pose.positions = positions.ToArray();
         pose.targets = targets.ToArray();
+        pose.controlPoints = controlPoints.ToArray();
 
         return pose;
     }
@@ -179,7 +187,9 @@ public class Skeleton : MonoBehaviour {
 
     public void RestorePose(Pose pose) {
         var bones = GetComponentsInChildren<Bone>();
+        var cps = GetComponentsInChildren<ControlPoint>();
         Undo.RegisterCompleteObjectUndo(bones, "Assign Pose");
+        Undo.RegisterCompleteObjectUndo(cps, "Assign Pose");
 
         foreach (RotationValue rv in pose.rotations) {
             Bone bone = bones.First(b => b.name == rv.name);
@@ -213,6 +223,17 @@ public class Skeleton : MonoBehaviour {
                 Debug.Log("This skeleton has no bone '" + bone.name + "'");
             }
         }
+
+        foreach (PositionValue cpv in pose.controlPoints) {
+            ControlPoint cp = cps.First(c => (c.transform.parent.name + c.name) == cpv.name);
+
+            if (cp != null) {
+                cp.transform.localPosition = cpv.position;
+            }
+            else {
+                Debug.Log("There is no control point '" + cpv.name + "'");
+            }
+        }
     }
 
     public void SetBasePose(Pose pose) {
@@ -242,7 +263,7 @@ public class Skeleton : MonoBehaviour {
         editMode = edit;
     }
 
-    public void CalculateWeights() {
+    public void CalculateWeights(bool weightToParent) {
         //find all Skin2D elements
         Skin2D[] skins = transform.GetComponentsInChildren<Skin2D>();
         Bone[] bones = transform.GetComponentsInChildren<Bone>();
@@ -251,7 +272,7 @@ public class Skeleton : MonoBehaviour {
             return;
         }
         foreach (Skin2D skin in skins) {
-            skin.CalculateBoneWeights(bones);
+            skin.CalculateBoneWeights(bones, weightToParent);
         }
     }
 
