@@ -200,7 +200,7 @@ public class Skin2D : MonoBehaviour {
                 
 	            foreach (Vector3 v in mesh.vertices) {
 	                float influence;
-					if (!weightToParent)
+					if (!weightToParent || weightToParent && bone.transform != transform.parent)
 					{
 						influence = bone.GetInfluence(v + transform.position);
 					}
