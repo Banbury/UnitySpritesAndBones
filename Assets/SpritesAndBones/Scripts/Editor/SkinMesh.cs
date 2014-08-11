@@ -82,9 +82,7 @@ public class SkinMesh : EditorWindow {
             }
 
             if (GUILayout.Button("Create Mesh from Sprite")) {
-                SpriteMesh spriteMesh = new SpriteMesh();
-                spriteMesh.spriteRenderer = spriteRenderer;
-                spriteMesh.CreateSpriteMesh();
+                SpriteMesh.CreateSpriteMeshAsset(spriteRenderer.transform, spriteRenderer.sprite);
             }
 
             EditorGUILayout.Separator();

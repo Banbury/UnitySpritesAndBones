@@ -54,9 +54,7 @@ public class Skin2D : MonoBehaviour {
 				SpriteRenderer spriteRenderer = o.GetComponent<SpriteRenderer>();
 				if (skin == null && spriteRenderer != null) {
 					Sprite thisSprite = spriteRenderer.sprite;
-					SpriteMesh spriteMesh = new SpriteMesh();
-					spriteMesh.spriteRenderer = spriteRenderer;
-					spriteMesh.CreateSpriteMesh();
+                    SpriteMesh.CreateSpriteMeshAsset(spriteRenderer.transform, thisSprite);
 					Texture2D spriteTexture = UnityEditor.Sprites.DataUtility.GetSpriteTexture(spriteRenderer.sprite, false);
 					Material spriteMaterial = new Material(spriteRenderer.sharedMaterial);
 					spriteMaterial.CopyPropertiesFromMaterial(spriteRenderer.sharedMaterial);
@@ -184,7 +182,7 @@ public class Skin2D : MonoBehaviour {
         mesh.uv2 = MeshFilter.sharedMesh.uv2;
         mesh.bounds = MeshFilter.sharedMesh.bounds;
 
-		if (bones != null && mesh != null) {
+		if (bones != null) {
             boneWeights = new Bone2DWeights();
 			boneWeights.weights = new Bone2DWeight[] { };
             
@@ -214,11 +212,11 @@ public class Skin2D : MonoBehaviour {
 
             mesh.bindposes = bindPoses;
 
-            var renderer = GetComponent<SkinnedMeshRenderer>();
-            if (renderer.sharedMesh != null && !AssetDatabase.Contains(renderer.sharedMesh.GetInstanceID()))
-                Object.DestroyImmediate(renderer.sharedMesh);
-            renderer.bones = bonesArr;
-            renderer.sharedMesh = mesh;
+            var skinRenderer = GetComponent<SkinnedMeshRenderer>();
+            if (skinRenderer.sharedMesh != null && !AssetDatabase.Contains(skinRenderer.sharedMesh.GetInstanceID()))
+                Object.DestroyImmediate(skinRenderer.sharedMesh);
+            skinRenderer.bones = bonesArr;
+            skinRenderer.sharedMesh = mesh;
         }
     }
 

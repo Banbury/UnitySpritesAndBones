@@ -49,8 +49,6 @@ public static class ScriptableObjectUtility {
 			string assetPathAndName = AssetDatabase.GenerateUniqueAssetPath (path + "/" + filename + ".asset");
 			
 			AssetDatabase.CreateAsset (asset, assetPathAndName);
-			
-			
 			AssetDatabase.SaveAssets ();
 			
 			Selection.activeObject = asset;
