@@ -28,12 +28,14 @@ using FarseerPhysics.Common;
 using FarseerPhysics.Common.PolygonManipulation;
 using Poly2Tri;
 using UnityEngine;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using System;
 using System.Collections;
 
 public class SpriteMesh {
-
+#if UNITY_EDITOR
 	public static Mesh CreateSpriteMesh(Transform owner, Sprite sprite) {
 		if (owner != null && sprite != null) {
 			// Unparent the skin temporarily before adding the mesh
@@ -217,4 +219,5 @@ public class SpriteMesh {
 
         return bmin;
     }
+#endif
 }

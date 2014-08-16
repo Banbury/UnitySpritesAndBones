@@ -89,7 +89,9 @@ public class PolygonMesh {
 				mesh.RecalculateBounds();
 			}
 
-			ScriptableObjectUtility.CreateAsset(mesh);
+#if UNITY_EDITOR
+            ScriptableObjectUtility.CreateAsset(mesh);
+#endif
 
 			// Reset the rotations of the object
 			polygonCollider.transform.localRotation = localRotation;

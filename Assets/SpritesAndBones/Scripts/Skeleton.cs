@@ -49,7 +49,7 @@ public class Skeleton : MonoBehaviour {
     [HideInInspector]
     private bool _useShadows;
 
-
+#if UNITY_EDITOR
     public bool flip {
         get { return _flip; }
         set {
@@ -65,6 +65,7 @@ public class Skeleton : MonoBehaviour {
             UseShadows();
         }
     }
+#endif
 
     private Shader spriteShader;
     private Shader spriteShadowsShader;
@@ -263,6 +264,7 @@ public class Skeleton : MonoBehaviour {
         editMode = edit;
     }
 
+#if UNITY_EDITOR
     public void CalculateWeights(bool weightToParent) {
         //find all Skin2D elements
         Skin2D[] skins = transform.GetComponentsInChildren<Skin2D>();
@@ -342,4 +344,5 @@ public class Skeleton : MonoBehaviour {
             }
         }
     }
+#endif
 }

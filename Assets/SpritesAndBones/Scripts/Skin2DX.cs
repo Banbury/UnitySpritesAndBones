@@ -26,7 +26,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine;
 using Object = UnityEngine.Object;
 
