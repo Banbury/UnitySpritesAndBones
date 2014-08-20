@@ -21,6 +21,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
+using System.Linq;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
@@ -95,7 +97,7 @@ public class SkinMaker : MonoBehaviour {
     public void GenerateMesh() {
         mesh.Clear();
 
-        int[] faces = Triangulator.Triangulate(System.Array.ConvertAll(controlPoints, x => (Vector2)x));
+        int[] faces = Triangulator.Triangulate(controlPoints.Select(x => (Vector2)x).ToArray());
 
         mesh.vertices = controlPoints;
         mesh.triangles = faces;

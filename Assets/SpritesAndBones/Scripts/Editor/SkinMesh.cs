@@ -51,11 +51,11 @@ public class SkinMesh : EditorWindow {
         EditorGUI.BeginChangeCheck();
         spriteRenderer = (SpriteRenderer)EditorGUILayout.ObjectField(spriteRenderer, typeof(SpriteRenderer), true);
         if (Selection.activeGameObject != null) {
-			GameObject o = Selection.activeGameObject;
-			spriteRenderer = o.GetComponent<SpriteRenderer>();
-		}
-		if (EditorGUI.EndChangeCheck()) {
-            polygon = new Vector2[0]; 
+            GameObject o = Selection.activeGameObject;
+            spriteRenderer = o.GetComponent<SpriteRenderer>();
+        }
+        if (EditorGUI.EndChangeCheck()) {
+            polygon = new Vector2[0];
         }
 
         if (spriteRenderer != null) {
@@ -81,25 +81,24 @@ public class SkinMesh : EditorWindow {
                 CreateMesh();
             }
 
-			if (GUILayout.Button("Create Mesh from Sprite")) {
-				SpriteMesh spriteMesh = new SpriteMesh();
-				spriteMesh.spriteRenderer = spriteRenderer;
-				spriteMesh.CreateSpriteMesh();
-			}
+            if (GUILayout.Button("Create Mesh from Sprite")) {
+                SpriteMesh.CreateSpriteMeshAsset(spriteRenderer.transform, spriteRenderer.sprite);
+            }
 
-			EditorGUILayout.Separator();
+            EditorGUILayout.Separator();
 
-			if (GUILayout.Button("Create Mesh from Polygon2D Collider")) {
-				PolygonCollider2D polygonCollider = spriteRenderer.GetComponent<PolygonCollider2D>();
-				if (polygonCollider == null) {
-					polygonCollider = spriteRenderer.gameObject.AddComponent<PolygonCollider2D>();
-				}
+            if (GUILayout.Button("Create Mesh from Polygon2D Collider")) {
+                PolygonCollider2D polygonCollider = spriteRenderer.GetComponent<PolygonCollider2D>();
+                if (polygonCollider == null) {
+                    polygonCollider = spriteRenderer.gameObject.AddComponent<PolygonCollider2D>();
+                }
 
-				PolygonMesh polygonMesh = new PolygonMesh();
-				polygonMesh.polygonCollider = polygonCollider;
-				polygonMesh.spriteRenderer = spriteRenderer;
-				polygonMesh.CreatePolygonMesh();
-			}
+                PolygonMesh polygonMesh = new PolygonMesh();
+                polygonMesh.polygonCollider = polygonCollider;
+                polygonMesh.spriteRenderer = spriteRenderer;
+                polygonMesh.CreatePolygonMesh();
+
+            }
         }
     }
 
@@ -188,11 +187,11 @@ public class SkinMesh : EditorWindow {
         return oddNodes;
     }
 
-	public bool IsBadTriangle(DelaunayTriangle triangle) {
-		// Finde die längste Seite
-		// Berechne den Cosinus des Winkels direkt gegenüber (law of cosine)
-		// Das Dreieck ist schlecht, wenn der Wert <= -0.5 ist.
-		return false;
-	}
+    public bool IsBadTriangle(DelaunayTriangle triangle) {
+        // Finde die längste Seite
+        // Berechne den Cosinus des Winkels direkt gegenüber (law of cosine)
+        // Das Dreieck ist schlecht, wenn der Wert <= -0.5 ist.
+        return false;
+    }
 
 }

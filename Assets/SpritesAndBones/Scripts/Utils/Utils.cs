@@ -93,4 +93,13 @@ public static class Utils {
 
         return ret;
     }
+
+    public static int AsInt(this Color color) {
+        return (int)(color.r * 255.0f) << 24 | (int)(color.g * 255.0f) << 16 | (int)(color.b * 255.0f) << 8 |
+               (int)(color.a * 255.0f);
+    }
+
+    public static Color ColorFromInt(int c) {
+        return new Color((byte)(c >> 24) / 255.0f, (byte)(c >> 16) / 255.0f, (byte)(c >> 8) / 255.0f, (byte)c / 255.0f);
+    }
 }
