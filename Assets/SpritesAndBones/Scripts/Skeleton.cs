@@ -45,7 +45,7 @@ public class Skeleton : MonoBehaviour {
 	[SerializeField] 
 	[HideInInspector]
 	private bool _flip;
-
+#if UNITY_EDITOR
 	public bool flip
 	{
 		get { return _flip; }
@@ -55,6 +55,7 @@ public class Skeleton : MonoBehaviour {
 			Flip();
 		}
 	}
+#endif
 
 	[SerializeField] 
 	[HideInInspector]
@@ -254,6 +255,7 @@ public class Skeleton : MonoBehaviour {
         editMode = edit;
     }
 
+#if UNITY_EDITOR
 	public void CalculateWeights ()
 	{
 		CalculateWeights(false);
@@ -357,4 +359,5 @@ public class Skeleton : MonoBehaviour {
 			}
 		}
 	}
+	#endif
 }

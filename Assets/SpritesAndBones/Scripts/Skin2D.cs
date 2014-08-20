@@ -28,9 +28,11 @@ using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityToolbag;
 
 [RequireComponent(typeof(MeshFilter))]
 [RequireComponent(typeof(SkinnedMeshRenderer))]
+[RequireComponent(typeof(SortingLayerExposed))]
 [ExecuteInEditMode()]
 public class Skin2D : MonoBehaviour {
 
@@ -67,6 +69,8 @@ public class Skin2D : MonoBehaviour {
 					skin = o.GetComponent<SkinnedMeshRenderer>();
 					MeshFilter filter = o.GetComponent<MeshFilter>();
 					skin.material = spriteMaterial;
+					skin.sortingLayerName = spriteRenderer.sortingLayerName;
+					skin.sortingOrder = spriteRenderer.sortingOrder;
 					filter.mesh = (Mesh)Selection.activeObject;
 					if (filter.sharedMesh != null && skin.sharedMesh == null) {
 						skin.sharedMesh = filter.sharedMesh;
@@ -127,6 +131,9 @@ public class Skin2D : MonoBehaviour {
     void Update () {
         if (MeshFilter.sharedMesh != null && GetComponent<SkinnedMeshRenderer>().sharedMesh == null) {
             GetComponent<SkinnedMeshRenderer>().sharedMesh = MeshFilter.sharedMesh;
+        }
+		if (GetComponent<SortingLayerExposed>() == null) {
+            gameObject.AddComponent<SortingLayerExposed>();
         }
     }
 

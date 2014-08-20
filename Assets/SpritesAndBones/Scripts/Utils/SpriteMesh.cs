@@ -23,11 +23,14 @@ THE SOFTWARE.
 */
 
 using UnityEngine;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using System;
 using System.Collections;
 
 public class SpriteMesh {
+#if UNITY_EDITOR
 
 	public SpriteRenderer spriteRenderer;
 
@@ -72,4 +75,5 @@ public class SpriteMesh {
 			spriteRenderer.transform.parent = spriteRendererParent;
 		}
 	}
+#endif
 }
