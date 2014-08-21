@@ -66,10 +66,10 @@ public class Skin2D : MonoBehaviour {
 					Skin2D skin2D = o.AddComponent<Skin2D>();
 					skin2D.sprite = thisSprite;
 					skin = o.GetComponent<SkinnedMeshRenderer>();
-					skin.sortingLayerName = sortLayerName;
-					skin.sortingOrder = sortOrder;
 					MeshFilter filter = o.GetComponent<MeshFilter>();
 					skin.material = spriteMaterial;
+					skin.sortingLayerName = sortLayerName;
+					skin.sortingOrder = sortOrder;
 					filter.mesh = (Mesh)Selection.activeObject;
 					if (filter.sharedMesh != null && skin.sharedMesh == null) {
 						skin.sharedMesh = filter.sharedMesh;
