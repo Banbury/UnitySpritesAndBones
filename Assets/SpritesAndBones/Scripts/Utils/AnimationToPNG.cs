@@ -261,7 +261,9 @@ public class AnimationToPNG : MonoBehaviour {
 
 				// Encode the resulting output texture to a byte array then write to the file
 				byte[] pngShot = outputtex.EncodeToPNG();
+				#if !UNITY_WEBPLAYER
 				File.WriteAllBytes(filename, pngShot);
+				#endif
 
 				// Reset the time scale, then move on to the next frame.
 				Time.timeScale = originaltimescaleTime;
