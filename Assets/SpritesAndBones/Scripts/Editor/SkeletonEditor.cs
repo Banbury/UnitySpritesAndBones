@@ -48,6 +48,18 @@ public class SkeletonEditor : Editor {
         if (skeleton.basePose == null) {
             EditorGUILayout.HelpBox("You have not selected a base pose.", MessageType.Error);
         }
+		if(GUILayout.Button("Save Children Positions")) {
+			Bone[] bones = skeleton.gameObject.GetComponentsInChildren<Bone>();
+			foreach (Bone bone in bones) {
+				bone.SaveChildPosRot();
+			}
+		}
+		if(GUILayout.Button("Load Children Positions")) {
+			Bone[] bones = skeleton.gameObject.GetComponentsInChildren<Bone>();
+			foreach (Bone bone in bones) {
+				bone.LoadChildPosRot();
+			}
+		}
     }
 
     void OnSceneGUI() {

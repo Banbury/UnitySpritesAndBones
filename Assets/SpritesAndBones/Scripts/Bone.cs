@@ -27,6 +27,7 @@ using UnityEngine;
 using UnityEditor;
 #endif
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -46,6 +47,9 @@ public class Bone : MonoBehaviour {
     private Bone parent;
 
 	private Skeleton skeleton;
+
+	private Dictionary<Transform, Vector3> childPositions = new Dictionary<Transform, Vector3>();
+	private Dictionary<Transform, Quaternion> childRotations = new Dictionary<Transform, Quaternion>();
 
     public Vector2 Head {
         get {
@@ -133,6 +137,40 @@ public class Bone : MonoBehaviour {
     public void AddIK() {
         Undo.AddComponent<InverseKinematics>(gameObject);
     }
+
+	public void SaveChildPosRot() {
+		if (Application.isEditor && editMode) {
+			Transform[] children = gameObject.GetComponentsInChildren<Transform>(true);
+			foreach (Transform child in children){
+				if (!child.GetComponent<Bone>()){
+					childPositions[child] = new Vector3(child.position.x, child.position.y, child.position.z);
+					childRotations[child] = new Quaternion(child.rotation.x, child.rotation.y, child.rotation.z, child.rotation.w);
+				}
+			}
+			Debug.Log("Skeleton Children Positions and Rotations saved.");
+		}
+		else
+		{
+			Debug.Log("Skeleton needs to be in Edit Mode");
+		}
+	}
+
+	public void LoadChildPosRot() {
+		if (Application.isEditor && editMode) {
+			Transform[] children = gameObject.GetComponentsInChildren<Transform>(true);
+			foreach (Transform child in children){
+				if (childPositions.ContainsKey(child)){
+					child.position = childPositions[child];
+					child.rotation = childRotations[child];
+				}
+			}
+			Debug.Log("Skeleton Children Positions and Rotations loaded.");
+		}
+		else
+		{
+			Debug.Log("Skeleton needs to be in Edit Mode");
+		}
+	}
     #endif
 
     // Use this for initialization

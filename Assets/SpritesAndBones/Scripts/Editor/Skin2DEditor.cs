@@ -54,5 +54,11 @@ public class Skin2DEditor : Editor {
         if (skin.GetComponent<SkinnedMeshRenderer>().sharedMesh != null && GUILayout.Button("Reset Control Points")) {
             skin.ResetControlPointPositions();
         }
+
+        if (skin.GetComponent<SkinnedMeshRenderer>().sharedMesh != null && GUILayout.Button("Generate Mesh Asset")) {
+            #if UNITY_EDITOR
+			ScriptableObjectUtility.CreateAsset(skin.GetComponent<SkinnedMeshRenderer>().sharedMesh);
+			#endif
+        }
     }
 }

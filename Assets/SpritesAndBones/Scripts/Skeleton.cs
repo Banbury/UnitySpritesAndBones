@@ -71,8 +71,8 @@ public class Skeleton : MonoBehaviour {
 		}
 	}
 
-	private Shader spriteShader;
-	private Shader spriteShadowsShader;
+	public Shader spriteShader;
+	public Shader spriteShadowsShader;
 	public Color colorRight = new Color(255.0f/255.0f, 128.0f/255.0f, 0f, 255.0f/255.0f);
 	public Color colorLeft = Color.magenta;
 
@@ -99,7 +99,7 @@ public class Skeleton : MonoBehaviour {
     // Use this for initialization
 	void Start () {
 		spriteShader = Shader.Find("Sprites/Default");
-		spriteShadowsShader = Shader.Find("Sprites/Skeleton-Diffuse");
+		spriteShadowsShader = Shader.Find("Sprites/Skeleton-CutOut");
 		if (Application.isPlaying) {
             SetEditMode(false);
         }
@@ -134,7 +134,7 @@ public class Skeleton : MonoBehaviour {
 		}
 		if (spriteShadowsShader == null)
 		{
-			spriteShadowsShader = Shader.Find("Sprites/Skeleton-Diffuse");
+			spriteShadowsShader = Shader.Find("Sprites/Skeleton-CutOut");
 		}
 
 #if !UNITY_EDITOR
@@ -299,6 +299,7 @@ public class Skeleton : MonoBehaviour {
 					if (spriteShadowsShader != null && skin.sharedMaterial.shader == spriteShadowsShader)
 					{
 						skin.sharedMaterial.SetVector("_Normal", new Vector3(0, 0, normal));
+						skin.transform.localPosition = new Vector3(skin.transform.localPosition.x, skin.transform.localPosition.y, (skin.transform.localPosition.z * -1)); 
 					}
 				}
 			}
@@ -311,6 +312,7 @@ public class Skeleton : MonoBehaviour {
 					if (spriteShadowsShader != null && spriteRenderer.sharedMaterial.shader == spriteShadowsShader)
 					{
 						spriteRenderer.sharedMaterial.SetVector("_Normal", new Vector3(0, 0, normal));
+						spriteRenderer.transform.localPosition = new Vector3(spriteRenderer.transform.localPosition.x, spriteRenderer.transform.localPosition.y, (spriteRenderer.transform.localPosition.z * -1));
 					}
 				}
 			}
@@ -328,10 +330,18 @@ public class Skeleton : MonoBehaviour {
 				if (useShadows && spriteShadowsShader != null)
 				{
 					skin.sharedMaterial.shader = spriteShadowsShader;
+					float z = skin.sortingOrder / -100f;
+					skin.transform.localPosition = new Vector3(skin.transform.localPosition.x, skin.transform.localPosition.y, z);
+					skin.sortingLayerName = "Default";
+					skin.sortingOrder = 0;
 				}
 				else
 				{
 					skin.sharedMaterial.shader = spriteShader;
+					int sortLayer = Mathf.RoundToInt(skin.transform.localPosition.z * -100);
+					skin.transform.localPosition = new Vector3(skin.transform.localPosition.x, skin.transform.localPosition.y, 0);
+					skin.sortingLayerName = "Default";
+					skin.sortingOrder = sortLayer;
 				}
 
 				skin.castShadows = useShadows;
@@ -348,10 +358,18 @@ public class Skeleton : MonoBehaviour {
 				if (useShadows && spriteShadowsShader != null)
 				{
 					spriteRenderer.sharedMaterial.shader = spriteShadowsShader;
+					float z = spriteRenderer.sortingOrder / -100f;
+					spriteRenderer.transform.localPosition = new Vector3(spriteRenderer.transform.localPosition.x, spriteRenderer.transform.localPosition.y, z);
+					spriteRenderer.sortingLayerName = "Default";
+					spriteRenderer.sortingOrder = 0;
 				}
 				else
 				{
 					spriteRenderer.sharedMaterial.shader = spriteShader;
+					int sortLayer = Mathf.RoundToInt(spriteRenderer.transform.localPosition.z * -100);
+					spriteRenderer.transform.localPosition = new Vector3(spriteRenderer.transform.localPosition.x, spriteRenderer.transform.localPosition.y, 0);
+					spriteRenderer.sortingLayerName = "Default";
+					spriteRenderer.sortingOrder = sortLayer;
 				}
 
 				spriteRenderer.castShadows = useShadows;
