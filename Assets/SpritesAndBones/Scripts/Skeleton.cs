@@ -330,7 +330,7 @@ public class Skeleton : MonoBehaviour {
 				if (useShadows && spriteShadowsShader != null)
 				{
 					skin.sharedMaterial.shader = spriteShadowsShader;
-					float z = skin.sortingOrder / -100f;
+					float z = skin.sortingOrder / -10000f;
 					skin.transform.localPosition = new Vector3(skin.transform.localPosition.x, skin.transform.localPosition.y, z);
 					skin.sortingLayerName = "Default";
 					skin.sortingOrder = 0;
@@ -338,7 +338,7 @@ public class Skeleton : MonoBehaviour {
 				else
 				{
 					skin.sharedMaterial.shader = spriteShader;
-					int sortLayer = Mathf.RoundToInt(skin.transform.localPosition.z * -100);
+					int sortLayer = Mathf.RoundToInt(skin.transform.localPosition.z * -10000);
 					skin.transform.localPosition = new Vector3(skin.transform.localPosition.x, skin.transform.localPosition.y, 0);
 					skin.sortingLayerName = "Default";
 					skin.sortingOrder = sortLayer;
@@ -358,7 +358,7 @@ public class Skeleton : MonoBehaviour {
 				if (useShadows && spriteShadowsShader != null)
 				{
 					spriteRenderer.sharedMaterial.shader = spriteShadowsShader;
-					float z = spriteRenderer.sortingOrder / -100f;
+					float z = spriteRenderer.sortingOrder / -10000f;
 					spriteRenderer.transform.localPosition = new Vector3(spriteRenderer.transform.localPosition.x, spriteRenderer.transform.localPosition.y, z);
 					spriteRenderer.sortingLayerName = "Default";
 					spriteRenderer.sortingOrder = 0;
@@ -366,7 +366,7 @@ public class Skeleton : MonoBehaviour {
 				else
 				{
 					spriteRenderer.sharedMaterial.shader = spriteShader;
-					int sortLayer = Mathf.RoundToInt(spriteRenderer.transform.localPosition.z * -100);
+					int sortLayer = Mathf.RoundToInt(spriteRenderer.transform.localPosition.z * -10000);
 					spriteRenderer.transform.localPosition = new Vector3(spriteRenderer.transform.localPosition.x, spriteRenderer.transform.localPosition.y, 0);
 					spriteRenderer.sortingLayerName = "Default";
 					spriteRenderer.sortingOrder = sortLayer;

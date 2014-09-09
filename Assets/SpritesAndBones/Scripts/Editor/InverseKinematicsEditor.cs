@@ -26,10 +26,16 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections;
 
+[InitializeOnLoad]
 [CustomEditor(typeof(InverseKinematics))]
 public class InverseKinematicsEditor : Editor {
 
 	private InverseKinematics ik; 
+
+	static InverseKinematicsEditor ()
+	{
+		SceneView.onSceneGUIDelegate += OnScene;
+	}
 
 	void OnEnable() {
 		ik = (InverseKinematics)target;
@@ -77,5 +83,48 @@ public class InverseKinematicsEditor : Editor {
 
 		//selects the transform of the Helper
 		Selection.activeTransform = o.transform;
+	}
+
+	//Angle Limit code adapted from Veli-Pekka Kokkonen's SimpleCCDEditor http://goo.gl/6oSzDx
+
+	// Scales scene view gizmo, feel free to change ;)
+	const float gizmoSize = 0.5f;
+
+	static void OnScene(SceneView sceneview)
+	{
+		var targets = GameObject.FindObjectsOfType<InverseKinematics>();
+
+		foreach (var target in targets)
+		{
+			foreach (var node in target.angleLimits)
+			{
+				if (node.Transform == null)
+					continue;
+
+				Transform transform = node.Transform;
+				Vector3 position = transform.position;
+
+				float handleSize = HandleUtility.GetHandleSize(position);
+				float discSize = handleSize * gizmoSize;
+
+
+				Bone b = transform.GetComponent<Bone>();
+				Bone pb = transform.parent.GetComponent<Bone>();
+				float parentRotation = pb ? Vector2.Angle(pb.Head, b.Head) : 0;
+				Vector3 min = Quaternion.Euler(0, 0, node.min + parentRotation)*Vector3.down;
+				Vector3 max = Quaternion.Euler(0, 0, node.max + parentRotation)*Vector3.down;
+
+				Handles.color = new Color(0, 1, 0, 0.1f);
+				Handles.DrawWireDisc(position, Vector3.back, discSize);
+				Handles.DrawSolidArc(position, Vector3.forward, min, node.max - node.min, discSize);
+
+				Handles.color = Color.green;
+				Handles.DrawLine(position, position + min * discSize);
+				Handles.DrawLine(position, position + max * discSize);
+
+				Vector3 toChild = target.RootBone.position - position;
+				Handles.DrawLine(position, position + toChild);
+			}
+		}
 	}
 }
