@@ -1,7 +1,7 @@
 ﻿/*
 The MIT License (MIT)
 
-Copyright (c) 2013 Banbury
+Copyright (c) 2014 Banbury & Play-Em
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -130,11 +130,16 @@ public class InverseKinematics : MonoBehaviour {
             while (--i >= 0 && bone != null) {
                 Vector3 root = bone.position;
 
-                Vector3 root2tip = (tip.position + tip.up * b.length - root);
+                Vector3 root2tip = ((Vector3)b.Head - root);
                 Vector3 root2target = (((target != null) ? target.transform.position : (Vector3)b.Head) - root);
 
 				// Calculate how much we should rotate to get to the target
 				float angle = SignedAngle(root2tip, root2target, bone);
+
+				// If you want to flip the bone on the y axis invert the angle
+				float yAngle = Utils.ClampAngle(bone.rotation.eulerAngles.y);
+				if (yAngle > 90 && yAngle < 270)
+				angle *= -1;
 
 				// "Slows" down the IK solving
 				angle *= damping;
@@ -143,7 +148,7 @@ public class InverseKinematics : MonoBehaviour {
 				angle = -(angle - bone.localRotation.eulerAngles.z);
 
 				// Take care of angle limits 
-				if (nodeCache.ContainsKey(bone))
+				if (nodeCache != null && nodeCache.ContainsKey(bone))
 				{
 					// Clamp angle in local space
 					var node = nodeCache[bone];
@@ -154,7 +159,7 @@ public class InverseKinematics : MonoBehaviour {
 					angle += parentRotation;
 				}
 
-				bone.localRotation = Quaternion.Euler(0, 0, angle);
+				bone.localRotation = Quaternion.Euler(bone.localRotation.eulerAngles.x, bone.localRotation.eulerAngles.y, angle);
 
                 bone = bone.parent;
             }
@@ -174,11 +179,12 @@ public class InverseKinematics : MonoBehaviour {
 			}
 		}
 
-		Vector3 dir = (skeleton.transform.localScale.x < 0) ? Vector3.forward : Vector3.back;
+		// Use skeleton as root, change dir if the rotation is flipped
+		Vector3 dir = (skeleton.transform.localRotation.eulerAngles.y == 180.0f) ? Vector3.forward : Vector3.back;
 		float sign = Mathf.Sign (Vector3.Dot (dir, Vector3.Cross (a, b)));
 		angle = angle * sign;
 		// Flip sign if character is turned around
-		angle *= Mathf.Sign(skeleton.transform.localScale.x);
+		angle *= Mathf.Sign(transform.root.localScale.x);
 		return angle;
 	}
 

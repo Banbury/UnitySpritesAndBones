@@ -44,22 +44,34 @@ public class Skeleton : MonoBehaviour {
 
 	[SerializeField] 
 	[HideInInspector]
-	private bool _flip;
-#if UNITY_EDITOR
-	public bool flip
+	private bool _flipY = false;
+
+	public bool flipY
 	{
-		get { return _flip; }
+		get { return _flipY; }
 		set
 		{
-			_flip = value;
-			Flip();
+			_flipY = value;
+			FlipY();
 		}
 	}
-#endif
 
 	[SerializeField] 
 	[HideInInspector]
-	private bool _useShadows;
+	private bool _flipX = false;
+	public bool flipX
+	{
+		get { return _flipX; }
+		set
+		{
+			_flipX = value;
+			FlipX();
+		}
+	}
+
+	[SerializeField] 
+	[HideInInspector]
+	private bool _useShadows = false;
 
 	public bool useShadows
 	{
@@ -275,20 +287,133 @@ public class Skeleton : MonoBehaviour {
 		}
 	}
 
-	public void Flip ()
+	public void FlipY ()
 	{
 		int normal = -1;
 		// Rotate the skeleton's local transform
-		if (!flip)
+		if (!flipY)
 		{
+			Dictionary<Transform, float> renderers = new Dictionary<Transform, float>();
+			// Get the new positions for the renderers from the rotation of this transform
+			if (useShadows)
+			{
+				renderers = GetRenderersZ();
+			}
 			transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, 0.0f, transform.localEulerAngles.z);
+			if (useShadows)
+			{
+				foreach (Transform renderer in renderers.Keys){
+					renderer.position = new Vector3(renderer.position.x, renderer.position.y, (float)renderers[renderer]);
+				}
+			}
 		}
 		else
 		{
+			Dictionary<Transform, float> renderers = new Dictionary<Transform, float>();
+			// Get the new positions for the renderers from the rotation of this transform
+			if (useShadows)
+			{
+				renderers = GetRenderersZ();
+			}
+			// Get the new positions for the renderers from the rotation of this transform
 			transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, 180.0f, transform.localEulerAngles.z);
+			if (useShadows)
+			{
+				foreach (Transform renderer in renderers.Keys){
+					renderer.position = new Vector3(renderer.position.x, renderer.position.y, (float)renderers[renderer]);
+				}
+			}
+		}
+
+		if (transform.localEulerAngles.x == 0.0f && transform.localEulerAngles.y == 180.0f || transform.localEulerAngles.x == 180.0f && transform.localEulerAngles.y == 0.0f)
+		{
 			normal = 1;
 		}
 
+		ChangeRendererNormals(normal);
+	}
+
+	public void FlipX ()
+	{
+		int normal = -1;
+
+		// Rotate the skeleton's local transform
+		if (!flipX)
+		{
+			Dictionary<Transform, float> renderers = new Dictionary<Transform, float>();
+			// Get the new positions for the renderers from the rotation of this transform
+			if (useShadows)
+			{
+				renderers = GetRenderersZ();
+			}
+			transform.localEulerAngles = new Vector3(0.0f, transform.localEulerAngles.y, transform.localEulerAngles.z);
+			if (useShadows)
+			{
+				foreach (Transform renderer in renderers.Keys){
+					renderer.position = new Vector3(renderer.position.x, renderer.position.y, (float)renderers[renderer]);
+				}
+			}
+		}
+		else
+		{
+			Dictionary<Transform, float> renderers = new Dictionary<Transform, float>();
+			// Get the new positions for the renderers from the rotation of this transform
+			if (useShadows)
+			{
+				renderers = GetRenderersZ();
+			}
+			transform.localEulerAngles = new Vector3(180.0f, transform.localEulerAngles.y, transform.localEulerAngles.z);
+			if (useShadows)
+			{
+				foreach (Transform renderer in renderers.Keys){
+					renderer.position = new Vector3(renderer.position.x, renderer.position.y, (float)renderers[renderer]);
+				}
+			}
+		}
+
+		if (transform.localEulerAngles.x == 0.0f && transform.localEulerAngles.y == 180.0f || transform.localEulerAngles.x == 180.0f && transform.localEulerAngles.y == 0.0f)
+		{
+			normal = 1;
+		}
+		
+		ChangeRendererNormals(normal);
+
+	}
+
+	public Dictionary<Transform, float> GetRenderersZ()
+	{
+		Dictionary<Transform, float> renderers = new Dictionary<Transform, float>();
+		if (useShadows)
+		{
+			//find all SkinnedMeshRenderer elements
+			SkinnedMeshRenderer[] skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
+			foreach(SkinnedMeshRenderer skin in skins) {
+				if (skin.sharedMaterial != null)
+				{
+					if (spriteShadowsShader != null && skin.sharedMaterial.shader == spriteShadowsShader)
+					{
+						renderers[skin.transform] = skin.transform.position.z;
+					}
+				}
+			}
+
+			//find all SpriteRenderer elements
+			SpriteRenderer[] spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>();
+			foreach(SpriteRenderer spriteRenderer in spriteRenderers) {
+				if (spriteRenderer.sharedMaterial != null)
+				{
+					if (spriteShadowsShader != null && spriteRenderer.sharedMaterial.shader == spriteShadowsShader)
+					{
+						renderers[spriteRenderer.transform] = spriteRenderer.transform.position.z;
+					}
+				}
+			}
+		}
+		return renderers;
+	}
+
+	public void ChangeRendererNormals(int normal)
+	{
 		if (useShadows)
 		{
 			//find all SkinnedMeshRenderer elements
@@ -299,7 +424,6 @@ public class Skeleton : MonoBehaviour {
 					if (spriteShadowsShader != null && skin.sharedMaterial.shader == spriteShadowsShader)
 					{
 						skin.sharedMaterial.SetVector("_Normal", new Vector3(0, 0, normal));
-						skin.transform.localPosition = new Vector3(skin.transform.localPosition.x, skin.transform.localPosition.y, (skin.transform.localPosition.z * -1)); 
 					}
 				}
 			}
@@ -312,7 +436,6 @@ public class Skeleton : MonoBehaviour {
 					if (spriteShadowsShader != null && spriteRenderer.sharedMaterial.shader == spriteShadowsShader)
 					{
 						spriteRenderer.sharedMaterial.SetVector("_Normal", new Vector3(0, 0, normal));
-						spriteRenderer.transform.localPosition = new Vector3(spriteRenderer.transform.localPosition.x, spriteRenderer.transform.localPosition.y, (spriteRenderer.transform.localPosition.z * -1));
 					}
 				}
 			}
