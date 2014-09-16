@@ -31,6 +31,9 @@ using System.Collections;
 public class SkeletonEditor : Editor {
     private Skeleton skeleton;
 	private string poseFileName = "New Pose";
+	private string shadows;
+	private string zsorting;
+
     void OnEnable() {
         skeleton = (Skeleton)target;
     }
@@ -48,9 +51,37 @@ public class SkeletonEditor : Editor {
 			skeleton.flipX = !skeleton.flipX;
         }
 
+		EditorGUILayout.Separator();
+
 		if (GUILayout.Button("Use Shadows")) {
 			skeleton.useShadows = !skeleton.useShadows;
         }
+		if (skeleton.useShadows)
+		{
+			shadows = "On";
+		}
+		else
+		{
+			shadows = "Off";
+		}
+		EditorGUILayout.LabelField("Shadows:", shadows, EditorStyles.whiteLabel);
+
+		EditorGUILayout.Separator();
+
+		if (GUILayout.Button("Use Z Sorting")) {
+			skeleton.useZSorting = !skeleton.useZSorting;
+        }
+		if (skeleton.useZSorting)
+		{
+			zsorting = "On";
+		}
+		else
+		{
+			zsorting = "Off";
+		}
+		EditorGUILayout.LabelField("Z Sorting:", zsorting, EditorStyles.whiteLabel);
+
+		EditorGUILayout.Separator();
 
         EditorGUILayout.LabelField("Poses", EditorStyles.boldLabel);
 
@@ -75,17 +106,36 @@ public class SkeletonEditor : Editor {
         if (skeleton.basePose == null) {
             EditorGUILayout.HelpBox("You have not selected a base pose.", MessageType.Error);
         }
-		if(GUILayout.Button("Save Children Positions")) {
+
+		EditorGUILayout.Separator();
+
+		EditorGUILayout.LabelField("Save/Load Children Positions", EditorStyles.boldLabel);
+
+        if (!skeleton.editMode) {
+            EditorGUILayout.HelpBox("Skeleton Needs to be in Edit Mode.", MessageType.Error);
+        }
+
+		if(GUILayout.Button("Save Children Positions") && skeleton.editMode) {
 			Bone[] bones = skeleton.gameObject.GetComponentsInChildren<Bone>();
 			foreach (Bone bone in bones) {
 				bone.SaveChildPosRot();
+				if (bone.HasChildPositionsSaved()){
+					skeleton.hasChildPositionsSaved = true;
+				}
 			}
+			Debug.Log("Saved Children Positions and Rotations in Skeleton.");
 		}
-		if(GUILayout.Button("Load Children Positions")) {
+
+        if (!skeleton.hasChildPositionsSaved) {
+            EditorGUILayout.HelpBox("You have not saved children positions.", MessageType.Error);
+        }
+
+		if(GUILayout.Button("Load Children Positions") && skeleton.hasChildPositionsSaved && skeleton.editMode) {
 			Bone[] bones = skeleton.gameObject.GetComponentsInChildren<Bone>();
 			foreach (Bone bone in bones) {
 				bone.LoadChildPosRot();
 			}
+			Debug.Log("Loaded Children Positions and Rotations in Skeleton.");
 		}
     }
 
@@ -108,4 +158,25 @@ public class SkeletonEditor : Editor {
                 break;
         }
     }
+	[MenuItem("Sprites And Bones/Create Ragdoll")]
+		protected static void ShowSkinMeshEditor() {
+		if (Selection.activeGameObject != null && Selection.activeGameObject.GetComponent<Skeleton>() != null) {
+			Bone[] bones = Selection.activeGameObject.GetComponentsInChildren<Bone>();
+			foreach (Bone bone in bones) {
+				BoxCollider2D coll = bone.gameObject.AddComponent<BoxCollider2D>();
+				coll.size = new Vector2(bone.length / 2, bone.length);
+				coll.center = new Vector2(0, bone.length / 2);
+				bone.gameObject.AddComponent<Rigidbody2D>();
+				if (bone.transform.parent != null && bone.transform.parent.GetComponent<Bone>() != null) {
+					Bone parentBone = bone.transform.parent.GetComponent<Bone>();
+					HingeJoint2D hinge = bone.gameObject.AddComponent<HingeJoint2D>();
+					hinge.connectedBody = parentBone.GetComponent<Rigidbody2D>();
+					hinge.connectedAnchor = bone.transform.localPosition;
+				}
+			}
+		}
+		else {
+			Debug.LogError("No Skeleton selected.");
+		}
+	}
 }

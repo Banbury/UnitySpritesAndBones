@@ -238,11 +238,11 @@ public class Skin2D : MonoBehaviour {
 
             mesh.bindposes = bindPoses;
 
-            var renderer = GetComponent<SkinnedMeshRenderer>();
-            if (renderer.sharedMesh != null && !AssetDatabase.Contains(renderer.sharedMesh.GetInstanceID()))
-                Object.DestroyImmediate(renderer.sharedMesh);
-            renderer.bones = bonesArr;
-            renderer.sharedMesh = mesh;
+            var skinRenderer = GetComponent<SkinnedMeshRenderer>();
+            if (skinRenderer.sharedMesh != null && !AssetDatabase.Contains(skinRenderer.sharedMesh.GetInstanceID()))
+                Object.DestroyImmediate(skinRenderer.sharedMesh);
+            skinRenderer.bones = bonesArr;
+            skinRenderer.sharedMesh = mesh;
         }
     }
 

@@ -24,6 +24,7 @@ THE SOFTWARE.
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 [RequireComponent(typeof(MeshRenderer))]
 [RequireComponent(typeof(MeshFilter))]
@@ -95,7 +96,7 @@ public class SkinMaker : MonoBehaviour {
     public void GenerateMesh() {
         mesh.Clear();
 
-        int[] faces = Triangulator.Triangulate(System.Array.ConvertAll(controlPoints, x => (Vector2)x));
+        int[] faces = Triangulator.Triangulate(controlPoints.Select(x => (Vector2)x).ToArray());
 
         mesh.vertices = controlPoints;
         mesh.triangles = faces;

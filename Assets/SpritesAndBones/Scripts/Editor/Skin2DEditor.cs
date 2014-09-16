@@ -34,18 +34,18 @@ public class Skin2DEditor : Editor {
         DrawDefaultInspector();
 
         EditorGUILayout.Separator();
-		/* Moved to skeleton for multiple Skin2D
-        if (skin.selectedBones != null && skin.GetComponent<MeshFilter>().sharedMesh != null && GUILayout.Button("Calculate weights")) {
-            skin.CalculateBoneWeights();
-        }*/
 
         if (skin.GetComponent<SkinnedMeshRenderer>().sharedMesh != null && GUILayout.Button("Save as Prefab")) {
             skin.SaveAsPrefab();
         }
 
+		EditorGUILayout.Separator();
+
         if (skin.GetComponent<SkinnedMeshRenderer>().sharedMesh != null && GUILayout.Button("Recalculate Bone Weights")) {
             skin.RecalculateBoneWeights();
         }
+
+		EditorGUILayout.Separator();
 
         if (skin.GetComponent<SkinnedMeshRenderer>().sharedMesh != null && GUILayout.Button("Create Control Points")) {
             ControlPoint.CreateControlPoints(skin.GetComponent<SkinnedMeshRenderer>());
@@ -55,9 +55,20 @@ public class Skin2DEditor : Editor {
             skin.ResetControlPointPositions();
         }
 
+		EditorGUILayout.Separator();
+
         if (skin.GetComponent<SkinnedMeshRenderer>().sharedMesh != null && GUILayout.Button("Generate Mesh Asset")) {
             #if UNITY_EDITOR
 			ScriptableObjectUtility.CreateAsset(skin.GetComponent<SkinnedMeshRenderer>().sharedMesh);
+			#endif
+        }
+
+        if (skin.GetComponent<SkinnedMeshRenderer>().sharedMaterial != null && GUILayout.Button("Generate Material Asset")) {
+            #if UNITY_EDITOR
+			Material material = new Material(skin.GetComponent<SkinnedMeshRenderer>().sharedMaterial);
+			material.CopyPropertiesFromMaterial(skin.GetComponent<SkinnedMeshRenderer>().sharedMaterial);
+			skin.GetComponent<SkinnedMeshRenderer>().sharedMaterial = material;
+			AssetDatabase.CreateAsset(material, "Assets/" + material.mainTexture.name + ".mat");
 			#endif
         }
     }

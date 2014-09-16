@@ -83,10 +83,27 @@ public class Skeleton : MonoBehaviour {
 		}
 	}
 
+	[SerializeField] 
+	[HideInInspector]
+	private bool _useZSorting = false;
+
+	public bool useZSorting
+	{
+		get { return _useZSorting; }
+		set
+		{
+			_useZSorting = value;
+			UseZSorting();
+		}
+	}
+
 	public Shader spriteShader;
 	public Shader spriteShadowsShader;
 	public Color colorRight = new Color(255.0f/255.0f, 128.0f/255.0f, 0f, 255.0f/255.0f);
 	public Color colorLeft = Color.magenta;
+
+	[HideInInspector]
+	public bool hasChildPositionsSaved = false;
 
 #if UNITY_EDITOR
 		[MenuItem("Sprites And Bones/Skeleton")]
@@ -170,16 +187,14 @@ public class Skeleton : MonoBehaviour {
         Pose pose = ScriptableObject.CreateInstance<Pose>();
 
         var bones = GetComponentsInChildren<Bone>();
-
         var cps = GetComponentsInChildren<ControlPoint>();
 
         List<RotationValue> rotations = new List<RotationValue>();
         List<PositionValue> positions = new List<PositionValue>();
-        List<PositionValue> controlPoints = new List<PositionValue>();
         List<PositionValue> targets = new List<PositionValue>();
+        List<PositionValue> controlPoints = new List<PositionValue>();
 
-        // Make sure all bones have unique names!!!
-		foreach (Bone b in bones) {
+        foreach (Bone b in bones) {
             rotations.Add(new RotationValue(b.name, b.transform.localRotation));
             positions.Add(new PositionValue(b.name, b.transform.localPosition));
 
@@ -189,25 +204,24 @@ public class Skeleton : MonoBehaviour {
         }
 
         // Use bone parent name + control point name for the search
-		foreach (ControlPoint cp in cps) {
+        foreach (ControlPoint cp in cps) {
             controlPoints.Add(new PositionValue(cp.transform.parent.name + cp.name, cp.transform.localPosition));
         }
 
         pose.rotations = rotations.ToArray();
         pose.positions = positions.ToArray();
-        pose.controlPoints = controlPoints.ToArray();
         pose.targets = targets.ToArray();
+        pose.controlPoints = controlPoints.ToArray();
 
         return pose;
     }
-		
+
     public void SavePose(string poseFileName) {
-		if(poseFileName!=null && poseFileName.Trim()!=""){
-        	ScriptableObjectUtility.CreateAsset(CreatePose(),poseFileName);
-		}
-		else{
-			ScriptableObjectUtility.CreateAsset(CreatePose());
-		}
+        if (poseFileName != null && poseFileName.Trim() != "") {
+            ScriptableObjectUtility.CreateAsset(CreatePose(), poseFileName);
+        } else {
+            ScriptableObjectUtility.CreateAsset(CreatePose());
+        }
     }
 
     public void RestorePose(Pose pose) {
@@ -217,24 +231,46 @@ public class Skeleton : MonoBehaviour {
         Undo.RegisterCompleteObjectUndo(cps, "Assign Pose");
 
         foreach (RotationValue rv in pose.rotations) {
-            System.Array.Find<Bone>(bones, b => b.name == rv.name).transform.localRotation = rv.rotation;
+            Bone bone = bones.First(b => b.name == rv.name);
+            if (bone != null) {
+                bone.transform.localRotation = rv.rotation;
+            } else {
+                Debug.Log("This skeleton has no bone '" + bone.name + "'");
+            }
         }
 
         foreach (PositionValue pv in pose.positions) {
-            System.Array.Find<Bone>(bones, b => b.name == pv.name).transform.localPosition = pv.position;
-        }
-
-        foreach (PositionValue cpv in pose.controlPoints) {
-            System.Array.Find<ControlPoint>(cps, cp => (cp.transform.parent.name + cp.name) == cpv.name).transform.localPosition = cpv.position;
+            Bone bone = bones.First(b => b.name == pv.name);
+            if (bone != null) {
+                bone.transform.localPosition = pv.position;
+            } else {
+                Debug.Log("This skeleton has no bone '" + bone.name + "'");
+            }
         }
 
         foreach (PositionValue tv in pose.targets) {
-            Bone bone = System.Array.Find<Bone>(bones, b => b.name == tv.name);
-            InverseKinematics ik = bone.GetComponent<InverseKinematics>();
+            Bone bone = bones.First(b => b.name == tv.name);
 
-            if (ik != null) {
-                Undo.RecordObject(ik.target, "Assign Pose");
-                ik.target.transform.localPosition = tv.position;
+            if (bone != null) {
+                InverseKinematics ik = bone.GetComponent<InverseKinematics>();
+
+                if (ik != null) {
+                    Undo.RecordObject(ik.target, "Assign Pose");
+                    ik.target.transform.localPosition = tv.position;
+                }
+            } else {
+                Debug.Log("This skeleton has no bone '" + bone.name + "'");
+            }
+        }
+
+        foreach (PositionValue cpv in pose.controlPoints) {
+            ControlPoint cp = cps.First(c => (c.transform.parent.name + c.name) == cpv.name);
+
+            if (cp != null) {
+                cp.transform.localPosition = cpv.position;
+            }
+            else {
+                Debug.Log("There is no control point '" + cpv.name + "'");
             }
         }
     }
@@ -295,12 +331,12 @@ public class Skeleton : MonoBehaviour {
 		{
 			Dictionary<Transform, float> renderers = new Dictionary<Transform, float>();
 			// Get the new positions for the renderers from the rotation of this transform
-			if (useShadows)
+			if (useZSorting)
 			{
 				renderers = GetRenderersZ();
 			}
 			transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, 0.0f, transform.localEulerAngles.z);
-			if (useShadows)
+			if (useZSorting)
 			{
 				foreach (Transform renderer in renderers.Keys){
 					renderer.position = new Vector3(renderer.position.x, renderer.position.y, (float)renderers[renderer]);
@@ -311,13 +347,13 @@ public class Skeleton : MonoBehaviour {
 		{
 			Dictionary<Transform, float> renderers = new Dictionary<Transform, float>();
 			// Get the new positions for the renderers from the rotation of this transform
-			if (useShadows)
+			if (useZSorting)
 			{
 				renderers = GetRenderersZ();
 			}
 			// Get the new positions for the renderers from the rotation of this transform
 			transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, 180.0f, transform.localEulerAngles.z);
-			if (useShadows)
+			if (useZSorting)
 			{
 				foreach (Transform renderer in renderers.Keys){
 					renderer.position = new Vector3(renderer.position.x, renderer.position.y, (float)renderers[renderer]);
@@ -342,12 +378,12 @@ public class Skeleton : MonoBehaviour {
 		{
 			Dictionary<Transform, float> renderers = new Dictionary<Transform, float>();
 			// Get the new positions for the renderers from the rotation of this transform
-			if (useShadows)
+			if (useZSorting)
 			{
 				renderers = GetRenderersZ();
 			}
 			transform.localEulerAngles = new Vector3(0.0f, transform.localEulerAngles.y, transform.localEulerAngles.z);
-			if (useShadows)
+			if (useZSorting)
 			{
 				foreach (Transform renderer in renderers.Keys){
 					renderer.position = new Vector3(renderer.position.x, renderer.position.y, (float)renderers[renderer]);
@@ -358,12 +394,12 @@ public class Skeleton : MonoBehaviour {
 		{
 			Dictionary<Transform, float> renderers = new Dictionary<Transform, float>();
 			// Get the new positions for the renderers from the rotation of this transform
-			if (useShadows)
+			if (useZSorting)
 			{
 				renderers = GetRenderersZ();
 			}
 			transform.localEulerAngles = new Vector3(180.0f, transform.localEulerAngles.y, transform.localEulerAngles.z);
-			if (useShadows)
+			if (useZSorting)
 			{
 				foreach (Transform renderer in renderers.Keys){
 					renderer.position = new Vector3(renderer.position.x, renderer.position.y, (float)renderers[renderer]);
@@ -383,17 +419,14 @@ public class Skeleton : MonoBehaviour {
 	public Dictionary<Transform, float> GetRenderersZ()
 	{
 		Dictionary<Transform, float> renderers = new Dictionary<Transform, float>();
-		if (useShadows)
+		if (useZSorting)
 		{
 			//find all SkinnedMeshRenderer elements
 			SkinnedMeshRenderer[] skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
 			foreach(SkinnedMeshRenderer skin in skins) {
 				if (skin.sharedMaterial != null)
 				{
-					if (spriteShadowsShader != null && skin.sharedMaterial.shader == spriteShadowsShader)
-					{
-						renderers[skin.transform] = skin.transform.position.z;
-					}
+					renderers[skin.transform] = skin.transform.position.z;
 				}
 			}
 
@@ -402,10 +435,7 @@ public class Skeleton : MonoBehaviour {
 			foreach(SpriteRenderer spriteRenderer in spriteRenderers) {
 				if (spriteRenderer.sharedMaterial != null)
 				{
-					if (spriteShadowsShader != null && spriteRenderer.sharedMaterial.shader == spriteShadowsShader)
-					{
-						renderers[spriteRenderer.transform] = spriteRenderer.transform.position.z;
-					}
+					renderers[spriteRenderer.transform] = spriteRenderer.transform.position.z;
 				}
 			}
 		}
@@ -453,18 +483,10 @@ public class Skeleton : MonoBehaviour {
 				if (useShadows && spriteShadowsShader != null)
 				{
 					skin.sharedMaterial.shader = spriteShadowsShader;
-					float z = skin.sortingOrder / -10000f;
-					skin.transform.localPosition = new Vector3(skin.transform.localPosition.x, skin.transform.localPosition.y, z);
-					skin.sortingLayerName = "Default";
-					skin.sortingOrder = 0;
 				}
 				else
 				{
 					skin.sharedMaterial.shader = spriteShader;
-					int sortLayer = Mathf.RoundToInt(skin.transform.localPosition.z * -10000);
-					skin.transform.localPosition = new Vector3(skin.transform.localPosition.x, skin.transform.localPosition.y, 0);
-					skin.sortingLayerName = "Default";
-					skin.sortingOrder = sortLayer;
 				}
 
 				skin.castShadows = useShadows;
@@ -481,6 +503,51 @@ public class Skeleton : MonoBehaviour {
 				if (useShadows && spriteShadowsShader != null)
 				{
 					spriteRenderer.sharedMaterial.shader = spriteShadowsShader;
+				}
+				else
+				{
+					spriteRenderer.sharedMaterial.shader = spriteShader;
+				}
+
+				spriteRenderer.castShadows = useShadows;
+				spriteRenderer.receiveShadows = useShadows;
+			}
+		}
+	}
+
+	public void UseZSorting ()
+	{
+		//find all SpriteRenderer elements
+		SkinnedMeshRenderer[] skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
+		
+		foreach(SkinnedMeshRenderer skin in skins) {
+			if (skin.sharedMaterial != null)
+			{
+				if (useZSorting)
+				{
+					float z = skin.sortingOrder / -10000f;
+					skin.transform.localPosition = new Vector3(skin.transform.localPosition.x, skin.transform.localPosition.y, z);
+					skin.sortingLayerName = "Default";
+					skin.sortingOrder = 0;
+				}
+				else
+				{
+					int sortLayer = Mathf.RoundToInt(skin.transform.localPosition.z * -10000);
+					skin.transform.localPosition = new Vector3(skin.transform.localPosition.x, skin.transform.localPosition.y, 0);
+					skin.sortingLayerName = "Default";
+					skin.sortingOrder = sortLayer;
+				}
+			}
+		}
+
+		//find all SpriteRenderer elements
+		SpriteRenderer[] spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>();
+		
+		foreach(SpriteRenderer spriteRenderer in spriteRenderers) {
+			if (spriteRenderer.sharedMaterial != null)
+			{
+				if (useZSorting)
+				{
 					float z = spriteRenderer.sortingOrder / -10000f;
 					spriteRenderer.transform.localPosition = new Vector3(spriteRenderer.transform.localPosition.x, spriteRenderer.transform.localPosition.y, z);
 					spriteRenderer.sortingLayerName = "Default";
@@ -488,15 +555,11 @@ public class Skeleton : MonoBehaviour {
 				}
 				else
 				{
-					spriteRenderer.sharedMaterial.shader = spriteShader;
 					int sortLayer = Mathf.RoundToInt(spriteRenderer.transform.localPosition.z * -10000);
 					spriteRenderer.transform.localPosition = new Vector3(spriteRenderer.transform.localPosition.x, spriteRenderer.transform.localPosition.y, 0);
 					spriteRenderer.sortingLayerName = "Default";
 					spriteRenderer.sortingOrder = sortLayer;
 				}
-
-				spriteRenderer.castShadows = useShadows;
-				spriteRenderer.receiveShadows = useShadows;
 			}
 		}
 	}

@@ -174,7 +174,6 @@ public class Bone : MonoBehaviour {
 					childRotations[child] = new Quaternion(child.rotation.x, child.rotation.y, child.rotation.z, child.rotation.w);
 				}
 			}
-			Debug.Log("Skeleton Children Positions and Rotations saved.");
 		}
 		else
 		{
@@ -191,12 +190,15 @@ public class Bone : MonoBehaviour {
 					child.rotation = childRotations[child];
 				}
 			}
-			Debug.Log("Skeleton Children Positions and Rotations loaded.");
 		}
 		else
 		{
 			Debug.Log("Skeleton needs to be in Edit Mode");
 		}
+	}
+
+	public bool HasChildPositionsSaved(){
+		return (childPositions.Count > 0 && childRotations.Count > 0);
 	}
     #endif
 
@@ -237,14 +239,20 @@ public class Bone : MonoBehaviour {
 			if (editMode) {
 				if (skeleton != null)
 				{
-					if (gameObject.name.ToUpper().EndsWith("R") || gameObject.name.ToUpper().EndsWith("RIGHT"))
-					{
-						Gizmos.color = new Color(skeleton.colorRight.r * 0.75f, skeleton.colorRight.g * 0.75f, skeleton.colorRight.b * 0.75f, skeleton.colorRight.a);
-					}
-					else if (gameObject.name.ToUpper().EndsWith("L") || gameObject.name.ToUpper().EndsWith("LEFT"))
-					{
-						Gizmos.color = new Color(skeleton.colorLeft.r * 0.75f, skeleton.colorLeft.g * 0.75f, skeleton.colorLeft.b * 0.75f, skeleton.colorLeft.a);
-					}
+					if (gameObject.name.ToUpper().EndsWith(" R") || 
+						gameObject.name.ToUpper().EndsWith("_R") || 
+						gameObject.name.ToUpper().EndsWith(".R") || 
+						gameObject.name.ToUpper().EndsWith("RIGHT"))
+						{
+							Gizmos.color = new Color(skeleton.colorRight.r * 0.75f, skeleton.colorRight.g * 0.75f, skeleton.colorRight.b * 0.75f, skeleton.colorRight.a);
+						}
+					else if (gameObject.name.ToUpper().EndsWith(" L") || 
+						gameObject.name.ToUpper().EndsWith("_L") || 
+						gameObject.name.ToUpper().EndsWith(".L") || 
+						gameObject.name.ToUpper().EndsWith("LEFT"))
+						{
+							Gizmos.color = new Color(skeleton.colorLeft.r * 0.75f, skeleton.colorLeft.g * 0.75f, skeleton.colorLeft.b * 0.75f, skeleton.colorLeft.a);
+						}
 					else
 					{
 						Gizmos.color = new Color(color.r * 0.75f, color.g * 0.75f, color.b * 0.75f, color.a);
@@ -258,14 +266,20 @@ public class Bone : MonoBehaviour {
             else {
 				if (skeleton != null)
 				{
-					if (gameObject.name.ToUpper().EndsWith("R") || gameObject.name.ToUpper().EndsWith("RIGHT"))
-					{
-						Gizmos.color = skeleton.colorRight;
-					}
-					else if (gameObject.name.ToUpper().EndsWith("L") || gameObject.name.ToUpper().EndsWith("LEFT"))
-					{
-						Gizmos.color = skeleton.colorLeft;
-					}
+					if (gameObject.name.ToUpper().EndsWith(" R") || 
+						gameObject.name.ToUpper().EndsWith("_R") || 
+						gameObject.name.ToUpper().EndsWith(".R") || 
+						gameObject.name.ToUpper().EndsWith("RIGHT"))
+						{
+							Gizmos.color = skeleton.colorRight;
+						}
+					else if (gameObject.name.ToUpper().EndsWith(" L") || 
+						gameObject.name.ToUpper().EndsWith("_L") || 
+						gameObject.name.ToUpper().EndsWith(".L") || 
+						gameObject.name.ToUpper().EndsWith("LEFT"))
+						{
+							Gizmos.color = skeleton.colorLeft;
+						}
 					else
 					{
 						Gizmos.color = color;
