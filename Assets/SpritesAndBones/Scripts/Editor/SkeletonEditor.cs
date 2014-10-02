@@ -137,6 +137,18 @@ public class SkeletonEditor : Editor {
 			}
 			Debug.Log("Loaded Children Positions and Rotations in Skeleton.");
 		}
+
+		EditorGUILayout.Separator();
+
+		EditorGUILayout.LabelField("Create Skin2D Prefabs from Children", EditorStyles.boldLabel);
+
+		if(GUILayout.Button("Create Skin2D Prefabs")) {
+			Skin2D[] skins = skeleton.gameObject.GetComponentsInChildren<Skin2D>();
+			foreach (Skin2D skin in skins) {
+				skin.SaveAsPrefab();
+			}
+			Debug.Log("Saved all Skins as Prefabs.");
+		}
     }
 
     void OnSceneGUI() {

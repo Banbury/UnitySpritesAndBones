@@ -105,6 +105,12 @@ public class Skeleton : MonoBehaviour {
 	[HideInInspector]
 	public bool hasChildPositionsSaved = false;
 
+	private Bone[] bones;
+	private Dictionary<Transform, float> renderers = new Dictionary<Transform, float>();
+
+	private SkinnedMeshRenderer[] skins;
+	private SpriteRenderer[] spriteRenderers;
+
 #if UNITY_EDITOR
 		[MenuItem("Sprites And Bones/Skeleton")]
 		public static void Create ()
@@ -145,13 +151,19 @@ public class Skeleton : MonoBehaviour {
 #endif
 
     private void EditorUpdate() {
-        foreach (Bone b in gameObject.GetComponentsInChildren<Bone>()) {
-            InverseKinematics ik = b.GetComponent<InverseKinematics>();
+		if (bones != null)
+		{
+			for (int i=0; i<bones.Length; i++) {
+                if (bones[i] != null)
+				{
+					InverseKinematics ik = bones[i].GetComponent<InverseKinematics>();
 
-            if (ik != null && !editMode && ik.enabled && ik.influence > 0) {
-                ik.resolveSK2D();
-            }
-        }
+					if (ik != null && !editMode && ik.enabled && ik.influence > 0) {
+						ik.resolveSK2D();
+					}
+				}
+			}
+		}
     }
 	
 	// Update is called once per frame
@@ -166,13 +178,20 @@ public class Skeleton : MonoBehaviour {
 			spriteShadowsShader = Shader.Find("Sprites/Skeleton-CutOut");
 		}
 
+		if (bones == null || bones != null && bones.Length <= 0 || Application.isEditor){
+			bones = gameObject.GetComponentsInChildren<Bone>();
+		}
+
 #if !UNITY_EDITOR
 		EditorUpdate();
 #else
-        if (Application.isEditor) {
-            foreach (Bone b in gameObject.GetComponentsInChildren<Bone>()) {
-                b.editMode = editMode;
-                b.showInfluence = showBoneInfluence;
+        if (Application.isEditor && bones != null) {
+            for (int i=0; i<bones.Length; i++) {
+                if (bones[i] != null)
+				{
+					bones[i].editMode = editMode;
+					bones[i].showInfluence = showBoneInfluence;
+				}
             }
         }
 #endif
@@ -230,49 +249,55 @@ public class Skeleton : MonoBehaviour {
         Undo.RegisterCompleteObjectUndo(bones, "Assign Pose");
         Undo.RegisterCompleteObjectUndo(cps, "Assign Pose");
 
-        foreach (RotationValue rv in pose.rotations) {
-            Bone bone = bones.First(b => b.name == rv.name);
-            if (bone != null) {
-                bone.transform.localRotation = rv.rotation;
-            } else {
-                Debug.Log("This skeleton has no bone '" + bone.name + "'");
-            }
-        }
+        if (bones.Length > 0)
+		{
+			foreach (RotationValue rv in pose.rotations) {
+				Bone bone = bones.First(b => b.name == rv.name);
+				if (bone != null) {
+					bone.transform.localRotation = rv.rotation;
+				} else {
+					Debug.Log("This skeleton has no bone '" + bone.name + "'");
+				}
+			}
 
-        foreach (PositionValue pv in pose.positions) {
-            Bone bone = bones.First(b => b.name == pv.name);
-            if (bone != null) {
-                bone.transform.localPosition = pv.position;
-            } else {
-                Debug.Log("This skeleton has no bone '" + bone.name + "'");
-            }
-        }
+			foreach (PositionValue pv in pose.positions) {
+				Bone bone = bones.First(b => b.name == pv.name);
+				if (bone != null) {
+					bone.transform.localPosition = pv.position;
+				} else {
+					Debug.Log("This skeleton has no bone '" + bone.name + "'");
+				}
+			}
 
-        foreach (PositionValue tv in pose.targets) {
-            Bone bone = bones.First(b => b.name == tv.name);
+			foreach (PositionValue tv in pose.targets) {
+				Bone bone = bones.First(b => b.name == tv.name);
 
-            if (bone != null) {
-                InverseKinematics ik = bone.GetComponent<InverseKinematics>();
+				if (bone != null) {
+					InverseKinematics ik = bone.GetComponent<InverseKinematics>();
 
-                if (ik != null) {
-                    Undo.RecordObject(ik.target, "Assign Pose");
-                    ik.target.transform.localPosition = tv.position;
-                }
-            } else {
-                Debug.Log("This skeleton has no bone '" + bone.name + "'");
-            }
-        }
+					if (ik != null) {
+						Undo.RecordObject(ik.target, "Assign Pose");
+						ik.target.transform.localPosition = tv.position;
+					}
+				} else {
+					Debug.Log("This skeleton has no bone '" + bone.name + "'");
+				}
+			}
+		}
 
-        foreach (PositionValue cpv in pose.controlPoints) {
-            ControlPoint cp = cps.First(c => (c.transform.parent.name + c.name) == cpv.name);
+        if (cps.Length > 0)
+		{
+			foreach (PositionValue cpv in pose.controlPoints) {
+				ControlPoint cp = cps.First(c => (c.transform.parent.name + c.name) == cpv.name);
 
-            if (cp != null) {
-                cp.transform.localPosition = cpv.position;
-            }
-            else {
-                Debug.Log("There is no control point '" + cpv.name + "'");
-            }
-        }
+				if (cp != null) {
+					cp.transform.localPosition = cpv.position;
+				}
+				else {
+					Debug.Log("There is no control point '" + cpv.name + "'");
+				}
+			}
+		}
     }
 
     public void SetBasePose(Pose pose) {
@@ -313,13 +338,19 @@ public class Skeleton : MonoBehaviour {
 	{
 		//find all Skin2D elements
 		Skin2D[] skins = transform.GetComponentsInChildren<Skin2D>();
-		Bone[] bones = transform.GetComponentsInChildren<Bone>();
-		if(bones.Length == 0) {
+		if(bones == null || bones.Length != null && bones.Length == 0) {
 			Debug.Log("No bones in skeleton");
 			return;
 		}
 		foreach(Skin2D skin in skins) {
 			skin.CalculateBoneWeights(bones, weightToParent);
+		}
+	}
+#endif
+
+	private void MoveRenderersPositions(){
+		foreach (Transform renderer in renderers.Keys){
+			renderer.position = new Vector3(renderer.position.x, renderer.position.y, (float)renderers[renderer]);
 		}
 	}
 
@@ -329,7 +360,7 @@ public class Skeleton : MonoBehaviour {
 		// Rotate the skeleton's local transform
 		if (!flipY)
 		{
-			Dictionary<Transform, float> renderers = new Dictionary<Transform, float>();
+			renderers = new Dictionary<Transform, float>();
 			// Get the new positions for the renderers from the rotation of this transform
 			if (useZSorting)
 			{
@@ -338,14 +369,12 @@ public class Skeleton : MonoBehaviour {
 			transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, 0.0f, transform.localEulerAngles.z);
 			if (useZSorting)
 			{
-				foreach (Transform renderer in renderers.Keys){
-					renderer.position = new Vector3(renderer.position.x, renderer.position.y, (float)renderers[renderer]);
-				}
+				MoveRenderersPositions();
 			}
 		}
 		else
 		{
-			Dictionary<Transform, float> renderers = new Dictionary<Transform, float>();
+			renderers = new Dictionary<Transform, float>();
 			// Get the new positions for the renderers from the rotation of this transform
 			if (useZSorting)
 			{
@@ -355,9 +384,7 @@ public class Skeleton : MonoBehaviour {
 			transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, 180.0f, transform.localEulerAngles.z);
 			if (useZSorting)
 			{
-				foreach (Transform renderer in renderers.Keys){
-					renderer.position = new Vector3(renderer.position.x, renderer.position.y, (float)renderers[renderer]);
-				}
+				MoveRenderersPositions();
 			}
 		}
 
@@ -376,7 +403,7 @@ public class Skeleton : MonoBehaviour {
 		// Rotate the skeleton's local transform
 		if (!flipX)
 		{
-			Dictionary<Transform, float> renderers = new Dictionary<Transform, float>();
+			renderers = new Dictionary<Transform, float>();
 			// Get the new positions for the renderers from the rotation of this transform
 			if (useZSorting)
 			{
@@ -385,14 +412,12 @@ public class Skeleton : MonoBehaviour {
 			transform.localEulerAngles = new Vector3(0.0f, transform.localEulerAngles.y, transform.localEulerAngles.z);
 			if (useZSorting)
 			{
-				foreach (Transform renderer in renderers.Keys){
-					renderer.position = new Vector3(renderer.position.x, renderer.position.y, (float)renderers[renderer]);
-				}
+				MoveRenderersPositions();
 			}
 		}
 		else
 		{
-			Dictionary<Transform, float> renderers = new Dictionary<Transform, float>();
+			renderers = new Dictionary<Transform, float>();
 			// Get the new positions for the renderers from the rotation of this transform
 			if (useZSorting)
 			{
@@ -401,9 +426,7 @@ public class Skeleton : MonoBehaviour {
 			transform.localEulerAngles = new Vector3(180.0f, transform.localEulerAngles.y, transform.localEulerAngles.z);
 			if (useZSorting)
 			{
-				foreach (Transform renderer in renderers.Keys){
-					renderer.position = new Vector3(renderer.position.x, renderer.position.y, (float)renderers[renderer]);
-				}
+				MoveRenderersPositions();
 			}
 		}
 
@@ -418,11 +441,11 @@ public class Skeleton : MonoBehaviour {
 
 	public Dictionary<Transform, float> GetRenderersZ()
 	{
-		Dictionary<Transform, float> renderers = new Dictionary<Transform, float>();
+		renderers = new Dictionary<Transform, float>();
 		if (useZSorting)
 		{
 			//find all SkinnedMeshRenderer elements
-			SkinnedMeshRenderer[] skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
+			skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
 			foreach(SkinnedMeshRenderer skin in skins) {
 				if (skin.sharedMaterial != null)
 				{
@@ -447,7 +470,7 @@ public class Skeleton : MonoBehaviour {
 		if (useShadows)
 		{
 			//find all SkinnedMeshRenderer elements
-			SkinnedMeshRenderer[] skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
+			skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
 			foreach(SkinnedMeshRenderer skin in skins) {
 				if (skin.sharedMaterial != null)
 				{
@@ -459,7 +482,7 @@ public class Skeleton : MonoBehaviour {
 			}
 
 			//find all SpriteRenderer elements
-			SpriteRenderer[] spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>();
+			spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>();
 			foreach(SpriteRenderer spriteRenderer in spriteRenderers) {
 				if (spriteRenderer.sharedMaterial != null)
 				{
@@ -475,7 +498,7 @@ public class Skeleton : MonoBehaviour {
 	public void UseShadows ()
 	{
 		//find all SpriteRenderer elements
-		SkinnedMeshRenderer[] skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
+		skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
 		
 		foreach(SkinnedMeshRenderer skin in skins) {
 			if (skin.sharedMaterial != null)
@@ -495,7 +518,7 @@ public class Skeleton : MonoBehaviour {
 		}
 
 		//find all SpriteRenderer elements
-		SpriteRenderer[] spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>();
+		spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>();
 		
 		foreach(SpriteRenderer spriteRenderer in spriteRenderers) {
 			if (spriteRenderer.sharedMaterial != null)
@@ -518,7 +541,7 @@ public class Skeleton : MonoBehaviour {
 	public void UseZSorting ()
 	{
 		//find all SpriteRenderer elements
-		SkinnedMeshRenderer[] skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
+		skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
 		
 		foreach(SkinnedMeshRenderer skin in skins) {
 			if (skin.sharedMaterial != null)
@@ -541,7 +564,7 @@ public class Skeleton : MonoBehaviour {
 		}
 
 		//find all SpriteRenderer elements
-		SpriteRenderer[] spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>();
+		spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>();
 		
 		foreach(SpriteRenderer spriteRenderer in spriteRenderers) {
 			if (spriteRenderer.sharedMaterial != null)
@@ -563,5 +586,4 @@ public class Skeleton : MonoBehaviour {
 			}
 		}
 	}
-	#endif
 }

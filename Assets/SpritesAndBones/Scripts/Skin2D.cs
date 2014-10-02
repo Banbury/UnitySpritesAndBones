@@ -29,6 +29,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityToolbag;
+using System.IO;
 
 [RequireComponent(typeof(MeshFilter))]
 [RequireComponent(typeof(SkinnedMeshRenderer))]
@@ -243,6 +244,10 @@ public class Skin2D : MonoBehaviour {
                 Object.DestroyImmediate(skinRenderer.sharedMesh);
             skinRenderer.bones = bonesArr;
             skinRenderer.sharedMesh = mesh;
+			EditorUtility.SetDirty(skinRenderer.gameObject);
+			if (PrefabUtility.GetPrefabType(skinRenderer.gameObject) != PrefabType.None) {
+				AssetDatabase.SaveAssets();
+			}
         }
     }
 
@@ -291,7 +296,31 @@ public class Skin2D : MonoBehaviour {
     }
 
     public void SaveAsPrefab() {
-        string path = "Assets/" + gameObject.name + ".prefab";
+
+		// Check if the Prefabs directory exists, if not, create it.
+        DirectoryInfo prefabDir = new DirectoryInfo("Assets/Prefabs");
+		if (Directory.Exists(prefabDir.FullName) == false)
+        {
+            Directory.CreateDirectory(prefabDir.FullName);
+        }
+
+		Skeleton[] skeletons = transform.root.gameObject.GetComponentsInChildren<Skeleton>(true);
+		Skeleton skeleton = null;
+		foreach (Skeleton s in skeletons)
+		{
+			if (transform.IsChildOf(s.transform))
+			{
+				skeleton = s;
+			}
+		}
+
+        DirectoryInfo prefabSkelDir = new DirectoryInfo("Assets/Prefabs/" + skeleton.gameObject.name);
+		if (Directory.Exists(prefabSkelDir.FullName) == false)
+        {
+            Directory.CreateDirectory(prefabSkelDir.FullName);
+        }
+
+        string path = "Assets/Prefabs/" + skeleton.gameObject.name + "/" + gameObject.name + ".prefab";
 
         Object obj = PrefabUtility.CreateEmptyPrefab(path);
 
@@ -301,7 +330,15 @@ public class Skin2D : MonoBehaviour {
     }
 
 	public void RecalculateBoneWeights() {
-		Skeleton skeleton = gameObject.transform.root.GetComponent<Skeleton>();
+		Skeleton[] skeletons = transform.root.gameObject.GetComponentsInChildren<Skeleton>(true);
+		Skeleton skeleton = null;
+		foreach (Skeleton s in skeletons)
+		{
+			if (transform.IsChildOf(s.transform))
+			{
+				skeleton = s;
+			}
+		}
 		if (skeleton != null)
 		{
 			skeleton.CalculateWeights(true);

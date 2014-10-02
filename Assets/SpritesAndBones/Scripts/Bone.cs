@@ -78,6 +78,11 @@ public class Bone : MonoBehaviour {
 	private Dictionary<Transform, Vector3> childPositions = new Dictionary<Transform, Vector3>();
 	private Dictionary<Transform, Quaternion> childRotations = new Dictionary<Transform, Quaternion>();
 
+	private Dictionary<Transform, float> renderers = new Dictionary<Transform, float>();
+
+	private SkinnedMeshRenderer[] skins;
+	private SpriteRenderer[] spriteRenderers;
+
     public Vector2 Head {
         get {
             Vector3 v = gameObject.transform.up * length;
@@ -213,12 +218,15 @@ public class Bone : MonoBehaviour {
 		if (gameObject.transform.parent != null)
             parent = gameObject.transform.parent.GetComponent<Bone>();
 
-		Skeleton[] skeletons = transform.root.GetComponentsInChildren<Skeleton>();
-		foreach (Skeleton s in skeletons)
+		if (!Application.isPlaying || skeleton == null)
 		{
-			if (transform.IsChildOf(s.transform))
+			Skeleton[] skeletons = transform.root.GetComponentsInChildren<Skeleton>();
+			foreach (Skeleton s in skeletons)
 			{
-				skeleton = s;
+				if (transform.IsChildOf(s.transform))
+				{
+					skeleton = s;
+				}
 			}
 		}
 
@@ -366,6 +374,11 @@ public class Bone : MonoBehaviour {
         return bones.Max(b => b.index) + 1;
     }
 
+	private void MoveRenderersPositions(){
+		foreach (Transform renderer in renderers.Keys){
+			renderer.position = new Vector3(renderer.position.x, renderer.position.y, (float)renderers[renderer]);
+		}
+	}
 
 	public void FlipY ()
 	{
@@ -373,7 +386,7 @@ public class Bone : MonoBehaviour {
 		// Rotate the skeleton's local transform
 		if (!flipY)
 		{
-			Dictionary<Transform, float> renderers = new Dictionary<Transform, float>();
+			renderers = new Dictionary<Transform, float>();
 			// Get the new positions for the renderers from the rotation of this transform
 			if (skeleton != null && skeleton.useShadows)
 			{
@@ -382,14 +395,12 @@ public class Bone : MonoBehaviour {
 			transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, 0.0f, transform.localEulerAngles.z);
 			if (skeleton != null && skeleton.useShadows)
 			{
-				foreach (Transform renderer in renderers.Keys){
-					renderer.position = new Vector3(renderer.position.x, renderer.position.y, (float)renderers[renderer]);
-				}
+				MoveRenderersPositions();
 			}
 		}
 		else
 		{
-			Dictionary<Transform, float> renderers = new Dictionary<Transform, float>();
+			renderers = new Dictionary<Transform, float>();
 			// Get the new positions for the renderers from the rotation of this transform
 			if (skeleton != null && skeleton.useShadows)
 			{
@@ -399,9 +410,7 @@ public class Bone : MonoBehaviour {
 			transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, 180.0f, transform.localEulerAngles.z);
 			if (skeleton != null && skeleton.useShadows)
 			{
-				foreach (Transform renderer in renderers.Keys){
-					renderer.position = new Vector3(renderer.position.x, renderer.position.y, (float)renderers[renderer]);
-				}
+				MoveRenderersPositions();
 			}
 		}
 
@@ -423,7 +432,7 @@ public class Bone : MonoBehaviour {
 		// Rotate the skeleton's local transform
 		if (!flipX)
 		{
-			Dictionary<Transform, float> renderers = new Dictionary<Transform, float>();
+			renderers = new Dictionary<Transform, float>();
 			// Get the new positions for the renderers from the rotation of this transform
 			if (skeleton != null && skeleton.useShadows)
 			{
@@ -432,14 +441,12 @@ public class Bone : MonoBehaviour {
 			transform.localEulerAngles = new Vector3(0.0f, transform.localEulerAngles.y, transform.localEulerAngles.z);
 			if (skeleton != null && skeleton.useShadows)
 			{
-				foreach (Transform renderer in renderers.Keys){
-					renderer.position = new Vector3(renderer.position.x, renderer.position.y, (float)renderers[renderer]);
-				}
+				MoveRenderersPositions();
 			}
 		}
 		else
 		{
-			Dictionary<Transform, float> renderers = new Dictionary<Transform, float>();
+			renderers = new Dictionary<Transform, float>();
 			// Get the new positions for the renderers from the rotation of this transform
 			if (skeleton != null && skeleton.useShadows)
 			{
@@ -448,9 +455,7 @@ public class Bone : MonoBehaviour {
 			transform.localEulerAngles = new Vector3(180.0f, transform.localEulerAngles.y, transform.localEulerAngles.z);
 			if (skeleton != null && skeleton.useShadows)
 			{
-				foreach (Transform renderer in renderers.Keys){
-					renderer.position = new Vector3(renderer.position.x, renderer.position.y, (float)renderers[renderer]);
-				}
+				MoveRenderersPositions();
 			}
 		}
 
@@ -467,11 +472,11 @@ public class Bone : MonoBehaviour {
 
 	public Dictionary<Transform, float> GetRenderersZ()
 	{
-		Dictionary<Transform, float> renderers = new Dictionary<Transform, float>();
+		renderers = new Dictionary<Transform, float>();
 		if (skeleton != null)
 		{
 			//find all SkinnedMeshRenderer elements
-			SkinnedMeshRenderer[] skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
+			skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
 			foreach(SkinnedMeshRenderer skin in skins) {
 				if (skin.sharedMaterial != null)
 				{
@@ -483,7 +488,7 @@ public class Bone : MonoBehaviour {
 			}
 
 			//find all SpriteRenderer elements
-			SpriteRenderer[] spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>();
+			spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>();
 			foreach(SpriteRenderer spriteRenderer in spriteRenderers) {
 				if (spriteRenderer.sharedMaterial != null)
 				{
@@ -502,7 +507,7 @@ public class Bone : MonoBehaviour {
 		if (skeleton != null)
 		{
 			//find all SkinnedMeshRenderer elements
-			SkinnedMeshRenderer[] skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
+			skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
 			foreach(SkinnedMeshRenderer skin in skins) {
 				if (skin.sharedMaterial != null)
 				{
@@ -514,7 +519,7 @@ public class Bone : MonoBehaviour {
 			}
 
 			//find all SpriteRenderer elements
-			SpriteRenderer[] spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>();
+			spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>();
 			foreach(SpriteRenderer spriteRenderer in spriteRenderers) {
 				if (spriteRenderer.sharedMaterial != null)
 				{

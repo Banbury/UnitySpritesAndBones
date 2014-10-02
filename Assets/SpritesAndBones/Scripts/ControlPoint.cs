@@ -34,6 +34,7 @@ using System.Linq.Expressions;
 public class ControlPoint : MonoBehaviour {
 	[SerializeField] public Color color = Color.red;
 	[SerializeField] public float size = 0.01f;
+	public bool getMeshSnapShot = false;
 
 	[HideInInspector]
     public Vector3 originalPosition;
@@ -115,11 +116,17 @@ public class ControlPoint : MonoBehaviour {
 					skeleton = transform.root.GetComponentInChildren<Skeleton>();
 					if (skeleton != null)
 					{
-						if (gameObject.name.ToUpper().EndsWith("R") || gameObject.name.ToUpper().EndsWith("RIGHT"))
+						if (gameObject.name.ToUpper().EndsWith(" R") || 
+						gameObject.name.ToUpper().EndsWith(".R") || 
+						gameObject.name.ToUpper().EndsWith("_R") || 
+						gameObject.name.ToUpper().EndsWith("RIGHT"))
 						{
 							Gizmos.color = skeleton.colorRight;
 						}
-						else if (gameObject.name.ToUpper().EndsWith("L") || gameObject.name.ToUpper().EndsWith("LEFT"))
+						else if (gameObject.name.ToUpper().EndsWith(" L") || 
+						gameObject.name.ToUpper().EndsWith(".L") || 
+						gameObject.name.ToUpper().EndsWith("_L") || 
+						gameObject.name.ToUpper().EndsWith("LEFT"))
 						{
 							Gizmos.color = skeleton.colorLeft;
 						}
@@ -136,10 +143,38 @@ public class ControlPoint : MonoBehaviour {
 				Gizmos.DrawSphere(gameObject.transform.position, size);
 			}
 		}
+		if (getMeshSnapShot)
+		{
+			GetMeshSnapshot();
+		}
     }
+
+	public void GetMeshSnapshot()
+	{
+
+		if (transform.parent.GetComponent<SkinnedMeshRenderer>() != null)
+		{
+			skin = transform.parent.GetComponent<SkinnedMeshRenderer>();
+			Mesh mesh = new Mesh();
+			skin.BakeMesh(mesh);
+			foreach (Vector3 v in mesh.vertices)
+			{
+				Gizmos.DrawSphere(transform.parent.TransformPoint(v), size);
+			}
+		}
+		getMeshSnapShot = false;
+	}
+
 #endif
 
 	public void ResetPosition() {
+		#if UNITY_EDITOR
+		Undo.RegisterCompleteObjectUndo(transform, "Reset Control Point");
+		Undo.RecordObject(transform, "Reset Control Point");
+		#endif
 		transform.localPosition = originalPosition;
+		#if UNITY_EDITOR
+		EditorUtility.SetDirty (transform);
+		#endif
 	}
 }

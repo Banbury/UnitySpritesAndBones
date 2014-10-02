@@ -34,6 +34,7 @@ public class InverseKinematics : MonoBehaviour {
     public float influence = 1.0f;
     public int chainLength = 0;
     public Transform target;
+	private Skeleton skeleton = null;
 
     public Transform RootBone {
         get {
@@ -105,6 +106,14 @@ public class InverseKinematics : MonoBehaviour {
 		foreach (var node in angleLimits)
 			if (!nodeCache.ContainsKey(node.Transform))
 				nodeCache.Add(node.Transform, node);
+		Skeleton[] skeletons = transform.root.gameObject.GetComponentsInChildren<Skeleton>(true);
+		foreach (Skeleton s in skeletons)
+		{
+			if (transform.IsChildOf(s.transform))
+			{
+				skeleton = s;
+			}
+		}
 	}
 
     void Update() {
@@ -166,25 +175,16 @@ public class InverseKinematics : MonoBehaviour {
         }
     }
 
-	public static float SignedAngle (Vector3 a, Vector3 b, Transform transform)
+	public float SignedAngle (Vector3 a, Vector3 b, Transform t)
 	{
 		float angle = Vector3.Angle (a, b);
-		Skeleton[] skeletons = transform.root.gameObject.GetComponentsInChildren<Skeleton>(true);
-		Skeleton skeleton = null;
-		foreach (Skeleton s in skeletons)
-		{
-			if (transform.IsChildOf(s.transform))
-			{
-				skeleton = s;
-			}
-		}
 
 		// Use skeleton as root, change dir if the rotation is flipped
-		Vector3 dir = (skeleton.transform.localRotation.eulerAngles.y == 180.0f) ? Vector3.forward : Vector3.back;
+		Vector3 dir = (skeleton && skeleton.transform.localRotation.eulerAngles.y == 180.0f && skeleton.transform.localRotation.eulerAngles.x == 0.0f) ? Vector3.forward : Vector3.back;
 		float sign = Mathf.Sign (Vector3.Dot (dir, Vector3.Cross (a, b)));
 		angle = angle * sign;
 		// Flip sign if character is turned around
-		angle *= Mathf.Sign(transform.root.localScale.x);
+		angle *= Mathf.Sign(t.root.localScale.x);
 		return angle;
 	}
 
