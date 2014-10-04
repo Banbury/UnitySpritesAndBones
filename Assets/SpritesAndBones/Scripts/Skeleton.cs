@@ -254,7 +254,9 @@ public class Skeleton : MonoBehaviour {
 			foreach (RotationValue rv in pose.rotations) {
 				Bone bone = bones.First(b => b.name == rv.name);
 				if (bone != null) {
+					Undo.RecordObject(bone.transform, "Assign Pose");
 					bone.transform.localRotation = rv.rotation;
+					EditorUtility.SetDirty (bone.transform);
 				} else {
 					Debug.Log("This skeleton has no bone '" + bone.name + "'");
 				}
@@ -263,7 +265,9 @@ public class Skeleton : MonoBehaviour {
 			foreach (PositionValue pv in pose.positions) {
 				Bone bone = bones.First(b => b.name == pv.name);
 				if (bone != null) {
+					Undo.RecordObject(bone.transform, "Assign Pose");
 					bone.transform.localPosition = pv.position;
+					EditorUtility.SetDirty (bone.transform);
 				} else {
 					Debug.Log("This skeleton has no bone '" + bone.name + "'");
 				}
@@ -278,6 +282,7 @@ public class Skeleton : MonoBehaviour {
 					if (ik != null) {
 						Undo.RecordObject(ik.target, "Assign Pose");
 						ik.target.transform.localPosition = tv.position;
+						EditorUtility.SetDirty (ik.target.transform);
 					}
 				} else {
 					Debug.Log("This skeleton has no bone '" + bone.name + "'");
@@ -291,7 +296,9 @@ public class Skeleton : MonoBehaviour {
 				ControlPoint cp = cps.First(c => (c.transform.parent.name + c.name) == cpv.name);
 
 				if (cp != null) {
+					Undo.RecordObject(cp.transform, "Assign Pose");
 					cp.transform.localPosition = cpv.position;
+					EditorUtility.SetDirty (cp.transform);
 				}
 				else {
 					Debug.Log("There is no control point '" + cpv.name + "'");
