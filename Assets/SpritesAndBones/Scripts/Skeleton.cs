@@ -452,7 +452,7 @@ public class Skeleton : MonoBehaviour {
 		if (useZSorting)
 		{
 			//find all SkinnedMeshRenderer elements
-			skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
+			skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>(true);
 			foreach(SkinnedMeshRenderer skin in skins) {
 				if (skin.sharedMaterial != null)
 				{
@@ -461,7 +461,7 @@ public class Skeleton : MonoBehaviour {
 			}
 
 			//find all SpriteRenderer elements
-			SpriteRenderer[] spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>();
+			SpriteRenderer[] spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>(true);
 			foreach(SpriteRenderer spriteRenderer in spriteRenderers) {
 				if (spriteRenderer.sharedMaterial != null)
 				{
@@ -477,7 +477,7 @@ public class Skeleton : MonoBehaviour {
 		if (useShadows)
 		{
 			//find all SkinnedMeshRenderer elements
-			skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
+			skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>(true);
 			foreach(SkinnedMeshRenderer skin in skins) {
 				if (skin.sharedMaterial != null)
 				{
@@ -489,7 +489,7 @@ public class Skeleton : MonoBehaviour {
 			}
 
 			//find all SpriteRenderer elements
-			spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>();
+			spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>(true);
 			foreach(SpriteRenderer spriteRenderer in spriteRenderers) {
 				if (spriteRenderer.sharedMaterial != null)
 				{
@@ -505,7 +505,7 @@ public class Skeleton : MonoBehaviour {
 	public void UseShadows ()
 	{
 		//find all SpriteRenderer elements
-		skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
+		skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>(true);
 		
 		foreach(SkinnedMeshRenderer skin in skins) {
 			if (skin.sharedMaterial != null)
@@ -525,7 +525,7 @@ public class Skeleton : MonoBehaviour {
 		}
 
 		//find all SpriteRenderer elements
-		spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>();
+		spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>(true);
 		
 		foreach(SpriteRenderer spriteRenderer in spriteRenderers) {
 			if (spriteRenderer.sharedMaterial != null)
@@ -548,7 +548,7 @@ public class Skeleton : MonoBehaviour {
 	public void UseZSorting ()
 	{
 		//find all SpriteRenderer elements
-		skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
+		skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>(true);
 		
 		foreach(SkinnedMeshRenderer skin in skins) {
 			if (skin.sharedMaterial != null)
@@ -571,7 +571,7 @@ public class Skeleton : MonoBehaviour {
 		}
 
 		//find all SpriteRenderer elements
-		spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>();
+		spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>(true);
 		
 		foreach(SpriteRenderer spriteRenderer in spriteRenderers) {
 			if (spriteRenderer.sharedMaterial != null)

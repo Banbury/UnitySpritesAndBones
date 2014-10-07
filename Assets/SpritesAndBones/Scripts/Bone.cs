@@ -220,7 +220,7 @@ public class Bone : MonoBehaviour {
 
 		if (!Application.isPlaying || skeleton == null)
 		{
-			Skeleton[] skeletons = transform.root.GetComponentsInChildren<Skeleton>();
+			Skeleton[] skeletons = transform.root.GetComponentsInChildren<Skeleton>(true);
 			foreach (Skeleton s in skeletons)
 			{
 				if (transform.IsChildOf(s.transform))
@@ -366,7 +366,7 @@ public class Bone : MonoBehaviour {
     }
 
     internal int GetMaxIndex() {
-        Bone[] bones = transform.root.GetComponentsInChildren<Bone>();
+        Bone[] bones = transform.root.GetComponentsInChildren<Bone>(true);
 
         if (bones == null || bones.Length == 0)
             return 0;
@@ -476,7 +476,7 @@ public class Bone : MonoBehaviour {
 		if (skeleton != null)
 		{
 			//find all SkinnedMeshRenderer elements
-			skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
+			skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>(true);
 			foreach(SkinnedMeshRenderer skin in skins) {
 				if (skin.sharedMaterial != null)
 				{
@@ -488,7 +488,7 @@ public class Bone : MonoBehaviour {
 			}
 
 			//find all SpriteRenderer elements
-			spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>();
+			spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>(true);
 			foreach(SpriteRenderer spriteRenderer in spriteRenderers) {
 				if (spriteRenderer.sharedMaterial != null)
 				{
@@ -507,7 +507,7 @@ public class Bone : MonoBehaviour {
 		if (skeleton != null)
 		{
 			//find all SkinnedMeshRenderer elements
-			skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
+			skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>(true);
 			foreach(SkinnedMeshRenderer skin in skins) {
 				if (skin.sharedMaterial != null)
 				{
@@ -519,7 +519,7 @@ public class Bone : MonoBehaviour {
 			}
 
 			//find all SpriteRenderer elements
-			spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>();
+			spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>(true);
 			foreach(SpriteRenderer spriteRenderer in spriteRenderers) {
 				if (spriteRenderer.sharedMaterial != null)
 				{
