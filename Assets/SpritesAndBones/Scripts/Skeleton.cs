@@ -252,7 +252,7 @@ public class Skeleton : MonoBehaviour {
         if (bones.Length > 0)
 		{
 			foreach (RotationValue rv in pose.rotations) {
-				Bone bone = bones.First(b => b.name == rv.name);
+				Bone bone = bones.FirstOrDefault(b => b.name == rv.name);
 				if (bone != null) {
 					Undo.RecordObject(bone.transform, "Assign Pose");
 					bone.transform.localRotation = rv.rotation;
@@ -263,7 +263,7 @@ public class Skeleton : MonoBehaviour {
 			}
 
 			foreach (PositionValue pv in pose.positions) {
-				Bone bone = bones.First(b => b.name == pv.name);
+				Bone bone = bones.FirstOrDefault(b => b.name == pv.name);
 				if (bone != null) {
 					Undo.RecordObject(bone.transform, "Assign Pose");
 					bone.transform.localPosition = pv.position;
@@ -274,7 +274,7 @@ public class Skeleton : MonoBehaviour {
 			}
 
 			foreach (PositionValue tv in pose.targets) {
-				Bone bone = bones.First(b => b.name == tv.name);
+				Bone bone = bones.FirstOrDefault(b => b.name == tv.name);
 
 				if (bone != null) {
 					InverseKinematics ik = bone.GetComponent<InverseKinematics>();
@@ -293,7 +293,7 @@ public class Skeleton : MonoBehaviour {
         if (cps.Length > 0)
 		{
 			foreach (PositionValue cpv in pose.controlPoints) {
-				ControlPoint cp = cps.First(c => (c.transform.parent.name + c.name) == cpv.name);
+				ControlPoint cp = cps.FirstOrDefault(c => (c.transform.parent.name + c.name) == cpv.name);
 
 				if (cp != null) {
 					Undo.RecordObject(cp.transform, "Assign Pose");
