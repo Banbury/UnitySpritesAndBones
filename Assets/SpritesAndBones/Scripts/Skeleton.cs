@@ -242,34 +242,46 @@ public class Skeleton : MonoBehaviour {
             ScriptableObjectUtility.CreateAsset(CreatePose());
         }
     }
+#endif
 
     public void RestorePose(Pose pose) {
         var bones = GetComponentsInChildren<Bone>();
         var cps = GetComponentsInChildren<ControlPoint>();
+		#if UNITY_EDITOR
         Undo.RegisterCompleteObjectUndo(bones, "Assign Pose");
         Undo.RegisterCompleteObjectUndo(cps, "Assign Pose");
+		#endif
 
         if (bones.Length > 0)
 		{
 			foreach (RotationValue rv in pose.rotations) {
 				Bone bone = bones.FirstOrDefault(b => b.name == rv.name);
 				if (bone != null) {
+					#if UNITY_EDITOR
 					Undo.RecordObject(bone.transform, "Assign Pose");
+					#endif
 					bone.transform.localRotation = rv.rotation;
+					#if UNITY_EDITOR
 					EditorUtility.SetDirty (bone.transform);
+					#endif
 				} else {
-					Debug.Log("This skeleton has no bone '" + bone.name + "'");
+					Debug.Log("This skeleton has no bone '" + rv.name + "'");
 				}
 			}
 
 			foreach (PositionValue pv in pose.positions) {
 				Bone bone = bones.FirstOrDefault(b => b.name == pv.name);
 				if (bone != null) {
+					#if UNITY_EDITOR
 					Undo.RecordObject(bone.transform, "Assign Pose");
+					#endif
 					bone.transform.localPosition = pv.position;
+					#if UNITY_EDITOR
 					EditorUtility.SetDirty (bone.transform);
+					#endif
+					
 				} else {
-					Debug.Log("This skeleton has no bone '" + bone.name + "'");
+					Debug.Log("This skeleton has no bone '" + pv.name + "'");
 				}
 			}
 
@@ -280,12 +292,16 @@ public class Skeleton : MonoBehaviour {
 					InverseKinematics ik = bone.GetComponent<InverseKinematics>();
 
 					if (ik != null) {
+						#if UNITY_EDITOR
 						Undo.RecordObject(ik.target, "Assign Pose");
+						#endif
 						ik.target.transform.localPosition = tv.position;
+						#if UNITY_EDITOR
 						EditorUtility.SetDirty (ik.target.transform);
+						#endif
 					}
 				} else {
-					Debug.Log("This skeleton has no bone '" + bone.name + "'");
+					Debug.Log("This skeleton has no bone '" + tv.name + "'");
 				}
 			}
 		}
@@ -296,9 +312,13 @@ public class Skeleton : MonoBehaviour {
 				ControlPoint cp = cps.FirstOrDefault(c => (c.transform.parent.name + c.name) == cpv.name);
 
 				if (cp != null) {
+					#if UNITY_EDITOR
 					Undo.RecordObject(cp.transform, "Assign Pose");
+					#endif
 					cp.transform.localPosition = cpv.position;
+					#if UNITY_EDITOR
 					EditorUtility.SetDirty (cp.transform);
+					#endif
 				}
 				else {
 					Debug.Log("There is no control point '" + cpv.name + "'");
@@ -310,7 +330,6 @@ public class Skeleton : MonoBehaviour {
     public void SetBasePose(Pose pose) {
         basePose = pose;
     }
-#endif
 
     public void SetEditMode(bool edit) {
 #if UNITY_EDITOR
