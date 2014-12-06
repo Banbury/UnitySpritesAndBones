@@ -51,7 +51,7 @@ public class ControlPoint : MonoBehaviour {
 		{
 			for (int i = 0; i < skin.sharedMesh.vertices.Length; i++)
 			{
-				GameObject b = new GameObject("Control Point");
+				GameObject b = new GameObject(skin.name + " Control Point");
 				// Unparent the skin temporarily before adding the control point
 				Transform skinParent = skin.transform.parent;
 				skin.transform.parent = null;
@@ -166,6 +166,12 @@ public class ControlPoint : MonoBehaviour {
 	}
 
 #endif
+
+	public void Rename() {
+		if (skin != null && !gameObject.name.Contains(skin.name)) {
+			gameObject.name = skin.name + " " + gameObject.name;
+		}
+	}
 
 	public void ResetPosition() {
 		#if UNITY_EDITOR

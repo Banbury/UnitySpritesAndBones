@@ -39,5 +39,11 @@ public class ControlPointEditor : Editor {
         if (GUILayout.Button("Reset Position")) {
             controlPoint.ResetPosition();
         }
+
+        EditorGUILayout.Separator();
+
+        if (GUILayout.Button("Reset Name")) {
+            controlPoint.Rename();
+        }
     }
 }

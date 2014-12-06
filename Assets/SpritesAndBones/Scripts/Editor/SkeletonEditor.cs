@@ -149,6 +149,18 @@ public class SkeletonEditor : Editor {
 			}
 			Debug.Log("Saved all Skins as Prefabs.");
 		}
+
+		EditorGUILayout.Separator();
+
+		EditorGUILayout.LabelField("Reset Skins' Control Point Names", EditorStyles.boldLabel);
+
+		if(GUILayout.Button("Reset Control Point Names")) {
+			ControlPoint[] cps = skeleton.gameObject.GetComponentsInChildren<ControlPoint>();
+			foreach (ControlPoint cp in cps) {
+				cp.Rename();
+			}
+			Debug.Log("Reset all control point names.");
+		}
     }
 
     void OnSceneGUI() {

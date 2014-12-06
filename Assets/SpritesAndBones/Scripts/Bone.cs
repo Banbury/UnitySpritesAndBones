@@ -376,7 +376,13 @@ public class Bone : MonoBehaviour {
 
 	private void MoveRenderersPositions(){
 		foreach (Transform renderer in renderers.Keys){
+			#if UNITY_EDITOR
+			Undo.RecordObject(renderer, "Move Render Position");
+			#endif
 			renderer.position = new Vector3(renderer.position.x, renderer.position.y, (float)renderers[renderer]);
+			#if UNITY_EDITOR
+			EditorUtility.SetDirty (renderer);
+			#endif
 		}
 	}
 
@@ -392,7 +398,13 @@ public class Bone : MonoBehaviour {
 			{
 				renderers = GetRenderersZ();
 			}
+			#if UNITY_EDITOR
+			Undo.RecordObject(transform, "Flip Y");
+			#endif
 			transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, 0.0f, transform.localEulerAngles.z);
+			#if UNITY_EDITOR
+			EditorUtility.SetDirty (transform);
+			#endif
 			if (skeleton != null && skeleton.useShadows)
 			{
 				MoveRenderersPositions();
@@ -407,7 +419,13 @@ public class Bone : MonoBehaviour {
 				renderers = GetRenderersZ();
 			}
 			// Get the new positions for the renderers from the rotation of this transform
+			#if UNITY_EDITOR
+			Undo.RecordObject(transform, "Flip Y");
+			#endif
 			transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, 180.0f, transform.localEulerAngles.z);
+			#if UNITY_EDITOR
+			EditorUtility.SetDirty (transform);
+			#endif
 			if (skeleton != null && skeleton.useShadows)
 			{
 				MoveRenderersPositions();
@@ -438,7 +456,13 @@ public class Bone : MonoBehaviour {
 			{
 				renderers = GetRenderersZ();
 			}
+			#if UNITY_EDITOR
+			Undo.RecordObject(transform, "Flip X");
+			#endif
 			transform.localEulerAngles = new Vector3(0.0f, transform.localEulerAngles.y, transform.localEulerAngles.z);
+			#if UNITY_EDITOR
+			EditorUtility.SetDirty (transform);
+			#endif
 			if (skeleton != null && skeleton.useShadows)
 			{
 				MoveRenderersPositions();
@@ -452,7 +476,13 @@ public class Bone : MonoBehaviour {
 			{
 				renderers = GetRenderersZ();
 			}
+			#if UNITY_EDITOR
+			Undo.RecordObject(transform, "Flip X");
+			#endif
 			transform.localEulerAngles = new Vector3(180.0f, transform.localEulerAngles.y, transform.localEulerAngles.z);
+			#if UNITY_EDITOR
+			EditorUtility.SetDirty (transform);
+			#endif
 			if (skeleton != null && skeleton.useShadows)
 			{
 				MoveRenderersPositions();
@@ -478,9 +508,9 @@ public class Bone : MonoBehaviour {
 			//find all SkinnedMeshRenderer elements
 			skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>(true);
 			foreach(SkinnedMeshRenderer skin in skins) {
-				if (skin.sharedMaterial != null)
+				if (skin.material != null)
 				{
-					if (skeleton.spriteShadowsShader != null && skin.sharedMaterial.shader == skeleton.spriteShadowsShader)
+					if (skeleton.spriteShadowsShader != null && skin.material.shader == skeleton.spriteShadowsShader)
 					{
 						renderers[skin.transform] = skin.transform.position.z;
 					}
@@ -490,9 +520,9 @@ public class Bone : MonoBehaviour {
 			//find all SpriteRenderer elements
 			spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>(true);
 			foreach(SpriteRenderer spriteRenderer in spriteRenderers) {
-				if (spriteRenderer.sharedMaterial != null)
+				if (spriteRenderer.material != null)
 				{
-					if (skeleton.spriteShadowsShader != null && spriteRenderer.sharedMaterial.shader == skeleton.spriteShadowsShader)
+					if (skeleton.spriteShadowsShader != null && spriteRenderer.material.shader == skeleton.spriteShadowsShader)
 					{
 						renderers[spriteRenderer.transform] = spriteRenderer.transform.position.z;
 					}
@@ -509,11 +539,17 @@ public class Bone : MonoBehaviour {
 			//find all SkinnedMeshRenderer elements
 			skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>(true);
 			foreach(SkinnedMeshRenderer skin in skins) {
-				if (skin.sharedMaterial != null)
+				if (skin.material != null)
 				{
-					if (skeleton.spriteShadowsShader != null && skin.sharedMaterial.shader == skeleton.spriteShadowsShader)
+					if (skeleton.spriteShadowsShader != null && skin.material.shader == skeleton.spriteShadowsShader)
 					{
-						skin.sharedMaterial.SetVector("_Normal", new Vector3(0, 0, normal));
+						#if UNITY_EDITOR
+						Undo.RecordObject(skin.material, "Change Render Normals");
+						#endif
+						skin.material.SetVector("_Normal", new Vector3(0, 0, normal));
+						#if UNITY_EDITOR
+						EditorUtility.SetDirty (skin.material);
+						#endif
 					}
 				}
 			}
@@ -521,11 +557,17 @@ public class Bone : MonoBehaviour {
 			//find all SpriteRenderer elements
 			spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>(true);
 			foreach(SpriteRenderer spriteRenderer in spriteRenderers) {
-				if (spriteRenderer.sharedMaterial != null)
+				if (spriteRenderer.material != null)
 				{
-					if (skeleton.spriteShadowsShader != null && spriteRenderer.sharedMaterial.shader == skeleton.spriteShadowsShader)
+					if (skeleton.spriteShadowsShader != null && spriteRenderer.material.shader == skeleton.spriteShadowsShader)
 					{
-						spriteRenderer.sharedMaterial.SetVector("_Normal", new Vector3(0, 0, normal));
+						#if UNITY_EDITOR
+						Undo.RecordObject(spriteRenderer.material, "Change Render Normals");
+						#endif
+						spriteRenderer.material.SetVector("_Normal", new Vector3(0, 0, normal));
+						#if UNITY_EDITOR
+						EditorUtility.SetDirty (spriteRenderer.material);
+						#endif
 					}
 				}
 			}

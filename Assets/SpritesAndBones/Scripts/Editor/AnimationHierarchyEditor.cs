@@ -87,6 +87,10 @@ public class AnimationHierarchyEditor : EditorWindow {
 		);
 
 		Color standardColor = GUI.color;
+		if (obj == null && path.Contains("/Control Point")) {
+			newPath = RenameControlPointPath(path);
+			// Debug.Log(RenameControlPointPath(path));
+		}
 
 		if (obj != null) {
 			GUI.color = Color.green;
@@ -139,6 +143,16 @@ public class AnimationHierarchyEditor : EditorWindow {
 				pathsKeys.Add(key);
 			}
 		}
+	}
+
+	string RenameControlPointPath(string oldPath) {
+		int index = oldPath.LastIndexOf("/");
+		string controlPointName = oldPath.Substring(index + 1);
+		string newPath = oldPath.Substring(0, index);
+		index = newPath.LastIndexOf("/");
+		string prefixName = newPath.Substring(index + 1);
+		newPath = newPath + "/" + prefixName + " " + controlPointName;
+		return newPath;
 	}
 
 	void UpdatePath(string oldPath, string newPath) {
