@@ -125,15 +125,16 @@ public class Skin2D : MonoBehaviour {
     
     // Use this for initialization
     void Start() {
-		Mesh oldMesh = GetComponent<SkinnedMeshRenderer>().sharedMesh;
-		if (oldMesh != null) {
-			Mesh newMesh = (Mesh)Object.Instantiate(oldMesh);
-			GetComponent<SkinnedMeshRenderer>().sharedMesh = newMesh;
-		}
-
 #if UNITY_EDITOR
         CalculateVertexColors();
 #endif
+		if (Application.isPlaying) {
+			Mesh oldMesh = GetComponent<SkinnedMeshRenderer>().sharedMesh;
+			if (oldMesh != null) {
+				Mesh newMesh = (Mesh)Object.Instantiate(oldMesh);
+				GetComponent<SkinnedMeshRenderer>().sharedMesh = newMesh;
+			}
+		}
     }
 
     // Update is called once per frame
