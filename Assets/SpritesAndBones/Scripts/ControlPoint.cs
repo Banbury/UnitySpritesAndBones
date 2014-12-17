@@ -86,7 +86,7 @@ public class ControlPoint : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	void LateUpdate () {
 		if (skin != null && skin.sharedMesh != null)
 		{
 
