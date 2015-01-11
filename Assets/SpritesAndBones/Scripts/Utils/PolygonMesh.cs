@@ -27,6 +27,9 @@ using UnityEngine.Sprites;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+#if UNITY_EDITOR
+using System.IO;
+#endif
 
 public class PolygonMesh {
 
@@ -89,7 +92,13 @@ public class PolygonMesh {
 				mesh.RecalculateBounds();
 			}
 #if UNITY_EDITOR
-			ScriptableObjectUtility.CreateAsset(mesh);
+			// Check if the Meshes directory exists, if not, create it.
+			DirectoryInfo meshDir = new DirectoryInfo("Assets/Meshes");
+			if (Directory.Exists(meshDir.FullName) == false)
+			{
+				Directory.CreateDirectory(meshDir.FullName);
+			}
+			ScriptableObjectUtility.CreateAsset(mesh, "Meshes/" + polygonCollider.gameObject.name + ".Mesh");
 #endif
 
 			// Reset the rotations of the object

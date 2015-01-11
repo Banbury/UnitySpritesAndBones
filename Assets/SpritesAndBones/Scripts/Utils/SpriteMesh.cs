@@ -25,6 +25,7 @@ THE SOFTWARE.
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
+using System.IO;
 #endif
 using System;
 using System.Collections;
@@ -68,7 +69,13 @@ public class SpriteMesh {
 			mesh.RecalculateNormals();
 			mesh.RecalculateBounds();
 
-			ScriptableObjectUtility.CreateAsset(mesh);
+			// Check if the Meshes directory exists, if not, create it.
+			DirectoryInfo meshDir = new DirectoryInfo("Assets/Meshes");
+			if (Directory.Exists(meshDir.FullName) == false)
+			{
+				Directory.CreateDirectory(meshDir.FullName);
+			}
+			ScriptableObjectUtility.CreateAsset(mesh, "Meshes/" + spriteRenderer.gameObject.name + ".Mesh");
 
 			// Reset the rotations of the object
 			spriteRenderer.transform.localRotation = localRotation;
