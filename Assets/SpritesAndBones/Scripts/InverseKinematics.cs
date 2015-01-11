@@ -168,7 +168,11 @@ public class InverseKinematics : MonoBehaviour {
 					angle += parentRotation;
 				}
 
-				bone.localRotation = Quaternion.Euler(bone.localRotation.eulerAngles.x, bone.localRotation.eulerAngles.y, angle);
+				Quaternion newRotation = Quaternion.Euler(bone.localRotation.eulerAngles.x, bone.localRotation.eulerAngles.y, angle);
+
+				if (!IsNaNRot(newRotation)) {
+					bone.localRotation = newRotation;
+				}
 
                 bone = bone.parent;
             }
@@ -192,5 +196,10 @@ public class InverseKinematics : MonoBehaviour {
 	{
 		angle = Mathf.Abs((angle % 360) + 360) % 360;
 		return Mathf.Clamp(angle, min, max);
+	}
+
+	private bool IsNaNRot(Quaternion q) 
+	{
+		return (float.IsNaN(q.x) || float.IsNaN(q.y) || float.IsNaN(q.z) || float.IsNaN(q.w));
 	}
 }

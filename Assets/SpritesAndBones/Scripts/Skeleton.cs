@@ -25,6 +25,7 @@ THE SOFTWARE.
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
+using System.IO;
 #endif
 using System.Collections;
 using System.Collections.Generic;
@@ -36,6 +37,7 @@ using System.Linq;
 public class Skeleton : MonoBehaviour {
     public bool editMode = true;
     public bool showBoneInfluence = true;
+    public bool IK_Enabled = true;
 
     //[HideInInspector]
     public Pose basePose;
@@ -151,15 +153,17 @@ public class Skeleton : MonoBehaviour {
 #endif
 
     private void EditorUpdate() {
-		if (bones != null)
-		{
-			for (int i=0; i<bones.Length; i++) {
-                if (bones[i] != null)
-				{
-					InverseKinematics ik = bones[i].GetComponent<InverseKinematics>();
+		if (IK_Enabled) {
+			if (bones != null)
+			{
+				for (int i=0; i<bones.Length; i++) {
+					if (bones[i] != null)
+					{
+						InverseKinematics ik = bones[i].GetComponent<InverseKinematics>();
 
-					if (ik != null && !editMode && ik.enabled && ik.influence > 0) {
-						ik.resolveSK2D();
+						if (ik != null && !editMode && ik.enabled && ik.influence > 0) {
+							ik.resolveSK2D();
+						}
 					}
 				}
 			}
@@ -182,9 +186,16 @@ public class Skeleton : MonoBehaviour {
 			bones = gameObject.GetComponentsInChildren<Bone>();
 		}
 
-#if !UNITY_EDITOR
+		#if UNITY_EDITOR
+			EditorUpdate();
+		#endif
+	}
+
+	void LateUpdate () {
+
+	#if !UNITY_EDITOR
 		EditorUpdate();
-#else
+	#endif
         if (Application.isEditor && bones != null) {
             for (int i=0; i<bones.Length; i++) {
                 if (bones[i] != null)
@@ -194,7 +205,6 @@ public class Skeleton : MonoBehaviour {
 				}
             }
         }
-#endif
     }
 
 #if UNITY_EDITOR
@@ -236,8 +246,12 @@ public class Skeleton : MonoBehaviour {
     }
 
     public void SavePose(string poseFileName) {
-        if (poseFileName != null && poseFileName.Trim() != "") {
-            ScriptableObjectUtility.CreateAsset(CreatePose(), poseFileName);
+		if(!Directory.Exists("Assets/Poses")) {
+			AssetDatabase.CreateFolder("Assets", "Poses");
+			AssetDatabase.Refresh();
+		}
+		if (poseFileName != null && poseFileName.Trim() != "") {
+            ScriptableObjectUtility.CreateAsset(CreatePose(), "Poses/" + poseFileName);
         } else {
             ScriptableObjectUtility.CreateAsset(CreatePose());
         }

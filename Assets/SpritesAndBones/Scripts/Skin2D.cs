@@ -24,12 +24,12 @@ THE SOFTWARE.
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
+using System.IO;
 #endif
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityToolbag;
-using System.IO;
 
 [RequireComponent(typeof(MeshFilter))]
 [RequireComponent(typeof(SkinnedMeshRenderer))]
