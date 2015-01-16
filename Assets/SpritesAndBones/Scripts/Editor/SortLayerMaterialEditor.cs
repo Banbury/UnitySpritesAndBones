@@ -23,7 +23,10 @@ THE SOFTWARE.
 */
 
 using UnityEngine;
+#if UNITY_EDITOR
 using UnityEditor;
+using System.IO;
+#endif
 using System.Collections;
 using System.Collections.Generic;
 
@@ -53,7 +56,16 @@ public class SortLayerMaterialEditor : EditorWindow {
 			Material material = new Material(go.renderer.sharedMaterial);
 			material.CopyPropertiesFromMaterial(go.renderer.sharedMaterial);
 			go.renderer.sharedMaterial = material;
-			AssetDatabase.CreateAsset(material, "Assets/" + material.mainTexture.name + ".mat");
+			MaterialPropertyBlock block = new MaterialPropertyBlock();
+			go.renderer.GetPropertyBlock(block);
+			#if UNITY_EDITOR
+			if(!Directory.Exists("Assets/Materials")) {
+				AssetDatabase.CreateFolder("Assets", "Materials");
+				AssetDatabase.Refresh();
+			}
+			AssetDatabase.CreateAsset(material, "Assets/Materials/" + block.GetTexture(0).name + ".mat");
+			Debug.Log("Created material " + block.GetTexture(0).name + " for " + go.name);
+			#endif
 		}
 	}
 

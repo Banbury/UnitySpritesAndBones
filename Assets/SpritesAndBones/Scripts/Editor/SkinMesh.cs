@@ -184,14 +184,32 @@ public class SkinMesh : EditorWindow {
 
 			if (GUILayout.Button("Load Custom Mesh")) {
 				if (spriteRenderer != null && loadMesh != null) {
+					// Unparent the skin temporarily before adding the mesh
+					Transform polygonParent = spriteRenderer.transform.parent;
+					spriteRenderer.transform.parent = null;
+
+					// Reset the rotation before creating the mesh so the UV's will align properly
+					Quaternion localRotation = spriteRenderer.transform.localRotation;
+					spriteRenderer.transform.localRotation = Quaternion.identity;
+
+					// Reset the scale before creating the mesh so the UV's will align properly
+					Vector3 localScale = spriteRenderer.transform.localScale;
+					spriteRenderer.transform.localScale = Vector3.one;
 					if (mesh != null) mesh.Clear();
 					mesh = new Mesh();
 					mesh.vertices = loadMesh.vertices;
 					mesh.triangles = loadMesh.triangles;
-					mesh.normals = loadMesh.normals;
 					mesh.uv = genUV(mesh.vertices);
+					mesh.normals = loadMesh.normals;
 					mesh.RecalculateNormals();
 					mesh.RecalculateBounds();
+
+					// Reset the rotations of the object
+					spriteRenderer.transform.localRotation = localRotation;
+					spriteRenderer.transform.localScale = localScale;
+					spriteRenderer.transform.parent = polygonParent;
+
+					meshCreated = true;
 
 					// Create the Vector2 vertices
 					points = new Vector2[mesh.vertices.Length];
@@ -217,17 +235,17 @@ public class SkinMesh : EditorWindow {
         }
     }
 
-	private void CreatePolygon () {
+	private void CreatePolygon() {
 		GameObject go = Selection.activeGameObject;
 
 		if (spriteRenderer != null && spriteRenderer.sprite != null)
 		{
 			List<Vector2> newPoints = new List<Vector2>();
-			Ray r = SceneView.lastActiveSceneView.camera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 1.0f));
-			Vector3 worldPos = r.GetPoint(Vector3.Distance(r.origin, spriteRenderer.transform.position));
+			Vector3 worldPos = SceneView.currentDrawingSceneView.camera.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, 1.0f)) - spriteRenderer.transform.position;
 			newPoints.Add(new Vector2(worldPos.x, worldPos.y));
 			points = newPoints.ToArray();
 			if (mesh != null) mesh.Clear();
+			mesh = null;
 			meshCreated = false;
 		}
 		Undo.RegisterCreatedObjectUndo(go, "Created Polygon");
@@ -363,6 +381,11 @@ public class SkinMesh : EditorWindow {
 				Handles.DrawLine(p3, p1);
 			}
 		}
+		else {
+			if (points.Length > 1 && !closed) {
+				Handles.DrawLine(points[0], points[1]);
+			}
+		}
 
 		EditorGUI.BeginChangeCheck();
 
@@ -377,47 +400,52 @@ public class SkinMesh : EditorWindow {
 				AddPoint(e);
 			}
 
-			for (int i = 0; i < points.Length; i++) {
-				Vector3 point = new Vector3(points[i].x, points[i].y, 0);
-				
-				Handles.color = handleColor;
-				GUI.SetNextControlName("polygon point " + i);
-				if (i == 0) Handles.color = handleColorFirst;
-				if (i == (points.Length - 1)) Handles.color = handleColorLast;
-				float size = GetHandleSize(point, 1);
-				point = Handles.FreeMoveHandle(
-					point, 
-					Quaternion.identity, 
-					size, 
-					Vector3.zero, 
-					Handles.CircleCap
-				);
+			if (points.Length > 0) {
+				for (int i = 0; i < points.Length; i++) {
+					Vector3 point = new Vector3(points[i].x, points[i].y, 0);
+					
+					Handles.color = handleColor;
+					GUI.SetNextControlName("polygon point " + i);
+					if (i == 0) Handles.color = handleColorFirst;
+					if (i == (points.Length - 1)) Handles.color = handleColorLast;
+					float size = GetHandleSize(point, 1);
+					point = Handles.FreeMoveHandle(
+						point, 
+						Quaternion.identity, 
+						size, 
+						Vector3.zero, 
+						Handles.CircleCap
+					);
 
-				points[i] = point;
+					points[i] = point;
+				}
 			}
 		}
 
 		if (EditorGUI.EndChangeCheck()) {
 			Undo.RecordObject(spriteRenderer, "moved polygon point");
-			points = points;
 			// UpdateMesh();
-			Vector3[] vertices = new Vector3[mesh.vertices.Length];
-			System.Array.Copy(mesh.vertices, vertices, mesh.vertices.Length);
-			for (int i = 0; i < points.Length; i++) {
-				Vector3 point = new Vector3(points[i].x, points[i].y, 0);
-				vertices[i] = point;
+			if (mesh != null) {
+				Vector3[] vertices = new Vector3[mesh.vertices.Length];
+				System.Array.Copy(mesh.vertices, vertices, mesh.vertices.Length);
+				if (points.Length > 0 && vertices.Length > 0 && points.Length == vertices.Length) {
+					for (int i = 0; i < points.Length; i++) {
+						Vector3 point = new Vector3(points[i].x, points[i].y, 0);
+						vertices[i] = point;
+					}
+				}
+				mesh.vertices = vertices;
+				mesh.RecalculateBounds();
+				mesh.RecalculateNormals();
 			}
-			mesh.vertices = vertices;
-			mesh.uv = genUV(mesh.vertices);
-			mesh.RecalculateBounds();
-			mesh.RecalculateNormals();
+			sceneView.Repaint();
 			EditorUtility.SetDirty(this);
 		}
 	}
 
 	void AddPoint (Event e) {
 		Ray r = HandleUtility.GUIPointToWorldRay(e.mousePosition);
-		Vector3 worldPos = r.GetPoint(Vector3.Distance(r.origin, spriteRenderer.transform.position));
+		Vector3 worldPos = r.origin - spriteRenderer.transform.position;
 		List<Vector2> newPoints = new List<Vector2>(points);
 		float size = GetHandleSize(worldPos, 0.5f);
 		if (Handles.Button(worldPos, Quaternion.identity, size, size, Handles.CircleCap)) {
@@ -432,24 +460,26 @@ public class SkinMesh : EditorWindow {
 	void AddMidPoint () {
 		List<Vector2> newPoints = new List<Vector2>(points);
 		int len = points.Length;
-		for (int i = 0; i < len; i++) {
-			int n = (i+1)%len;
-			Vector3 p1 = points[i];
-			Vector3 p2 = points[n];
-			Handles.color = Color.green;
-			GUI.SetNextControlName("remove polygon point " + i);
-			Vector3 mid = (p1 + p2) * 0.5f;
-			float size = GetHandleSize(mid, 0.5f);
-			if (Handles.Button(mid, Quaternion.identity, size, size, Handles.CircleCap)) {
-				newPoints.Insert(n, new Vector3(mid.x, mid.y, mid.z));
-				Undo.RecordObject(this, "added polygon point");
-				points = newPoints.ToArray();
-				UpdateMesh();
-				EditorUtility.SetDirty(this);
-				break;
+		if (points.Length > 1) {
+			for (int i = 0; i < len; i++) {
+				int n = (i+1)%len;
+				Vector3 p1 = points[i];
+				Vector3 p2 = points[n];
+				Handles.color = Color.green;
+				GUI.SetNextControlName("remove polygon point " + i);
+				Vector3 mid = (p1 + p2) * 0.5f;
+				float size = GetHandleSize(mid, 0.5f);
+				if (Handles.Button(mid, Quaternion.identity, size, size, Handles.CircleCap)) {
+					newPoints.Insert(n, new Vector3(mid.x, mid.y, mid.z));
+					Undo.RecordObject(this, "added polygon point");
+					points = newPoints.ToArray();
+					UpdateMesh();
+					EditorUtility.SetDirty(this);
+					break;
+				}
 			}
 		}
-	}	
+	}
 
 	void RemovePoint (int index) {
         if (index < 0 || index >= points.Length) return;
@@ -463,13 +493,15 @@ public class SkinMesh : EditorWindow {
     }
 
     void RemovePoint () {
-    	for (int i = 0; i < points.Length; i++) {
-			Handles.color = Color.red;
-   		 	float size = GetHandleSize(points[i], 1);
-   			GUI.SetNextControlName("remove pretty poly point " + i);
-			if (Handles.Button(points[i], Quaternion.identity, size, size, Handles.CircleCap)) {
-				RemovePoint(i);
-				break;
+		if (points.Length > 1) {
+			for (int i = 0; i < points.Length; i++) {
+				Handles.color = Color.red;
+				float size = GetHandleSize(points[i], 1);
+				GUI.SetNextControlName("remove pretty poly point " + i);
+				if (Handles.Button(points[i], Quaternion.identity, size, size, Handles.CircleCap)) {
+					RemovePoint(i);
+					break;
+				}
 			}
 		}
     }
@@ -568,13 +600,31 @@ public class SkinMesh : EditorWindow {
 	void SaveMesh() {
 		if (mesh != null && spriteRenderer != null) {
 		#if UNITY_EDITOR
-		// Check if the Mesh directory exists, if not, create it.
+			// Unparent the skin temporarily before adding the mesh
+			Transform polygonParent = spriteRenderer.transform.parent;
+			spriteRenderer.transform.parent = null;
+
+			// Reset the rotation before creating the mesh so the UV's will align properly
+			Quaternion localRotation = spriteRenderer.transform.localRotation;
+			spriteRenderer.transform.localRotation = Quaternion.identity;
+
+			// Reset the scale before creating the mesh so the UV's will align properly
+			Vector3 localScale = spriteRenderer.transform.localScale;
+			spriteRenderer.transform.localScale = Vector3.one;
+
+			mesh.uv = genUV(mesh.vertices);
+			// Check if the Mesh directory exists, if not, create it.
 			DirectoryInfo meshDir = new DirectoryInfo("Assets/Meshes");
 			if (Directory.Exists(meshDir.FullName) == false)
 			{
 				Directory.CreateDirectory(meshDir.FullName);
 			}
 			ScriptableObjectUtility.CreateAsset(mesh, "Meshes/" + spriteRenderer.gameObject.name + ".Mesh");
+
+			// Reset the rotations of the object
+			spriteRenderer.transform.localRotation = localRotation;
+			spriteRenderer.transform.localScale = localScale;
+			spriteRenderer.transform.parent = polygonParent;
 		#endif
 		}
 	}
@@ -665,6 +715,7 @@ public class SkinMesh : EditorWindow {
 			}
 
 			//transform vertices
+			points = new Vector2[triangleMesh.Vertices.Count];
 			Vector3[] vertices = new Vector3[triangleMesh.Vertices.Count];
 			Vector2[] uvs = new Vector2[triangleMesh.Vertices.Count];
 			Vector3[] normals = new Vector3[triangleMesh.Vertices.Count];
@@ -672,6 +723,7 @@ public class SkinMesh : EditorWindow {
 			int n = 0;
 			foreach(TriangleNet.Data.Vertex v in triangleMesh.Vertices) {
 
+				points[n] = new Vector2((float)v.X, (float)v.Y);
 				vertices[n] = new Vector3((float)v.X, (float)v.Y, 0);
 				normals[n] = new Vector3(0, 0, -1);
 				n++;
@@ -749,6 +801,7 @@ public class SkinMesh : EditorWindow {
 			triangleMesh.Triangulate(geometry);
 
 			//transform vertices
+			points = new Vector2[triangleMesh.Vertices.Count];
 			Vector3[] vertices = new Vector3[triangleMesh.Vertices.Count];
 			Vector2[] uvs = new Vector2[triangleMesh.Vertices.Count];
 			Vector3[] normals = new Vector3[triangleMesh.Vertices.Count];
@@ -757,7 +810,7 @@ public class SkinMesh : EditorWindow {
 			foreach(TriangleNet.Data.Vertex v in triangleMesh.Vertices) 
 			{
 
-				vertices[n] = new Vector3((float)v.X, (float)v.Y, 0);
+				points[n] = new Vector2((float)v.X, (float)v.Y);
 				vertices[n] = new Vector3((float)v.X, (float)v.Y, 0);
 				normals[n]=new Vector3(0,0,-1);
 
@@ -778,6 +831,7 @@ public class SkinMesh : EditorWindow {
 			mesh = new Mesh();
 			mesh.vertices = vertices;
 			mesh.triangles = triangles;
+			mesh.uv = genUV(mesh.vertices);
 			mesh.normals = normals;
 
 			return mesh;

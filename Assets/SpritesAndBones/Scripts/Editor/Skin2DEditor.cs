@@ -23,7 +23,10 @@ THE SOFTWARE.
 */
 
 using UnityEngine;
+#if UNITY_EDITOR
 using UnityEditor;
+using System.IO;
+#endif
 using System.Collections;
 
 [CustomEditor(typeof(Skin2D))]
@@ -59,7 +62,12 @@ public class Skin2DEditor : Editor {
 
         if (skin.GetComponent<SkinnedMeshRenderer>().sharedMesh != null && GUILayout.Button("Generate Mesh Asset")) {
             #if UNITY_EDITOR
-			ScriptableObjectUtility.CreateAsset(skin.GetComponent<SkinnedMeshRenderer>().sharedMesh);
+			// Check if the Meshes directory exists, if not, create it.
+			if(!Directory.Exists("Assets/Meshes")) {
+				AssetDatabase.CreateFolder("Assets", "Meshes");
+				AssetDatabase.Refresh();
+			}
+			ScriptableObjectUtility.CreateAsset(skin.GetComponent<SkinnedMeshRenderer>().sharedMesh, "Meshes/" + skin.gameObject.name + ".Mesh");
 			#endif
         }
 
@@ -68,7 +76,14 @@ public class Skin2DEditor : Editor {
 			Material material = new Material(skin.GetComponent<SkinnedMeshRenderer>().sharedMaterial);
 			material.CopyPropertiesFromMaterial(skin.GetComponent<SkinnedMeshRenderer>().sharedMaterial);
 			skin.GetComponent<SkinnedMeshRenderer>().sharedMaterial = material;
-			AssetDatabase.CreateAsset(material, "Assets/" + material.mainTexture.name + ".mat");
+			MaterialPropertyBlock block = new MaterialPropertyBlock();
+			skin.GetComponent<SkinnedMeshRenderer>().GetPropertyBlock(block);
+			if(!Directory.Exists("Assets/Materials")) {
+				AssetDatabase.CreateFolder("Assets", "Materials");
+				AssetDatabase.Refresh();
+			}
+			AssetDatabase.CreateAsset(material, "Assets/Materials/" + block.GetTexture(0).name + ".mat");
+			Debug.Log("Created material " + block.GetTexture(0).name + " for " + skin.gameObject.name);
 			#endif
         }
     }
