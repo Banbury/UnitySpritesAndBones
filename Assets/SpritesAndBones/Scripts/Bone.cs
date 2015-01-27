@@ -37,6 +37,7 @@ public class Bone : MonoBehaviour {
     public float length = 1.0f;
     public bool snapToParent = true;
     public bool editMode = true;
+	[HideInInspector]
     public bool showInfluence = true;
     public bool deform = false;
     public float influenceTail = 0f;
@@ -543,13 +544,23 @@ public class Bone : MonoBehaviour {
 				{
 					if (skeleton.spriteShadowsShader != null && skin.material.shader == skeleton.spriteShadowsShader)
 					{
-						#if UNITY_EDITOR
-						Undo.RecordObject(skin.material, "Change Render Normals");
-						#endif
-						skin.material.SetVector("_Normal", new Vector3(0, 0, normal));
-						#if UNITY_EDITOR
-						EditorUtility.SetDirty (skin.material);
-						#endif
+						if (!skeleton.useSharedMaterial) {
+							#if UNITY_EDITOR
+							Undo.RecordObject(skin.material, "Change Render Normals");
+							#endif
+							skin.material.SetVector("_Normal", new Vector3(0, 0, normal));
+							#if UNITY_EDITOR
+							EditorUtility.SetDirty (skin.material);
+							#endif
+						} else {
+							#if UNITY_EDITOR
+							Undo.RecordObject(skin.sharedMaterial, "Change Render Normals");
+							#endif
+							skin.sharedMaterial.SetVector("_Normal", new Vector3(0, 0, normal));
+							#if UNITY_EDITOR
+							EditorUtility.SetDirty (skin.sharedMaterial);
+							#endif
+						}
 					}
 				}
 			}
@@ -561,13 +572,23 @@ public class Bone : MonoBehaviour {
 				{
 					if (skeleton.spriteShadowsShader != null && spriteRenderer.material.shader == skeleton.spriteShadowsShader)
 					{
-						#if UNITY_EDITOR
-						Undo.RecordObject(spriteRenderer.material, "Change Render Normals");
-						#endif
-						spriteRenderer.material.SetVector("_Normal", new Vector3(0, 0, normal));
-						#if UNITY_EDITOR
-						EditorUtility.SetDirty (spriteRenderer.material);
-						#endif
+						if (!skeleton.useSharedMaterial) {
+							#if UNITY_EDITOR
+							Undo.RecordObject(spriteRenderer.material, "Change Render Normals");
+							#endif
+							spriteRenderer.material.SetVector("_Normal", new Vector3(0, 0, normal));
+							#if UNITY_EDITOR
+							EditorUtility.SetDirty (spriteRenderer.material);
+							#endif
+						} else {
+							#if UNITY_EDITOR
+							Undo.RecordObject(spriteRenderer.sharedMaterial, "Change Render Normals");
+							#endif
+							spriteRenderer.sharedMaterial.SetVector("_Normal", new Vector3(0, 0, normal));
+							#if UNITY_EDITOR
+							EditorUtility.SetDirty (spriteRenderer.sharedMaterial);
+							#endif
+						}
 					}
 				}
 			}

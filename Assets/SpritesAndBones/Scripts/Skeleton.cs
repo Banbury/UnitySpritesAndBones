@@ -113,6 +113,8 @@ public class Skeleton : MonoBehaviour {
 	private SkinnedMeshRenderer[] skins;
 	private SpriteRenderer[] spriteRenderers;
 
+	public bool useSharedMaterial = false;
+
 #if UNITY_EDITOR
 		[MenuItem("Sprites And Bones/Skeleton")]
 		public static void Create ()
@@ -135,8 +137,34 @@ public class Skeleton : MonoBehaviour {
 
     // Use this for initialization
 	void Start () {
+		// Set Default Shaders
 		spriteShader = Shader.Find("Sprites/Default");
 		spriteShadowsShader = Shader.Find("Sprites/Skeleton-CutOut");
+
+		// Initialize Z-Sorting and Shadows
+		skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+		foreach (SkinnedMeshRenderer skin in skins)
+		{
+			if (skin.transform.localPosition.z != 0) {
+				_useZSorting = true;
+			}
+			if (skin.receiveShadows) {
+				_useShadows = true;
+			}
+		}
+
+		spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>(true);
+		foreach (SpriteRenderer spriteRenderer in spriteRenderers)
+		{
+			if (spriteRenderer.transform.localPosition.z != 0) {
+				_useZSorting = true;
+			}
+			if (spriteRenderer.receiveShadows) {
+				_useShadows = true;
+			}
+		}
+
+		// Turn Edit mode off when playing
 		if (Application.isPlaying) {
             SetEditMode(false);
         }
@@ -546,13 +574,23 @@ public class Skeleton : MonoBehaviour {
 				{
 					if (spriteShadowsShader != null && skin.material.shader == spriteShadowsShader)
 					{
-						#if UNITY_EDITOR
-						Undo.RecordObject(skin.material, "Change Render Normals");
-						#endif
-						skin.material.SetVector("_Normal", new Vector3(0, 0, normal));
-						#if UNITY_EDITOR
-						EditorUtility.SetDirty (skin.material);
-						#endif
+						if (!useSharedMaterial) {
+							#if UNITY_EDITOR
+							Undo.RecordObject(skin.material, "Change Render Normals");
+							#endif
+							skin.material.SetVector("_Normal", new Vector3(0, 0, normal));
+							#if UNITY_EDITOR
+							EditorUtility.SetDirty (skin.material);
+							#endif
+						} else {
+							#if UNITY_EDITOR
+							Undo.RecordObject(skin.sharedMaterial, "Change Render Normals");
+							#endif
+							skin.sharedMaterial.SetVector("_Normal", new Vector3(0, 0, normal));
+							#if UNITY_EDITOR
+							EditorUtility.SetDirty (skin.sharedMaterial);
+							#endif
+						}
 					}
 				}
 			}
@@ -564,13 +602,23 @@ public class Skeleton : MonoBehaviour {
 				{
 					if (spriteShadowsShader != null && spriteRenderer.material.shader == spriteShadowsShader)
 					{
-						#if UNITY_EDITOR
-						Undo.RecordObject(spriteRenderer.material, "Change Render Normals");
-						#endif
-						spriteRenderer.material.SetVector("_Normal", new Vector3(0, 0, normal));
-						#if UNITY_EDITOR
-						EditorUtility.SetDirty (spriteRenderer.material);
-						#endif
+						if (!useSharedMaterial) {
+							#if UNITY_EDITOR
+							Undo.RecordObject(spriteRenderer.material, "Change Render Normals");
+							#endif
+							spriteRenderer.material.SetVector("_Normal", new Vector3(0, 0, normal));
+							#if UNITY_EDITOR
+							EditorUtility.SetDirty (spriteRenderer.material);
+							#endif
+						} else {
+							#if UNITY_EDITOR
+							Undo.RecordObject(spriteRenderer.sharedMaterial, "Change Render Normals");
+							#endif
+							spriteRenderer.sharedMaterial.SetVector("_Normal", new Vector3(0, 0, normal));
+							#if UNITY_EDITOR
+							EditorUtility.SetDirty (spriteRenderer.sharedMaterial);
+							#endif
+						}
 					}
 				}
 			}
@@ -587,23 +635,43 @@ public class Skeleton : MonoBehaviour {
 			{
 				if (useShadows && spriteShadowsShader != null)
 				{
-					#if UNITY_EDITOR
-					Undo.RecordObject(skin.material.shader, "Use Shadows");
-					#endif
-					skin.material.shader = spriteShadowsShader;
-					#if UNITY_EDITOR
-					EditorUtility.SetDirty (skin.material.shader);
-					#endif
+					if (!useSharedMaterial) {
+						#if UNITY_EDITOR
+						Undo.RecordObject(skin.material.shader, "Use Shadows");
+						#endif
+						skin.material.shader = spriteShadowsShader;
+						#if UNITY_EDITOR
+						EditorUtility.SetDirty (skin.material.shader);
+						#endif
+					} else {
+						#if UNITY_EDITOR
+						Undo.RecordObject(skin.sharedMaterial.shader, "Use Shadows");
+						#endif
+						skin.sharedMaterial.shader = spriteShadowsShader;
+						#if UNITY_EDITOR
+						EditorUtility.SetDirty (skin.sharedMaterial.shader);
+						#endif
+					}
 				}
 				else
 				{
-					#if UNITY_EDITOR
-					Undo.RecordObject(skin.material.shader, "Use Shadows");
-					#endif
-					skin.material.shader = spriteShader;
-					#if UNITY_EDITOR
-					EditorUtility.SetDirty (skin.material.shader);
-					#endif
+					if (!useSharedMaterial) {
+						#if UNITY_EDITOR
+						Undo.RecordObject(skin.material.shader, "Use Shadows");
+						#endif
+						skin.material.shader = spriteShader;
+						#if UNITY_EDITOR
+						EditorUtility.SetDirty (skin.material.shader);
+						#endif
+					} else {
+						#if UNITY_EDITOR
+						Undo.RecordObject(skin.sharedMaterial.shader, "Use Shadows");
+						#endif
+						skin.sharedMaterial.shader = spriteShader;
+						#if UNITY_EDITOR
+						EditorUtility.SetDirty (skin.sharedMaterial.shader);
+						#endif
+					}
 				}
 
 				skin.castShadows = useShadows;
@@ -619,23 +687,43 @@ public class Skeleton : MonoBehaviour {
 			{
 				if (useShadows && spriteShadowsShader != null)
 				{
-					#if UNITY_EDITOR
-					Undo.RecordObject(spriteRenderer.material.shader, "Use Shadows");
-					#endif
-					spriteRenderer.material.shader = spriteShadowsShader;
-					#if UNITY_EDITOR
-					EditorUtility.SetDirty (spriteRenderer.material.shader);
-					#endif
+					if (!useSharedMaterial) {
+						#if UNITY_EDITOR
+						Undo.RecordObject(spriteRenderer.material.shader, "Use Shadows");
+						#endif
+						spriteRenderer.material.shader = spriteShadowsShader;
+						#if UNITY_EDITOR
+						EditorUtility.SetDirty (spriteRenderer.material.shader);
+						#endif
+					} else {
+						#if UNITY_EDITOR
+						Undo.RecordObject(spriteRenderer.sharedMaterial.shader, "Use Shadows");
+						#endif
+						spriteRenderer.sharedMaterial.shader = spriteShadowsShader;
+						#if UNITY_EDITOR
+						EditorUtility.SetDirty (spriteRenderer.sharedMaterial.shader);
+						#endif
+					}
 				}
 				else
 				{
-					#if UNITY_EDITOR
-					Undo.RecordObject(spriteRenderer.material.shader, "Use Shadows");
-					#endif
-					spriteRenderer.material.shader = spriteShader;
-					#if UNITY_EDITOR
-					EditorUtility.SetDirty (spriteRenderer.material.shader);
-					#endif
+					if (!useSharedMaterial) {
+						#if UNITY_EDITOR
+						Undo.RecordObject(spriteRenderer.material.shader, "Use Shadows");
+						#endif
+						spriteRenderer.material.shader = spriteShader;
+						#if UNITY_EDITOR
+						EditorUtility.SetDirty (spriteRenderer.material.shader);
+						#endif
+					} else {
+						#if UNITY_EDITOR
+						Undo.RecordObject(spriteRenderer.sharedMaterial.shader, "Use Shadows");
+						#endif
+						spriteRenderer.sharedMaterial.shader = spriteShader;
+						#if UNITY_EDITOR
+						EditorUtility.SetDirty (spriteRenderer.sharedMaterial.shader);
+						#endif
+					}
 				}
 
 				spriteRenderer.castShadows = useShadows;

@@ -76,14 +76,12 @@ public class Skin2DEditor : Editor {
 			Material material = new Material(skin.GetComponent<SkinnedMeshRenderer>().sharedMaterial);
 			material.CopyPropertiesFromMaterial(skin.GetComponent<SkinnedMeshRenderer>().sharedMaterial);
 			skin.GetComponent<SkinnedMeshRenderer>().sharedMaterial = material;
-			MaterialPropertyBlock block = new MaterialPropertyBlock();
-			skin.GetComponent<SkinnedMeshRenderer>().GetPropertyBlock(block);
 			if(!Directory.Exists("Assets/Materials")) {
 				AssetDatabase.CreateFolder("Assets", "Materials");
 				AssetDatabase.Refresh();
 			}
-			AssetDatabase.CreateAsset(material, "Assets/Materials/" + block.GetTexture(0).name + ".mat");
-			Debug.Log("Created material " + block.GetTexture(0).name + " for " + skin.gameObject.name);
+			AssetDatabase.CreateAsset(material, "Assets/Materials/" + material.mainTexture.name + ".mat");
+			Debug.Log("Created material " + material.mainTexture.name + " for " + skin.gameObject.name);
 			#endif
         }
     }

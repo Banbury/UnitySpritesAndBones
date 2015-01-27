@@ -63,8 +63,15 @@ public class SortLayerMaterialEditor : EditorWindow {
 				AssetDatabase.CreateFolder("Assets", "Materials");
 				AssetDatabase.Refresh();
 			}
-			AssetDatabase.CreateAsset(material, "Assets/Materials/" + block.GetTexture(0).name + ".mat");
-			Debug.Log("Created material " + block.GetTexture(0).name + " for " + go.name);
+
+			string textureName = null;
+			if (block.GetTexture(0).name != null) {
+				textureName = block.GetTexture(0).name;
+			} else {
+				textureName = material.mainTexture.name;
+			}
+			AssetDatabase.CreateAsset(material, "Assets/Materials/" + textureName + ".mat");
+			Debug.Log("Created material " + textureName + " for " + go.name);
 			#endif
 		}
 	}
