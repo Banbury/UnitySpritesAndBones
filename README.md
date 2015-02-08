@@ -35,5 +35,8 @@ Screenshots:
 Forum thread:
 * http://forum.unity3d.com/threads/219915-Release-Free-Unity-Sprites-And-Bones-2D-skeleton-animation
 
+Demo of how to use sprites and bones with this fork:
+* https://www.youtube.com/watch?feature=player_embedded&v=bsd8lpesiTE
+
 ## Installation
 After importing into a new project, the Gizmo folder has to be moved to the Asset folder. Otherwise some icons won't show up in the editor and the hierarchy.
