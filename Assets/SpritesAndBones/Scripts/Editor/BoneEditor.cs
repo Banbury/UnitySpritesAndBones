@@ -77,6 +77,7 @@ public class BoneEditor : Editor {
             if (bone.enabled && !current.control) {
                 EditorGUI.BeginChangeCheck();
                 Vector3 v = Handles.FreeMoveHandle(bone.Head, Quaternion.identity, 0.1f, Vector3.zero, Handles.RectangleCap);
+                Undo.RecordObject(bone.transform, "Change bone transform");
                 Undo.RecordObject(bone, "Change bone");
                 bone.length = Vector2.Distance(v, bone.transform.position);
                 bone.transform.up = (v - bone.transform.position).normalized;

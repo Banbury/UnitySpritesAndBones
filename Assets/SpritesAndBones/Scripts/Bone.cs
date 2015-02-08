@@ -301,17 +301,18 @@ public class Bone : MonoBehaviour {
             }
         }
 
-		int div = 5; 
+		int div = 5;
 
-		Vector3 v = Quaternion.AngleAxis(45, Vector3.forward) * (((Vector3)Head - gameObject.transform.position) / div);
+        Vector3 HeadProjected = new Vector3(Head.x, Head.y, gameObject.transform.position.z);
+		Vector3 v = Quaternion.AngleAxis(45, Vector3.forward) * ((Head - (Vector2)gameObject.transform.position) / div);
 		Gizmos.DrawLine(gameObject.transform.position, gameObject.transform.position + v);
-		Gizmos.DrawLine(gameObject.transform.position + v, Head);
+        Gizmos.DrawLine(gameObject.transform.position + v, HeadProjected);
 
-		v = Quaternion.AngleAxis(-45, Vector3.forward) * (((Vector3)Head - gameObject.transform.position) / div);
+		v = Quaternion.AngleAxis(-45, Vector3.forward) * ((Head - (Vector2)gameObject.transform.position) / div);
 		Gizmos.DrawLine(gameObject.transform.position, gameObject.transform.position + v);
-		Gizmos.DrawLine(gameObject.transform.position + v, Head);
+        Gizmos.DrawLine(gameObject.transform.position + v, HeadProjected);
 
-		Gizmos.DrawLine(gameObject.transform.position, Head);
+        Gizmos.DrawLine(gameObject.transform.position, HeadProjected);
 
 		Gizmos.color = new Color(Gizmos.color.r, Gizmos.color.g, Gizmos.color.b, 0.5f);
 

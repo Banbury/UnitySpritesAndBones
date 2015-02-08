@@ -108,22 +108,25 @@ public class InverseKinematicsEditor : Editor {
 				float discSize = handleSize * gizmoSize;
 
 
-				Bone b = transform.GetComponent<Bone>();
 				Bone pb = transform.parent.GetComponent<Bone>();
-				float parentRotation = pb ? Vector2.Angle(pb.Head, b.Head) : 0;
-				Vector3 min = Quaternion.Euler(0, 0, node.min + parentRotation)*Vector3.down;
-				Vector3 max = Quaternion.Euler(0, 0, node.max + parentRotation)*Vector3.down;
+                float parentRotation = pb ? pb.transform.eulerAngles.z : 0;
+
+                Vector3 min = Quaternion.Euler(0, 0, Mathf.Min(node.min, node.max) + parentRotation) * Vector3.up;
+                Vector3 max = Quaternion.Euler(0, 0, Mathf.Max(node.min, node.max) + parentRotation) * Vector3.up;
+                //Vector3 min = Quaternion.Euler(0, 0, node.min + parentRotation) * Vector3.down;
+                //Vector3 max = Quaternion.Euler(0, 0, node.max + parentRotation) * Vector3.down;
 
 				Handles.color = new Color(0, 1, 0, 0.1f);
 				Handles.DrawWireDisc(position, Vector3.back, discSize);
-				Handles.DrawSolidArc(position, Vector3.forward, min, node.max - node.min, discSize);
+				Handles.DrawSolidArc(position, Vector3.forward, (node.min < node.max) ? min : max, (360 + node.max - node.min) % 360, discSize);
+                //Handles.DrawSolidArc(position, Vector3.forward, min, node.max - node.min, discSize);
 
 				Handles.color = Color.green;
 				Handles.DrawLine(position, position + min * discSize);
 				Handles.DrawLine(position, position + max * discSize);
 
-				Vector3 toChild = target.RootBone.position - position;
-				Handles.DrawLine(position, position + toChild);
+				Vector3 toChild = transform.rotation * Vector3.up;
+				Handles.DrawLine(position, position + toChild * discSize);
 			}
 		}
 	}
