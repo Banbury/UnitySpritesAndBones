@@ -406,7 +406,7 @@ public class Skeleton : MonoBehaviour {
 	{
 		//find all Skin2D elements
 		Skin2D[] skins = transform.GetComponentsInChildren<Skin2D>();
-		if(bones == null || bones.Length != null && bones.Length == 0) {
+		if(bones == null || bones.Length == 0) {
 			Debug.Log("No bones in skeleton");
 			return;
 		}

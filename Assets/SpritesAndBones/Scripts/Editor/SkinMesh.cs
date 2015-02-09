@@ -51,7 +51,7 @@ public class SkinMesh : EditorWindow {
 	public Vector2[] points = new Vector2[0];
 	public Mesh mesh = new Mesh();
 	public Mesh combineMesh;
-	public Mesh loadMesh;
+	public Mesh customLoadMesh;
 
 	private bool meshCreated = false;
 
@@ -180,43 +180,11 @@ public class SkinMesh : EditorWindow {
 			GUILayout.Label("Adding or Deleting points Re-Triangulates Mesh", EditorStyles.whiteLabel);
 
 			EditorGUILayout.Separator();
-			loadMesh = (Mesh)EditorGUILayout.ObjectField(loadMesh, typeof(Mesh), true);
+			customLoadMesh = (Mesh)EditorGUILayout.ObjectField(customLoadMesh, typeof(Mesh), true);
 
 			if (GUILayout.Button("Load Custom Mesh")) {
-				if (spriteRenderer != null && loadMesh != null) {
-					// Unparent the skin temporarily before adding the mesh
-					Transform polygonParent = spriteRenderer.transform.parent;
-					spriteRenderer.transform.parent = null;
-
-					// Reset the rotation before creating the mesh so the UV's will align properly
-					Quaternion localRotation = spriteRenderer.transform.localRotation;
-					spriteRenderer.transform.localRotation = Quaternion.identity;
-
-					// Reset the scale before creating the mesh so the UV's will align properly
-					Vector3 localScale = spriteRenderer.transform.localScale;
-					spriteRenderer.transform.localScale = Vector3.one;
-					if (mesh != null) mesh.Clear();
-					mesh = new Mesh();
-					mesh.vertices = loadMesh.vertices;
-					mesh.triangles = loadMesh.triangles;
-					mesh.uv = genUV(mesh.vertices);
-					mesh.normals = loadMesh.normals;
-					mesh.RecalculateNormals();
-					mesh.RecalculateBounds();
-
-					// Reset the rotations of the object
-					spriteRenderer.transform.localRotation = localRotation;
-					spriteRenderer.transform.localScale = localScale;
-					spriteRenderer.transform.parent = polygonParent;
-
-					meshCreated = true;
-
-					// Create the Vector2 vertices
-					points = new Vector2[mesh.vertices.Length];
-					for (int i=0; i< mesh.vertices.Length; i++) {
-						points[i] = new Vector2(mesh.vertices[i].x, mesh.vertices[i].y);
-					}
-					EditorUtility.SetDirty(this);
+				if (spriteRenderer != null && customLoadMesh != null) {
+                    LoadMesh(customLoadMesh);
 				}
 			}
 
@@ -233,6 +201,25 @@ public class SkinMesh : EditorWindow {
 				if (spriteRenderer != null) CombineMesh();
 			}
         }
+    }
+
+    private void LoadMesh(Mesh loadMesh) {
+        if(mesh != null) mesh.Clear();
+        mesh = new Mesh();
+        mesh.vertices = loadMesh.vertices;
+        mesh.triangles = loadMesh.triangles;
+        mesh.uv = genUV(mesh.vertices);
+        mesh.normals = loadMesh.normals;
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+
+        meshCreated = true;
+
+        points = new Vector2[mesh.vertices.Length];
+        for(int i=0; i < mesh.vertices.Length; i++) {
+            points[i] = new Vector2(mesh.vertices[i].x, mesh.vertices[i].y);
+        }
+        EditorUtility.SetDirty(this);
     }
 
 	private void CreatePolygon() {
@@ -256,25 +243,20 @@ public class SkinMesh : EditorWindow {
 
         Rect bounds = GetBounds(polygon);
 
-        DTSweepContext ctx = new DTSweepContext();
-        Polygon poly = new Polygon(polygon.Select(p => new PolygonPoint(p.x, p.y)));
+        TriangleNet.Mesh tnMesh = new TriangleNet.Mesh();
+        TriangleNet.Geometry.InputGeometry input = new TriangleNet.Geometry.InputGeometry();
 
-        ctx.PrepareTriangulation(poly);
-        DTSweep.Triangulate(ctx);
+        input.AddPolygon(polygon);
 
-        List<Vector2> verts = new List<Vector2>();
-        List<int> tris = new List<int>();
-
-        foreach (DelaunayTriangle tri in poly.Triangles) {
-            verts.AddRange(tri.Points.Reverse().Select(p => new Vector2(p.Xf, p.Yf)));
-            for (int i = 0; i < 3; i++) {
-                tris.Add(tris.Count);
-            }
-        }
+        tnMesh.Triangulate(input);
 
         Mesh mesh = new Mesh();
-        mesh.vertices = verts.Select(x => (Vector3)x).ToArray();
-        mesh.triangles = tris.ToArray();
+        mesh.vertices = tnMesh.Vertices.Select(p => new Vector3((float)p.X, (float)p.Y, 0)).ToArray();
+
+        // Not sure about winding
+        // If there is an interesting error, It is probably because of cw/ccw windings
+        int[] tris = tnMesh.Triangles.ToUnityMeshTriangleIndices();
+        mesh.triangles = tris;
 
         List<Vector2> uv = new List<Vector2>();
 
@@ -372,7 +354,8 @@ public class SkinMesh : EditorWindow {
 
 		// Handles.DrawPolyLine(mesh.vertices);
 		if (mesh != null) {
-			for (int i = 0; i < mesh.triangles.Length / 3; i++) {
+            int triCount = mesh.triangles.Length / 3;
+			for (int i = 0; i < triCount; i++) {
 				Vector3 p1 = mesh.vertices[mesh.triangles[i * 3]];
 				Vector3 p2 = mesh.vertices[mesh.triangles[(i * 3) + 1]];
 				Vector3 p3 = mesh.vertices[mesh.triangles[(i * 3) + 2]];
@@ -768,32 +751,12 @@ public class SkinMesh : EditorWindow {
 			TriangleNet.Geometry.InputGeometry geometry = new TriangleNet.Geometry.InputGeometry(pointNum);
 
 
-			int N = geometry.Count;
-			int end = 0;
-			//Add vertices
-			foreach (Vector2 point in points) {
-				geometry.AddPoint(point.x,point.y);
-				end++;
-			}
-
-			for (int i = 0; i < end; i++) {
-				geometry.AddSegment(N + i, N + ((i + 1) % end));
-			}
+            geometry.AddPolygon(points);
 
 
 			if (combine && combineMesh != null) {
-				N = geometry.Count;
-				end = 0;
-				//Add vertices
-				foreach (Vector3 point in combineMesh.vertices) {
-					geometry.AddPoint(point.x,point.y);
-					end++;
-				}
-				for (int i = 0; i < end; i++) {
-					geometry.AddSegment(N + i, N + ((i + 1) % end));
-				}
+                geometry.AddPolygon(combineMesh.vertices.Select(x => (Vector2)x).ToArray());
 			}
-
 
 			//Triangulate
 			TriangleNet.Mesh triangleMesh = new TriangleNet.Mesh();
@@ -818,14 +781,7 @@ public class SkinMesh : EditorWindow {
 			}
 
 			//transform triangles
-			int[] triangles = new int[triangleMesh.Triangles.Count*3];
-			n = 0;
-			foreach (TriangleNet.Data.Triangle t in triangleMesh.Triangles) 
-			{
-				triangles[n++] = t.P1;
-				triangles[n++] = t.P0;
-				triangles[n++] = t.P2;
-			}
+            int[] triangles = triangleMesh.Triangles.ToUnityMeshTriangleIndices();
 
 			mesh.Clear();
 			mesh = new Mesh();
