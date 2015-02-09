@@ -129,8 +129,6 @@ public class InverseKinematics : MonoBehaviour {
      * Angle Limit code adapted from Veli-Pekka Kokkonen's SimpleCCD http://goo.gl/6oSzDx
      **/
     public void resolveSK2D() {
-        Transform tip = transform;
-
         for (int it = 0; it < iterations; it++) {
             int i = ChainLength;
             Transform bone = transform;
@@ -139,8 +137,9 @@ public class InverseKinematics : MonoBehaviour {
             while (--i >= 0 && bone != null) {
                 Vector3 root = bone.position;
 
-                Vector3 root2tip = ((Vector3)b.Head - root);
-                Vector3 root2target = (((target != null) ? target.transform.position : (Vector3)b.Head) - root);
+                // Z position can be different than 0
+                Vector3 root2tip = ((Vector3)b.Head - (Vector3)(Vector2)root);
+                Vector3 root2target = (((target != null) ? (Vector3)(Vector2)target.transform.position : (Vector3)b.Head) - (Vector3)(Vector2)root);
 
 				// Calculate how much we should rotate to get to the target
 				float angle = SignedAngle(root2tip, root2target, bone);
@@ -156,17 +155,12 @@ public class InverseKinematics : MonoBehaviour {
 				// Wanted angle for rotation
 				angle = -(angle - bone.localRotation.eulerAngles.z);
 
-				// Take care of angle limits 
-				if (nodeCache != null && nodeCache.ContainsKey(bone))
-				{
-					// Clamp angle in local space
-					var node = nodeCache[bone];
-					Bone pb = bone.parent.GetComponent<Bone>();
-					float parentRotation = pb ? Vector2.Angle(pb.Head, b.Head) : 0;
-					angle -= parentRotation;
-					angle = ClampAngle(angle, node.min, node.max);
-					angle += parentRotation;
-				}
+                if(nodeCache != null && nodeCache.ContainsKey(bone))
+                {
+                    // Clamp angle in local space
+                    var node = nodeCache[bone];
+                    angle = ClampAngle(angle, node.min, node.max);
+                }
 
 				Quaternion newRotation = Quaternion.Euler(bone.localRotation.eulerAngles.x, bone.localRotation.eulerAngles.y, angle);
 
@@ -194,8 +188,21 @@ public class InverseKinematics : MonoBehaviour {
 
 	float ClampAngle (float angle, float min, float max)
 	{
-		angle = Mathf.Abs((angle % 360) + 360) % 360;
-		return Mathf.Clamp(angle, min, max);
+        // I personally think clamping angle between two angles as it is is wrong instead closest angle should be chosen
+        // Also denoting angle limits as "min" and "max" is also wrong what if you want "min" to be 330 and "max" to be 400
+        // This way "min" may be greater than "max" and clamped angle will be between them in other direction
+        // "min" and "max" may be renamed as "from" and "to" for better understanding
+        angle = Mathf.Abs((angle % 360) + 360) % 360;
+        if(min > max) {
+            if(angle < max || angle > min)
+                return angle;
+            else
+                return Mathf.Abs(angle - min) < Mathf.Abs(angle - max) ? min : max;
+        }
+        if(angle < max && angle > min)
+            return angle;
+        else
+            return Mathf.Abs(angle - min) < Mathf.Abs(angle - max) || Mathf.Abs(angle - min - 360) < Mathf.Abs(angle - max) ? min : max;
 	}
 
 	private bool IsNaNRot(Quaternion q) 
