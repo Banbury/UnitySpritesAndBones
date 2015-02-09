@@ -1,7 +1,7 @@
 ﻿/*
 The MIT License (MIT)
 
-Copyright (c) 2013 Banbury
+Copyright (c) 2013 - 2015 Banbury & Play-Em
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -64,7 +64,7 @@ public class Weightpainter : EditorWindow {
     public void OnGUI() {
         skin = (SkinnedMeshRenderer)EditorGUILayout.ObjectField("Skin", skin, typeof(SkinnedMeshRenderer), true);
 
-        if (skin != null) {
+        if (skin != null && skin.bones.Length > 0) {
             GUI.color = (isPainting) ? Color.green : Color.white;
 
             if (GUILayout.Button("Paint")) {
@@ -85,7 +85,10 @@ public class Weightpainter : EditorWindow {
 			boneIndex = EditorGUILayout.Popup("Bone", boneIndex, bones);
             colorTransparency = Mathf.Clamp(EditorGUILayout.FloatField("Color Transparency", colorTransparency), 0, 1);
 
-        }
+        } else {
+			EditorGUILayout.HelpBox("SkinnedMeshRenderer not assigned to any bones, Recalculate Bone Weights.", MessageType.Error);
+			SceneView.currentDrawingSceneView.Repaint();
+		}
     }
 
     public void OnSceneGUI(SceneView sceneView) {

@@ -1,7 +1,7 @@
 ﻿/*
 The MIT License (MIT)
 
-Copyright (c) 2014 Banbury & Play-Em
+Copyright (c) 2014 Banbury & Play-Em & SirKurt
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -85,17 +85,17 @@ public class InverseKinematics : MonoBehaviour {
 	public class Node
 	{
 		public Transform Transform;
-		public float min;
-		public float max;
+		public float from;
+		public float to;
 	}
 
 	void OnValidate()
 	{
-		// min & max has to be between 0 ... 360
+		// from & to has to be between 0 ... 360
 		foreach (var node in angleLimits)
 		{
-			node.min = Mathf.Clamp (node.min, 0, 360);
-			node.max = Mathf.Clamp (node.max, 0, 360);
+			node.from = Mathf.Clamp (node.from, 0, 360);
+			node.to = Mathf.Clamp (node.to, 0, 360);
 		}
 	}
 
@@ -159,7 +159,7 @@ public class InverseKinematics : MonoBehaviour {
                 {
                     // Clamp angle in local space
                     var node = nodeCache[bone];
-                    angle = ClampAngle(angle, node.min, node.max);
+                    angle = ClampAngle(angle, node.from, node.to);
                 }
 
 				Quaternion newRotation = Quaternion.Euler(bone.localRotation.eulerAngles.x, bone.localRotation.eulerAngles.y, angle);
@@ -186,23 +186,19 @@ public class InverseKinematics : MonoBehaviour {
 		return angle;
 	}
 
-	float ClampAngle (float angle, float min, float max)
+	float ClampAngle (float angle, float from, float to)
 	{
-        // I personally think clamping angle between two angles as it is is wrong instead closest angle should be chosen
-        // Also denoting angle limits as "min" and "max" is also wrong what if you want "min" to be 330 and "max" to be 400
-        // This way "min" may be greater than "max" and clamped angle will be between them in other direction
-        // "min" and "max" may be renamed as "from" and "to" for better understanding
         angle = Mathf.Abs((angle % 360) + 360) % 360;
-        if(min > max) {
-            if(angle < max || angle > min)
+        if(from > to) {
+            if(angle < from || angle > to)
                 return angle;
             else
-                return Mathf.Abs(angle - min) < Mathf.Abs(angle - max) ? min : max;
+                return Mathf.Abs(angle - from) < Mathf.Abs(angle - to) ? from : to;
         }
-        if(angle < max && angle > min)
+        if(angle < to && angle > from)
             return angle;
         else
-            return Mathf.Abs(angle - min) < Mathf.Abs(angle - max) || Mathf.Abs(angle - min - 360) < Mathf.Abs(angle - max) ? min : max;
+            return Mathf.Abs(angle - from) < Mathf.Abs(angle - to) || Mathf.Abs(angle - from - 360) < Mathf.Abs(angle - to) ? from : to;
 	}
 
 	private bool IsNaNRot(Quaternion q) 
