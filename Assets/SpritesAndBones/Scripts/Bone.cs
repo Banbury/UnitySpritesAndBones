@@ -510,24 +510,18 @@ public class Bone : MonoBehaviour {
 			//find all SkinnedMeshRenderer elements
 			skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>(true);
 			foreach(SkinnedMeshRenderer skin in skins) {
-				if (skin.material != null)
+				if (skeleton.spriteShadowsShader != null && skin.material.shader == skeleton.spriteShadowsShader)
 				{
-					if (skeleton.spriteShadowsShader != null && skin.material.shader == skeleton.spriteShadowsShader)
-					{
-						renderers[skin.transform] = skin.transform.position.z;
-					}
+					renderers[skin.transform] = skin.transform.position.z;
 				}
 			}
 
 			//find all SpriteRenderer elements
 			spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>(true);
 			foreach(SpriteRenderer spriteRenderer in spriteRenderers) {
-				if (spriteRenderer.material != null)
+				if (skeleton.spriteShadowsShader != null && spriteRenderer.material.shader == skeleton.spriteShadowsShader)
 				{
-					if (skeleton.spriteShadowsShader != null && spriteRenderer.material.shader == skeleton.spriteShadowsShader)
-					{
-						renderers[spriteRenderer.transform] = spriteRenderer.transform.position.z;
-					}
+					renderers[spriteRenderer.transform] = spriteRenderer.transform.position.z;
 				}
 			}
 		}
@@ -541,27 +535,24 @@ public class Bone : MonoBehaviour {
 			//find all SkinnedMeshRenderer elements
 			skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>(true);
 			foreach(SkinnedMeshRenderer skin in skins) {
-				if (skin.material != null)
+				if (skeleton.spriteShadowsShader != null && skin.material.shader == skeleton.spriteShadowsShader)
 				{
-					if (skeleton.spriteShadowsShader != null && skin.material.shader == skeleton.spriteShadowsShader)
-					{
-						if (!skeleton.useSharedMaterial) {
-							#if UNITY_EDITOR
-							Undo.RecordObject(skin.material, "Change Render Normals");
-							#endif
-							skin.material.SetVector("_Normal", new Vector3(0, 0, normal));
-							#if UNITY_EDITOR
-							EditorUtility.SetDirty (skin.material);
-							#endif
-						} else {
-							#if UNITY_EDITOR
-							Undo.RecordObject(skin.sharedMaterial, "Change Render Normals");
-							#endif
-							skin.sharedMaterial.SetVector("_Normal", new Vector3(0, 0, normal));
-							#if UNITY_EDITOR
-							EditorUtility.SetDirty (skin.sharedMaterial);
-							#endif
-						}
+					if (!skeleton.useSharedMaterial) {
+						#if UNITY_EDITOR
+						Undo.RecordObject(skin.material, "Change Render Normals");
+						#endif
+						skin.material.SetVector("_Normal", new Vector3(0, 0, normal));
+						#if UNITY_EDITOR
+						EditorUtility.SetDirty (skin.material);
+						#endif
+					} else {
+						#if UNITY_EDITOR
+						Undo.RecordObject(skin.sharedMaterial, "Change Render Normals");
+						#endif
+						skin.sharedMaterial.SetVector("_Normal", new Vector3(0, 0, normal));
+						#if UNITY_EDITOR
+						EditorUtility.SetDirty (skin.sharedMaterial);
+						#endif
 					}
 				}
 			}
@@ -569,27 +560,24 @@ public class Bone : MonoBehaviour {
 			//find all SpriteRenderer elements
 			spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>(true);
 			foreach(SpriteRenderer spriteRenderer in spriteRenderers) {
-				if (spriteRenderer.material != null)
+				if (skeleton.spriteShadowsShader != null && spriteRenderer.material.shader == skeleton.spriteShadowsShader)
 				{
-					if (skeleton.spriteShadowsShader != null && spriteRenderer.material.shader == skeleton.spriteShadowsShader)
-					{
-						if (!skeleton.useSharedMaterial) {
-							#if UNITY_EDITOR
-							Undo.RecordObject(spriteRenderer.material, "Change Render Normals");
-							#endif
-							spriteRenderer.material.SetVector("_Normal", new Vector3(0, 0, normal));
-							#if UNITY_EDITOR
-							EditorUtility.SetDirty (spriteRenderer.material);
-							#endif
-						} else {
-							#if UNITY_EDITOR
-							Undo.RecordObject(spriteRenderer.sharedMaterial, "Change Render Normals");
-							#endif
-							spriteRenderer.sharedMaterial.SetVector("_Normal", new Vector3(0, 0, normal));
-							#if UNITY_EDITOR
-							EditorUtility.SetDirty (spriteRenderer.sharedMaterial);
-							#endif
-						}
+					if (!skeleton.useSharedMaterial) {
+						#if UNITY_EDITOR
+						Undo.RecordObject(spriteRenderer.material, "Change Render Normals");
+						#endif
+						spriteRenderer.material.SetVector("_Normal", new Vector3(0, 0, normal));
+						#if UNITY_EDITOR
+						EditorUtility.SetDirty (spriteRenderer.material);
+						#endif
+					} else {
+						#if UNITY_EDITOR
+						Undo.RecordObject(spriteRenderer.sharedMaterial, "Change Render Normals");
+						#endif
+						spriteRenderer.sharedMaterial.SetVector("_Normal", new Vector3(0, 0, normal));
+						#if UNITY_EDITOR
+						EditorUtility.SetDirty (spriteRenderer.sharedMaterial);
+						#endif
 					}
 				}
 			}
