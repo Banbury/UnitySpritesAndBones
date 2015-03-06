@@ -186,20 +186,21 @@ public class InverseKinematics : MonoBehaviour {
 		return angle;
 	}
 
-	float ClampAngle (float angle, float from, float to)
-	{
-        angle = Mathf.Abs((angle % 360) + 360) % 360;
-        if(from > to) {
-            if(angle < from || angle > to)
-                return angle;
-            else
-                return Mathf.Abs(angle - from) < Mathf.Abs(angle - to) ? from : to;
-        }
-        if(angle < to && angle > from)
-            return angle;
-        else
-            return Mathf.Abs(angle - from) < Mathf.Abs(angle - to) || Mathf.Abs(angle - from - 360) < Mathf.Abs(angle - to) ? from : to;
-	}
+	float ClampAngle(float angle, float from, float to)
+    	{
+	        angle = Mathf.Abs((angle % 360) + 360) % 360;
+	
+	        //Check limits
+	        if (from > to && (angle > from || angle < to))
+	            return angle;
+	        else if (to > from && (angle < to && angle > from))
+	            return angle;
+	
+	        //Return nearest limit if not in bounds
+	        return (Mathf.Abs(angle - from) < Mathf.Abs(angle - to) && Mathf.Abs(angle - from) < Mathf.Abs((angle + 360) - to)) || (Mathf.Abs(angle - from - 360) < Mathf.Abs(angle - to) && Mathf.Abs(angle - from - 360) < Mathf.Abs((angle + 360) - to)) ? from : to;
+    	
+    		
+    	}
 
 	private bool IsNaNRot(Quaternion q) 
 	{
