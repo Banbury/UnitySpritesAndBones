@@ -41,6 +41,7 @@ public class AnimationCurvesCopier : EditorWindow {
 	private Hashtable paths;
 	private Hashtable selectedCurves = new Hashtable();
 	private Vector2 scrollPos = Vector2.zero;
+	private string filter = "";
 
     [MenuItem("Window/Animation Curves Copier")]
     static void ShowWindow() {
@@ -115,12 +116,23 @@ public class AnimationCurvesCopier : EditorWindow {
 			}
 
 			EditorGUILayout.EndHorizontal();
+
 		} else {
 
 			EditorGUILayout.EndHorizontal();
 		}
 
 		if (copyFromClip != null) {
+
+			EditorGUILayout.BeginHorizontal();
+			string newFilter = "";
+			newFilter = EditorGUILayout.TextField("Filter by Property Name:", filter, GUILayout.Width(columnWidth));
+
+			if (newFilter != filter) {
+				filter = newFilter;
+				FillModel();
+			}
+			EditorGUILayout.EndHorizontal();
 
 			scrollPos = GUILayout.BeginScrollView(scrollPos, GUIStyle.none);
 
@@ -156,20 +168,23 @@ public class AnimationCurvesCopier : EditorWindow {
 		if (properties != null) {
 			for(int i = 0; i < properties.Count; i++) {
 				EditorCurveBinding thisCurve = (EditorCurveBinding)properties[i];
+				string propertyName = thisCurve.propertyName.ToUpper();
+				if (filter == null || propertyName.Contains(filter.ToUpper())) {
+					bool selected = false;
+					EditorGUILayout.BeginHorizontal();
+					GUILayout.Label(ShortenedPath(path), GUILayout.Width(columnWidth));
+					
+					if (!selectedCurves.ContainsKey(path + " " + thisCurve.propertyName)) {
+						selectedCurves[path + " " + thisCurve.propertyName] = selected;
+					} 
+					selectedCurves[path + " " + thisCurve.propertyName] = EditorGUILayout.ToggleLeft(thisCurve.propertyName, (bool)selectedCurves[path + " " + thisCurve.propertyName], GUILayout.Width(columnWidth*0.5f));
+					newCurve = (AnimationCurve)AnimationUtility.GetEditorCurve(copyFromClip, thisCurve);
+					if (newCurve != null) {
+						newCurve = (AnimationCurve)EditorGUILayout.CurveField(newCurve, GUILayout.Width(columnWidth));
+					}
 
-				bool selected = false;
-				EditorGUILayout.BeginHorizontal();
-				EditorGUILayout.TextField(ShortenedPath(path), GUILayout.Width(columnWidth));
-				if (!selectedCurves.ContainsKey(path + " " + thisCurve.propertyName)) {
-					selectedCurves[path + " " + thisCurve.propertyName] = selected;
-				} 
-				selectedCurves[path + " " + thisCurve.propertyName] = EditorGUILayout.ToggleLeft(thisCurve.propertyName, (bool)selectedCurves[path + " " + thisCurve.propertyName], GUILayout.Width(columnWidth*0.5f));
-				newCurve = (AnimationCurve)AnimationUtility.GetEditorCurve(copyFromClip, thisCurve);
-				if (newCurve != null) {
-					newCurve = (AnimationCurve)EditorGUILayout.CurveField(newCurve, GUILayout.Width(columnWidth));
+					EditorGUILayout.EndHorizontal();
 				}
-
-				EditorGUILayout.EndHorizontal();
 			}
 		};
 	}
