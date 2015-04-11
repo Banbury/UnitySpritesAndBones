@@ -35,7 +35,7 @@ public class AnimationCurvesCopier : EditorWindow {
 	private static int columnWidth = 300;
 
 	private Animator animatorObject;
-    public AnimationClip copyFromClip;
+	public AnimationClip copyFromClip;
 	private List<AnimationClip> animationClips;
 	private ArrayList pathsKeys;
 	private Hashtable paths;
