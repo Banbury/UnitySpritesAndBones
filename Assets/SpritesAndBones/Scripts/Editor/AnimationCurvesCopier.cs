@@ -110,7 +110,7 @@ public class AnimationCurvesCopier : EditorWindow {
 			EditorGUILayout.EndHorizontal();
 
 			EditorGUILayout.BeginHorizontal();
-			if (GUILayout.Button("Add Curves to Clips", GUILayout.Width(columnWidth))) {
+			if (GUILayout.Button("Add Curves to Clips", GUILayout.Width(columnWidth*0.5f))) {
 				Debug.Log("Added curves to clips");
 				AddCurves();
 			}
@@ -131,6 +131,14 @@ public class AnimationCurvesCopier : EditorWindow {
 			if (newFilter != filter) {
 				filter = newFilter;
 				FillModel();
+			}
+			if (GUILayout.Button("Select All", GUILayout.Width(columnWidth*0.5f))) {
+				Debug.Log("Selected All curves");
+				SelectAll(true);
+			}
+			if (GUILayout.Button("Select None", GUILayout.Width(columnWidth*0.5f))) {
+				Debug.Log("Selected no curves");
+				SelectAll(false);
 			}
 			EditorGUILayout.EndHorizontal();
 
@@ -320,6 +328,16 @@ public class AnimationCurvesCopier : EditorWindow {
 			EditorUtility.ClearProgressBar();
 
 			this.Repaint();
+		}
+	}
+
+	void SelectAll(bool select) {
+		if (selectedCurves != null && selectedCurves.Count > 0) {
+			Hashtable newSelectedCurves = new Hashtable();
+			foreach (string key in selectedCurves.Keys) {
+				newSelectedCurves.Add(key, select);
+			}
+			selectedCurves = newSelectedCurves;
 		}
 	}
 }
