@@ -196,6 +196,12 @@ public class AnimationCurvesCopier : EditorWindow {
 	string ShortenedPath(string oldPath) {
 		int index = oldPath.LastIndexOf("/");
 		string objectName = oldPath.Substring(index + 1);
+		if ((index - 1) >= 0) {
+			string parentPath = oldPath.Substring(0, index);
+			index = parentPath.LastIndexOf("/");
+			string parentName = parentPath.Substring(index + 1);
+			objectName = parentName + "/" + objectName;
+		}
 		index = oldPath.IndexOf("/");
 		string newPath = "";
 		if (index != -1) {
