@@ -147,9 +147,9 @@ public class AnimationCurvesCopier : EditorWindow {
 			GUILayout.Space(20);
 
 			EditorGUILayout.BeginHorizontal();
-			GUILayout.Label("Reference path:", GUILayout.Width(columnWidth));
-			GUILayout.Label("Property name:", GUILayout.Width(columnWidth));
-			GUILayout.Label("Curve:", GUILayout.Width(columnWidth));
+			GUILayout.Label("Reference path:", GUILayout.Width(columnWidth*1.5f));
+			GUILayout.Label("Property name:", GUILayout.Width(columnWidth*0.5f));
+			GUILayout.Label("Curve:", GUILayout.Width(columnWidth*0.75f));
 			EditorGUILayout.EndHorizontal();
 
 			if (paths == null) {
@@ -180,7 +180,7 @@ public class AnimationCurvesCopier : EditorWindow {
 				if (filter == null || propertyName.Contains(filter.ToUpper())) {
 					bool selected = false;
 					EditorGUILayout.BeginHorizontal();
-					GUILayout.Label(ShortenedPath(path), GUILayout.Width(columnWidth));
+					GUILayout.Label(ShortenedPath(path), GUILayout.Width(columnWidth*1.5f));
 					
 					if (!selectedCurves.ContainsKey(path + " " + thisCurve.propertyName)) {
 						selectedCurves[path + " " + thisCurve.propertyName] = selected;
@@ -188,7 +188,7 @@ public class AnimationCurvesCopier : EditorWindow {
 					selectedCurves[path + " " + thisCurve.propertyName] = EditorGUILayout.ToggleLeft(thisCurve.propertyName, (bool)selectedCurves[path + " " + thisCurve.propertyName], GUILayout.Width(columnWidth*0.5f));
 					newCurve = (AnimationCurve)AnimationUtility.GetEditorCurve(copyFromClip, thisCurve);
 					if (newCurve != null) {
-						newCurve = (AnimationCurve)EditorGUILayout.CurveField(newCurve, GUILayout.Width(columnWidth));
+						newCurve = (AnimationCurve)EditorGUILayout.CurveField(newCurve, GUILayout.Width(columnWidth*0.75f));
 					}
 
 					EditorGUILayout.EndHorizontal();
@@ -215,7 +215,11 @@ public class AnimationCurvesCopier : EditorWindow {
 		if (index != -1) {
 			newPath = oldPath.Substring(0, index);
 		}
-		newPath = newPath + "/" + objectName;
+		if (!objectName.StartsWith(newPath)) {
+			newPath = newPath + "/" + objectName;
+		} else {
+			newPath = objectName;
+		}
 		return newPath;
 	}
 
