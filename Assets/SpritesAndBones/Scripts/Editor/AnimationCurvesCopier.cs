@@ -97,7 +97,7 @@ public class AnimationCurvesCopier : EditorWindow {
 		if (animationClips.Count > 0 ) {
 			if ( animationClips.Count == 1 )
 			{
-				animationClips[0] = (AnimationClip)EditorGUILayout.ObjectField("Copy From Clip:",
+				animationClips[0] = (AnimationClip)EditorGUILayout.ObjectField("Copy To Clip:",
 					animationClips[0],
 					typeof(AnimationClip),
 					true);
