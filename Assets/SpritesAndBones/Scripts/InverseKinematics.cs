@@ -85,18 +85,10 @@ public class InverseKinematics : MonoBehaviour {
 	public class Node
 	{
 		public Transform Transform;
+		[Range(0,360)]
 		public float from;
+		[Range(0,360)]
 		public float to;
-	}
-
-	void OnValidate()
-	{
-		// from & to has to be between 0 ... 360
-		foreach (var node in angleLimits)
-		{
-			node.from = Mathf.Clamp (node.from, 0, 360);
-			node.to = Mathf.Clamp (node.to, 0, 360);
-		}
 	}
 
 	void Start()
