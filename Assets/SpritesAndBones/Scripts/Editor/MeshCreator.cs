@@ -65,6 +65,7 @@ public class MeshCreator : EditorWindow {
     private Material previewMaterial = new Material(Shader.Find("Unlit/Transparent"));
 
     private Mesh generatedMesh = null;
+	public Mesh customLoadMesh;
     public Vector3[] meshVertices = null;
     public bool meshDirty = true;
 
@@ -191,6 +192,18 @@ public class MeshCreator : EditorWindow {
             ScriptableObjectUtility.CreateAsset(mesh, "Meshes/" + mesh.name + ".Mesh");
         }
         #endregion
+
+		#region Load Mesh Button
+
+			EditorGUILayout.Separator();
+			customLoadMesh = (Mesh)EditorGUILayout.ObjectField(customLoadMesh, typeof(Mesh), true);
+
+			if (GUILayout.Button("Load Custom Mesh")) {
+				if (spriteRenderer != null && customLoadMesh != null) {
+                    LoadMesh(customLoadMesh);
+				}
+			}
+		#endregion
 		#endif
     }
 
