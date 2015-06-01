@@ -211,7 +211,7 @@ public class Skeleton : MonoBehaviour {
 		}
 
 		if (bones == null || bones != null && bones.Length <= 0 || Application.isEditor){
-			bones = gameObject.GetComponentsInChildren<Bone>();
+			bones = gameObject.GetComponentsInChildren<Bone>(true);
 		}
 
 		#if UNITY_EDITOR
@@ -404,14 +404,17 @@ public class Skeleton : MonoBehaviour {
 
 	public void CalculateWeights (bool weightToParent)
 	{
-		//find all Skin2D elements
-		Skin2D[] skins = transform.GetComponentsInChildren<Skin2D>();
 		if(bones == null || bones.Length == 0) {
 			Debug.Log("No bones in skeleton");
 			return;
 		}
+		//find all Skin2D elements
+		Skin2D[] skins = transform.GetComponentsInChildren<Skin2D>(true);
 		foreach(Skin2D skin in skins) {
+			bool skinActive = skin.gameObject.activeSelf;
+			skin.gameObject.SetActive(true);
 			skin.CalculateBoneWeights(bones, weightToParent);
+			skin.gameObject.SetActive(skinActive);
 		}
 	}
 #endif

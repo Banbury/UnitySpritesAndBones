@@ -116,7 +116,7 @@ public class SkeletonEditor : Editor {
         }
 
 		if(GUILayout.Button("Save Children Positions") && skeleton.editMode) {
-			Bone[] bones = skeleton.gameObject.GetComponentsInChildren<Bone>();
+			Bone[] bones = skeleton.gameObject.GetComponentsInChildren<Bone>(true);
 			foreach (Bone bone in bones) {
 				bone.SaveChildPosRot();
 				if (bone.HasChildPositionsSaved()){
@@ -131,7 +131,7 @@ public class SkeletonEditor : Editor {
         }
 
 		if(GUILayout.Button("Load Children Positions") && skeleton.hasChildPositionsSaved && skeleton.editMode) {
-			Bone[] bones = skeleton.gameObject.GetComponentsInChildren<Bone>();
+			Bone[] bones = skeleton.gameObject.GetComponentsInChildren<Bone>(true);
 			foreach (Bone bone in bones) {
 				bone.LoadChildPosRot();
 			}
@@ -143,11 +143,29 @@ public class SkeletonEditor : Editor {
 		EditorGUILayout.LabelField("Create Skin2D Prefabs from Children", EditorStyles.boldLabel);
 
 		if(GUILayout.Button("Create Skin2D Prefabs")) {
-			Skin2D[] skins = skeleton.gameObject.GetComponentsInChildren<Skin2D>();
+			Skin2D[] skins = skeleton.gameObject.GetComponentsInChildren<Skin2D>(true);
 			foreach (Skin2D skin in skins) {
+				bool skinActive = skin.gameObject.activeSelf;
+				skin.gameObject.SetActive(true);
 				skin.SaveAsPrefab();
+				skin.gameObject.SetActive(skinActive);
 			}
 			Debug.Log("Saved all Skins as Prefabs.");
+		}
+
+		EditorGUILayout.Separator();
+
+		EditorGUILayout.LabelField("Disconnect All Skin2D Prefabs", EditorStyles.boldLabel);
+
+		if(GUILayout.Button("Disconnect Skin2D Prefabs")) {
+			Skin2D[] skins = skeleton.gameObject.GetComponentsInChildren<Skin2D>(true);
+			foreach (Skin2D skin in skins) {
+				bool skinActive = skin.gameObject.activeSelf;
+				skin.gameObject.SetActive(true);
+				PrefabUtility.DisconnectPrefabInstance(skin.gameObject);
+				skin.gameObject.SetActive(skinActive);
+			}
+			Debug.Log("Disconnected Skin2D Prefabs.");
 		}
 
 		EditorGUILayout.Separator();
@@ -155,7 +173,7 @@ public class SkeletonEditor : Editor {
 		EditorGUILayout.LabelField("Reset Skins' Control Point Names", EditorStyles.boldLabel);
 
 		if(GUILayout.Button("Reset Control Point Names")) {
-			ControlPoint[] cps = skeleton.gameObject.GetComponentsInChildren<ControlPoint>();
+			ControlPoint[] cps = skeleton.gameObject.GetComponentsInChildren<ControlPoint>(true);
 			foreach (ControlPoint cp in cps) {
 				cp.Rename();
 			}

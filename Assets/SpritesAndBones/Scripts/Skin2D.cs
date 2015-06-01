@@ -78,34 +78,8 @@ public class Skin2D : MonoBehaviour {
 					if (filter.sharedMesh != null && skin.sharedMesh == null) {
 						skin.sharedMesh = filter.sharedMesh;
 					}
-					Skeleton skeleton = o.transform.root.GetComponent<Skeleton>();
-					if (skeleton != null)
-					{
-						// Generate the mesh and calculate the weights if the root transform has a skeleton
-						skeleton.CalculateWeights(true);
-						// Debug.Log("Calculated weights for " + o.name);
-
-						// Try to initialize the parent bone to this skin
-						Bone bone = o.transform.parent.GetComponent<Bone>();
-						if (bone != null)
-						{
-							bone.deform = true;
-							Mesh m = skin.sharedMesh.Clone();
-							List<BoneWeight> weights = m.boneWeights.ToList();
-
-							for (int i = 0; i < m.vertices.Length; i++) {
-								BoneWeight bw = weights[i];
-								bw = bw.SetWeight(bone.index, 1);
-								weights[i] = bw.Clone();
-							}
-
-							skin.sharedMesh.boneWeights = weights.ToArray();
-							EditorUtility.SetDirty(skin.gameObject);
-							if (PrefabUtility.GetPrefabType(skin.gameObject) != PrefabType.None) {
-								AssetDatabase.SaveAssets();
-							}
-						}
-					}
+					// Recalculate the bone weights for the new mesh
+					skin2D.RecalculateBoneWeights();
 				}
 				else
 				{
@@ -214,7 +188,8 @@ public class Skin2D : MonoBehaviour {
             foreach (Bone bone in bones) {
                 int i=0;
 
-                
+                bool boneActive = bone.gameObject.activeSelf;
+				bone.gameObject.SetActive(true);
 	            foreach (Vector3 v in mesh.vertices) {
 	                float influence;
 					if (!weightToParent || weightToParent && bone.transform != transform.parent)
@@ -232,6 +207,7 @@ public class Skin2D : MonoBehaviour {
 	            }
                 
                 index++;
+				bone.gameObject.SetActive(boneActive);
             }
 
             BoneWeight[] unitweights = boneWeights.GetUnityBoneWeights();
