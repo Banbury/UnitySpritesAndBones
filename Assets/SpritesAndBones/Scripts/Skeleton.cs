@@ -243,8 +243,8 @@ public class Skeleton : MonoBehaviour {
     public Pose CreatePose() {
         Pose pose = ScriptableObject.CreateInstance<Pose>();
 
-        var bones = GetComponentsInChildren<Bone>();
-        var cps = GetComponentsInChildren<ControlPoint>();
+        var bones = GetComponentsInChildren<Bone>(true);
+        var cps = GetComponentsInChildren<ControlPoint>(true);
 
         List<RotationValue> rotations = new List<RotationValue>();
         List<PositionValue> positions = new List<PositionValue>();

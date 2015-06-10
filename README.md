@@ -14,7 +14,7 @@ This is an addon for Unity 3D to create 2D skeletal sprite animations. With the 
 * Bones can be added by holding Ctrl and left clicking.
 * Bone splitting (Subdivision).
 * Flip Skeletons and Bones on X or Y Axis at the push of a button.
-* Mesh creation for Skinnable Meshes using Polygon2D Colliders.  Meshes are saved as assets.
+* Mesh creation for Skinnable Meshes using custom mesh creation tools.  Meshes are saved as assets.
 * Free Form Deformation using control points.
 * Shaders that support shadows and z-zorting (can be customized per Skeleton).
 * Scaling of root object of Skeleton.
