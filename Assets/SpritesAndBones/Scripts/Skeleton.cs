@@ -240,11 +240,11 @@ public class Skeleton : MonoBehaviour {
         Gizmos.DrawIcon(transform.position, "man_icon.png", true);
     }
 
-    public Pose CreatePose() {
+    public Pose CreatePose(bool includeDisabled) {
         Pose pose = ScriptableObject.CreateInstance<Pose>();
 
-        var bones = GetComponentsInChildren<Bone>(true);
-        var cps = GetComponentsInChildren<ControlPoint>(true);
+        var bones = GetComponentsInChildren<Bone>(includeDisabled);
+        var cps = GetComponentsInChildren<ControlPoint>(includeDisabled);
 
         List<RotationValue> rotations = new List<RotationValue>();
         List<PositionValue> positions = new List<PositionValue>();
@@ -271,6 +271,10 @@ public class Skeleton : MonoBehaviour {
         pose.controlPoints = controlPoints.ToArray();
 
         return pose;
+    }
+
+    public Pose CreatePose() {
+        return CreatePose(true);
     }
 
     public void SavePose(string poseFileName) {

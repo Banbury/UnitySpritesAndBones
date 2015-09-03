@@ -111,7 +111,7 @@ public class BakePoseEditor : EditorWindow {
 			foreach (Skeleton s in skeletons)
 			{
 				if (s.gameObject.activeInHierarchy) {
-					Pose bakedPose = s.CreatePose();
+					Pose bakedPose = s.CreatePose(false);
 					Poses.Add(s, bakedPose);
 					Debug.Log("Added Baked Pose for " + s.name);
 				}
