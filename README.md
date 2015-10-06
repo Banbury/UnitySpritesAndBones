@@ -30,6 +30,7 @@ Screenshots:
 * http://postimg.org/image/g7dd50agv/
 
 Tutorials:
+* https://www.youtube.com/watch?t=124&v=9QK4h9IocZU
 * https://vimeo.com/channels/650373
 
 Forum thread:
