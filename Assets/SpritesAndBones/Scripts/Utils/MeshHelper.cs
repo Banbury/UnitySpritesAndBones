@@ -23,7 +23,7 @@ public static class MeshHelper {
         normals = new List<Vector3>(mesh.normals);
         colors = new List<Color>(mesh.colors);
         uv = new List<Vector2>(mesh.uv);
-        uv1 = new List<Vector2>(mesh.uv1);
+        uv1 = new List<Vector2>(mesh.uv2);
         uv2 = new List<Vector2>(mesh.uv2);
         indices = new List<int>();
     }
@@ -96,7 +96,7 @@ public static class MeshHelper {
         if (uv.Count > 0)
             mesh.uv = uv.ToArray();
         if (uv1.Count > 0)
-            mesh.uv1 = uv1.ToArray();
+            mesh.uv2 = uv1.ToArray();
         if (uv2.Count > 0)
             mesh.uv2 = uv2.ToArray();
 
@@ -177,7 +177,7 @@ public static class MeshHelper {
         if (uv.Count > 0)
             mesh.uv = uv.ToArray();
         if (uv1.Count > 0)
-            mesh.uv1 = uv1.ToArray();
+            mesh.uv2 = uv1.ToArray();
         if (uv2.Count > 0)
             mesh.uv2 = uv2.ToArray();
 
