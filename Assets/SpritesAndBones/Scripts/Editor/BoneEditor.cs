@@ -1,7 +1,7 @@
 ﻿/*
 The MIT License (MIT)
 
-Copyright (c) 2013 Banbury
+Copyright (c) 2014 Banbury & Play-Em
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,22 @@ public class BoneEditor : Editor {
     public override void OnInspectorGUI() {
         DrawDefaultInspector();
 
+		EditorGUILayout.Separator();
+		if (GUILayout.Button("FlipY") && !bone.editMode) {
+			bone.flipY = !bone.flipY;
+        }
+        else if(bone.editMode) {
+            EditorGUILayout.HelpBox("Need to uncheck Edit in skeleton.", MessageType.Error);
+        }
+
+		if (GUILayout.Button("FlipX") && !bone.editMode) {
+			bone.flipX = !bone.flipX;
+        }
+        else if (bone.editMode){
+            EditorGUILayout.HelpBox("Need to uncheck Edit in skeleton.", MessageType.Error);
+        }
+		EditorGUILayout.Separator();
+
         GUILayout.BeginHorizontal();
 
         if (GUILayout.Button("Add child")) {
@@ -61,6 +77,7 @@ public class BoneEditor : Editor {
             if (bone.enabled && !current.control) {
                 EditorGUI.BeginChangeCheck();
                 Vector3 v = Handles.FreeMoveHandle(bone.Head, Quaternion.identity, 0.1f, Vector3.zero, Handles.RectangleCap);
+                Undo.RecordObject(bone.transform, "Change bone transform");
                 Undo.RecordObject(bone, "Change bone");
                 bone.length = Vector2.Distance(v, bone.transform.position);
                 bone.transform.up = (v - bone.transform.position).normalized;

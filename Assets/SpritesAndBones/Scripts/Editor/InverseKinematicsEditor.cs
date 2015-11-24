@@ -1,7 +1,7 @@
 ﻿/*
 The MIT License (MIT)
 
-Copyright (c) 2013 Banbury
+Copyright (c) 2013 - 2015 Banbury & Play-Em & SirKurt
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -26,10 +26,16 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections;
 
+[InitializeOnLoad]
 [CustomEditor(typeof(InverseKinematics))]
 public class InverseKinematicsEditor : Editor {
 
 	private InverseKinematics ik; 
+
+	static InverseKinematicsEditor ()
+	{
+		SceneView.onSceneGUIDelegate += OnScene;
+	}
 
 	void OnEnable() {
 		ik = (InverseKinematics)target;
@@ -47,10 +53,10 @@ public class InverseKinematicsEditor : Editor {
         }
     }
 
-    [DrawGizmo(GizmoType.SelectedOrChild | GizmoType.NotSelected)]
-    static void DrawIKGizmo(InverseKinematics ik, GizmoType gizmoType) {
-        Handles.Label(ik.transform.position + new Vector3(0.1f, 0), "IK");
-    }
+    // [DrawGizmo(GizmoType.SelectedOrChild | GizmoType.NotSelected)]
+    // static void DrawIKGizmo(InverseKinematics ik, GizmoType gizmoType) {
+        // Handles.Label(ik.transform.position + new Vector3(0.1f, 0), "IK");
+    // }
 
 	//Create a Helper for the IK Component and sets it as the IK's Target
 	private void CreateHelper(){
@@ -77,5 +83,54 @@ public class InverseKinematicsEditor : Editor {
 
 		//selects the transform of the Helper
 		Selection.activeTransform = o.transform;
+	}
+
+	//Angle Limit code adapted from Veli-Pekka Kokkonen's SimpleCCDEditor http://goo.gl/6oSzDx
+
+	// Scales scene view gizmo, feel free to change ;)
+	const float gizmoSize = 0.5f;
+
+	static void OnScene(SceneView sceneview)
+	{
+		var targets = GameObject.FindObjectsOfType<InverseKinematics>();
+
+		foreach (var target in targets)
+		{
+			if (Selection.activeGameObject != null)
+			{
+				if (target.gameObject.Equals(Selection.activeGameObject))
+				{
+					foreach (var node in target.angleLimits)
+					{
+						if (node.Transform == null)
+							continue;
+
+						Transform transform = node.Transform;
+						Vector3 position = transform.position;
+
+						float handleSize = HandleUtility.GetHandleSize(position);
+						float discSize = handleSize * gizmoSize;
+
+
+						Bone pb = transform.parent.GetComponent<Bone>();
+						float parentRotation = pb ? pb.transform.eulerAngles.z : 0;
+
+						Vector3 from = Quaternion.Euler(0, 0, Mathf.Min(node.from, node.to) + parentRotation) * Vector3.up;
+						Vector3 to = Quaternion.Euler(0, 0, Mathf.Max(node.from, node.to) + parentRotation) * Vector3.up;
+
+						Handles.color = new Color(0, 1, 0, 0.1f);
+						Handles.DrawWireDisc(position, Vector3.back, discSize);
+						Handles.DrawSolidArc(position, Vector3.forward, (node.from < node.to) ? from : to, (360 + node.to - node.from) % 360, discSize);
+
+						Handles.color = Color.green;
+						Handles.DrawLine(position, position + from * discSize);
+						Handles.DrawLine(position, position + to * discSize);
+
+						Vector3 toChild = transform.rotation * Vector3.up;
+						Handles.DrawLine(position, position + toChild * discSize);
+					}
+				}
+			}
+		}
 	}
 }

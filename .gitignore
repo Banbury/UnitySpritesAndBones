@@ -9,3 +9,4 @@ Assets/AssetStoreTools/
 Gizmos/
 Assets/GitSharp/
 .gradle/
+build/
