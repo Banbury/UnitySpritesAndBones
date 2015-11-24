@@ -94,6 +94,13 @@ public class BakePoseEditor : EditorWindow {
 				if (GUILayout.Button("Apply Poses")) {
 					ApplyPoses();
 				}
+
+				EditorGUILayout.Separator();
+
+				GUILayout.Label("Only Saves Active GameObjects in Poses", EditorStyles.boldLabel);
+				if (GUILayout.Button("Save Poses")) {
+					SavePoses();
+				}
 			}
 
 
@@ -160,6 +167,19 @@ public class BakePoseEditor : EditorWindow {
 			#endif
 			s.IK_Enabled = isIK;
 			Debug.Log("Applied Baked Poses for " + s.name);
+		}
+	}
+
+	private void SavePoses(){
+		if(!Directory.Exists("Assets/Poses")) {
+			AssetDatabase.CreateFolder("Assets", "Poses");
+			AssetDatabase.Refresh();
+		}
+		foreach (Skeleton s in Poses.Keys){
+			#if UNITY_EDITOR
+			ScriptableObjectUtility.CreateAsset((Pose)Poses[s], "Poses/" + s.name + " Pose");
+			#endif
+			Debug.Log("Saved Baked Poses for " + s.name);
 		}
 	}
 }
