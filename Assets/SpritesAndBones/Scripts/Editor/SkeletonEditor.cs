@@ -170,6 +170,36 @@ public class SkeletonEditor : Editor {
 
 		EditorGUILayout.Separator();
 
+		EditorGUILayout.LabelField("Lock All Skin Bone Weights", EditorStyles.boldLabel);
+
+		if(GUILayout.Button("Lock Skin2D Bone Weights")) {
+			Skin2D[] skins = skeleton.gameObject.GetComponentsInChildren<Skin2D>(true);
+			foreach (Skin2D skin in skins) {
+				bool skinActive = skin.gameObject.activeSelf;
+				skin.gameObject.SetActive(true);
+				skin.lockBoneWeights = true;
+				skin.gameObject.SetActive(skinActive);
+			}
+			Debug.Log("Locked Skin2D Bone Weights.");
+		}
+
+		EditorGUILayout.Separator();
+
+		EditorGUILayout.LabelField("Unlock All Skin Bone Weights", EditorStyles.boldLabel);
+
+		if(GUILayout.Button("Unlock Skin2D Bone Weights")) {
+			Skin2D[] skins = skeleton.gameObject.GetComponentsInChildren<Skin2D>(true);
+			foreach (Skin2D skin in skins) {
+				bool skinActive = skin.gameObject.activeSelf;
+				skin.gameObject.SetActive(true);
+				skin.lockBoneWeights = false;
+				skin.gameObject.SetActive(skinActive);
+			}
+			Debug.Log("Unlocked Skin2D Bone Weights.");
+		}
+
+		EditorGUILayout.Separator();
+
 		EditorGUILayout.LabelField("Reset Skins' Control Point Names", EditorStyles.boldLabel);
 
 		if(GUILayout.Button("Reset Control Point Names")) {
@@ -207,7 +237,7 @@ public class SkeletonEditor : Editor {
 			foreach (Bone bone in bones) {
 				BoxCollider2D coll = bone.gameObject.AddComponent<BoxCollider2D>();
 				coll.size = new Vector2(bone.length / 2, bone.length);
-				coll.center = new Vector2(0, bone.length / 2);
+				coll.offset = new Vector2(0, bone.length / 2);
 				bone.gameObject.AddComponent<Rigidbody2D>();
 				if (bone.transform.parent != null && bone.transform.parent.GetComponent<Bone>() != null) {
 					Bone parentBone = bone.transform.parent.GetComponent<Bone>();

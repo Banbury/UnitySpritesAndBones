@@ -80,7 +80,7 @@ public class MeshCreator : EditorWindow {
     [MenuItem("Sprites And Bones/Mesh Creator")]
     protected static void ShowSkinMeshEditor() {
         var wnd = GetWindow<MeshCreator>();
-        wnd.title = "Mesh Creator";
+        wnd.titleContent.text = "Mesh Creator";
 
         if(Selection.activeGameObject != null) {
             GameObject o = Selection.activeGameObject;
@@ -209,7 +209,6 @@ public class MeshCreator : EditorWindow {
 
     public void OnDestroy() {
         #if UNITY_EDITOR
-		//if(sceneWindow != null) sceneWindow.Close();
         SceneView.onSceneGUIDelegate -= OnSceneGUI;
         DestroyPreviewObject();
 		#endif
@@ -239,7 +238,7 @@ public class MeshCreator : EditorWindow {
 
             #region Hole operations
             if(e.alt && e.type == EventType.MouseDown) {
-                Undo.RegisterUndo(this, "Added or Removed hole");
+                Undo.RecordObject(this, "Added or Removed hole");
 				AddOrRemoveHole(mousePos);
                 e.Use();
 				EditorUtility.SetDirty(this);
@@ -248,7 +247,7 @@ public class MeshCreator : EditorWindow {
 
             #region Vertex operations
             else if(e.shift && e.type == EventType.MouseDown) {
-                Undo.RegisterUndo(this, "Removed Vertex or Segment");
+                Undo.RecordObject(this, "Removed Vertex or Segment");
 				RemoveVertexOrSegment(mousePos);
                 e.Use();
 				EditorUtility.SetDirty(this);
@@ -259,13 +258,13 @@ public class MeshCreator : EditorWindow {
             // Adding a point if control is pressed
             else if(e.control && e.type == EventType.MouseDown) {
                 var newVert = new Vertex(mousePos);
-                Undo.RegisterUndo(this, "Added Point");
+                Undo.RecordObject(this, "Added Point");
 				verts.Add(newVert);
                 e.Use();
 				EditorUtility.SetDirty(this);
 
                 // Remove old segment and add 2 new segments if new point is added near a segment
-				Undo.RegisterUndo(this, "Added Segments");
+				Undo.RecordObject(this, "Added Segments");
                 var seg = GetSegmentNearPosition(mousePos);
                 if(seg != null) {
 					segments.RemoveAt(seg.index);
@@ -279,7 +278,7 @@ public class MeshCreator : EditorWindow {
 
             #region Segment Defining
             else if(!segmentDefiningDrag && e.button == 1 && e.type == EventType.MouseDown) {
-                Undo.RegisterUndo(this, "Defined Segment");
+                Undo.RecordObject(this, "Defined Segment");
                 segmentDefiningDrag = true;
                 var dragStart = GetVertexNearPosition(mousePos);
 				dragStartIndex = dragStart == null ? -1 : dragStart.index;
@@ -290,7 +289,7 @@ public class MeshCreator : EditorWindow {
         }
         else if(e.type == EventType.MouseUp) {
             if(segmentDefiningDrag && dragStartIndex >= 0) {
-				Undo.RegisterUndo(this, "Added Segment");
+				Undo.RecordObject(this, "Added Segment");
                 var endVert = GetVertexNearPosition(mousePos);
                 if(endVert != null && endVert != verts[dragStartIndex]) {
 					AddSegment(endVert, verts[dragStartIndex]);
@@ -614,13 +613,13 @@ public class MeshCreator : EditorWindow {
 
         for(int i = 0; i < holes.Count; i++) {
             if((position - holes[i]).sqrMagnitude < selectDistance) {
-                Undo.RegisterUndo(this, "Removed Hole");
+                Undo.RecordObject(this, "Removed Hole");
 				holes.RemoveAt(i);
 				EditorUtility.SetDirty(this);
                 return;
             }
         }
-		Undo.RegisterUndo(this, "Added Hole");
+		Undo.RecordObject(this, "Added Hole");
         holes.Add(position);
 		EditorUtility.SetDirty(this);
         return;
@@ -683,7 +682,9 @@ public class MeshCreator : EditorWindow {
             generatedMesh = null;
 			#if UNITY_EDITOR
             EditorUtility.SetDirty(this);
-            SceneView.currentDrawingSceneView.Repaint();
+            if (SceneView.currentDrawingSceneView != null) {
+				SceneView.currentDrawingSceneView.Repaint();
+			}
 			#endif
             return true;
         }

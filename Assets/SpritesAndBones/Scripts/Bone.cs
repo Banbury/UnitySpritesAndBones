@@ -216,10 +216,11 @@ public class Bone : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		if (gameObject.transform.parent != null)
+		if (gameObject.transform.parent != null && parent == null || 
+			gameObject.transform.parent != null && parent != gameObject.transform.parent)
             parent = gameObject.transform.parent.GetComponent<Bone>();
 
-		if (!Application.isPlaying || skeleton == null)
+		if (skeleton == null || skeleton != null && !Application.isPlaying && !transform.IsChildOf(skeleton.transform))
 		{
 			Skeleton[] skeletons = transform.root.GetComponentsInChildren<Skeleton>(true);
 			foreach (Skeleton s in skeletons)

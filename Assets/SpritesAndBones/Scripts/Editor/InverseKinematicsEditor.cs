@@ -53,10 +53,10 @@ public class InverseKinematicsEditor : Editor {
         }
     }
 
-    [DrawGizmo(GizmoType.SelectedOrChild | GizmoType.NotSelected)]
-    static void DrawIKGizmo(InverseKinematics ik, GizmoType gizmoType) {
-        Handles.Label(ik.transform.position + new Vector3(0.1f, 0), "IK");
-    }
+    // [DrawGizmo(GizmoType.SelectedOrChild | GizmoType.NotSelected)]
+    // static void DrawIKGizmo(InverseKinematics ik, GizmoType gizmoType) {
+        // Handles.Label(ik.transform.position + new Vector3(0.1f, 0), "IK");
+    // }
 
 	//Create a Helper for the IK Component and sets it as the IK's Target
 	private void CreateHelper(){
@@ -96,34 +96,40 @@ public class InverseKinematicsEditor : Editor {
 
 		foreach (var target in targets)
 		{
-			foreach (var node in target.angleLimits)
+			if (Selection.activeGameObject != null)
 			{
-				if (node.Transform == null)
-					continue;
+				if (target.gameObject.Equals(Selection.activeGameObject))
+				{
+					foreach (var node in target.angleLimits)
+					{
+						if (node.Transform == null)
+							continue;
 
-				Transform transform = node.Transform;
-				Vector3 position = transform.position;
+						Transform transform = node.Transform;
+						Vector3 position = transform.position;
 
-				float handleSize = HandleUtility.GetHandleSize(position);
-				float discSize = handleSize * gizmoSize;
+						float handleSize = HandleUtility.GetHandleSize(position);
+						float discSize = handleSize * gizmoSize;
 
 
-				Bone pb = transform.parent.GetComponent<Bone>();
-                float parentRotation = pb ? pb.transform.eulerAngles.z : 0;
+						Bone pb = transform.parent.GetComponent<Bone>();
+						float parentRotation = pb ? pb.transform.eulerAngles.z : 0;
 
-                Vector3 from = Quaternion.Euler(0, 0, Mathf.Min(node.from, node.to) + parentRotation) * Vector3.up;
-                Vector3 to = Quaternion.Euler(0, 0, Mathf.Max(node.from, node.to) + parentRotation) * Vector3.up;
+						Vector3 from = Quaternion.Euler(0, 0, Mathf.Min(node.from, node.to) + parentRotation) * Vector3.up;
+						Vector3 to = Quaternion.Euler(0, 0, Mathf.Max(node.from, node.to) + parentRotation) * Vector3.up;
 
-				Handles.color = new Color(0, 1, 0, 0.1f);
-				Handles.DrawWireDisc(position, Vector3.back, discSize);
-				Handles.DrawSolidArc(position, Vector3.forward, (node.from < node.to) ? from : to, (360 + node.to - node.from) % 360, discSize);
+						Handles.color = new Color(0, 1, 0, 0.1f);
+						Handles.DrawWireDisc(position, Vector3.back, discSize);
+						Handles.DrawSolidArc(position, Vector3.forward, (node.from < node.to) ? from : to, (360 + node.to - node.from) % 360, discSize);
 
-				Handles.color = Color.green;
-				Handles.DrawLine(position, position + from * discSize);
-				Handles.DrawLine(position, position + to * discSize);
+						Handles.color = Color.green;
+						Handles.DrawLine(position, position + from * discSize);
+						Handles.DrawLine(position, position + to * discSize);
 
-				Vector3 toChild = transform.rotation * Vector3.up;
-				Handles.DrawLine(position, position + toChild * discSize);
+						Vector3 toChild = transform.rotation * Vector3.up;
+						Handles.DrawLine(position, position + toChild * discSize);
+					}
+				}
 			}
 		}
 	}

@@ -44,7 +44,7 @@ public class Weightpainter : EditorWindow {
     [MenuItem("Sprites And Bones/Weight painting")]
     protected static void ShowWeightpainterWindow() {
         var wnd = GetWindow<Weightpainter>();
-        wnd.title = "Weight painting";
+        wnd.titleContent.text = "Weight painting";
 
         if (Selection.activeGameObject != null) {
             SkinnedMeshRenderer skin = Selection.activeGameObject.GetComponent<SkinnedMeshRenderer>();
@@ -87,7 +87,8 @@ public class Weightpainter : EditorWindow {
 
         } else {
 			EditorGUILayout.HelpBox("SkinnedMeshRenderer not assigned to any bones, Recalculate Bone Weights.", MessageType.Error);
-			SceneView.currentDrawingSceneView.Repaint();
+			if (SceneView.currentDrawingSceneView != null)
+				SceneView.currentDrawingSceneView.Repaint();
 		}
     }
 

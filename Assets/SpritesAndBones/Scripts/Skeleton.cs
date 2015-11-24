@@ -667,7 +667,12 @@ public class Skeleton : MonoBehaviour {
 				}
 			}
 
-			skin.castShadows = useShadows;
+			if (useShadows){
+				skin.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.TwoSided;
+			}
+			else {
+				skin.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+			}
 			skin.receiveShadows = useShadows;
 		}
 
@@ -716,7 +721,12 @@ public class Skeleton : MonoBehaviour {
 				}
 			}
 
-			spriteRenderer.castShadows = useShadows;
+			if (useShadows){
+				spriteRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.TwoSided;
+			}
+			else {
+				spriteRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+			}
 			spriteRenderer.receiveShadows = useShadows;
 		}
 	}

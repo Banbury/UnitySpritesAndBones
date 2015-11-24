@@ -40,7 +40,7 @@ public class BakePoseEditor : EditorWindow {
     [MenuItem("Sprites And Bones/Bake Poses")]
     protected static void ShowBakePoseEditor() {
         var wnd = GetWindow<BakePoseEditor>();
-        wnd.title = "Bake Poses";
+        wnd.titleContent.text = "Bake Poses";
         wnd.Show();
 
 		// SceneView.onSceneGUIDelegate += wnd.OnSceneGUI;

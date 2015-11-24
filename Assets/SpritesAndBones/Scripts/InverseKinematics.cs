@@ -94,16 +94,21 @@ public class InverseKinematics : MonoBehaviour {
 	void Start()
 	{
 		// Cache optimization
-		nodeCache = new Dictionary<Transform, Node>(angleLimits.Length);
-		foreach (var node in angleLimits)
-			if (!nodeCache.ContainsKey(node.Transform))
-				nodeCache.Add(node.Transform, node);
-		Skeleton[] skeletons = transform.root.gameObject.GetComponentsInChildren<Skeleton>(true);
-		foreach (Skeleton s in skeletons)
-		{
-			if (transform.IsChildOf(s.transform))
+		if (angleLimits.Length > 0 && nodeCache != null && nodeCache.Count != angleLimits.Length ||
+		angleLimits.Length > 0 && nodeCache == null){
+			nodeCache = new Dictionary<Transform, Node>(angleLimits.Length);
+			foreach (var node in angleLimits)
+				if (!nodeCache.ContainsKey(node.Transform))
+					nodeCache.Add(node.Transform, node);
+		}
+		if (skeleton == null || skeleton != null && !transform.IsChildOf(skeleton.transform)) {
+			Skeleton[] skeletons = transform.root.gameObject.GetComponentsInChildren<Skeleton>(true);
+			foreach (Skeleton s in skeletons)
 			{
-				skeleton = s;
+				if (transform.IsChildOf(s.transform))
+				{
+					skeleton = s;
+				}
 			}
 		}
 	}

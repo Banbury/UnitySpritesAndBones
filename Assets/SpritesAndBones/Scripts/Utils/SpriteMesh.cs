@@ -52,8 +52,8 @@ public class SpriteMesh {
 			Vector3 localScale = spriteRenderer.transform.localScale;
 			spriteRenderer.transform.localScale = Vector3.one;
 
-			Vector2[] vertices2D = UnityEditor.Sprites.DataUtility.GetSpriteMesh(spriteRenderer.sprite, false);
-			int[] indices = UnityEditor.Sprites.DataUtility.GetSpriteIndices(spriteRenderer.sprite, false).Select(element => (int)element).ToArray();
+			Vector2[] vertices2D = spriteRenderer.sprite.vertices;
+			int[] indices = spriteRenderer.sprite.triangles.Select(element => (int)element).ToArray();
 
 			// Create the Vector3 vertices
 			Vector3[] vertices = new Vector3[vertices2D.Length];
@@ -64,7 +64,7 @@ public class SpriteMesh {
 			Mesh mesh = new Mesh();
 			mesh.vertices = vertices;
 			mesh.triangles = indices;
-			Vector2[] uvs = UnityEditor.Sprites.DataUtility.GetSpriteUVs(spriteRenderer.sprite, false);
+			Vector2[] uvs = UnityEditor.Sprites.SpriteUtility.GetSpriteUVs(spriteRenderer.sprite, false);
 			mesh.uv = uvs;
 			mesh.RecalculateNormals();
 			mesh.RecalculateBounds();

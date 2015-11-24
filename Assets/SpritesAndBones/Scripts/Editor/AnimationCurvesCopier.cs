@@ -34,7 +34,6 @@ using System.Collections.Generic;
 public class AnimationCurvesCopier : EditorWindow {
 	private static int columnWidth = 300;
 
-	private Animator animatorObject;
 	public AnimationClip copyFromClip;
 	private List<AnimationClip> animationClips;
 	private ArrayList pathsKeys;
@@ -243,36 +242,6 @@ public class AnimationCurvesCopier : EditorWindow {
 				newProperties.Add(curveData);
 				paths.Add(key, newProperties);
 				pathsKeys.Add(key);
-			}
-		}
-	}
-
-	GameObject FindObjectInRoot(string path) {
-		if (animatorObject == null) {
-			return null;
-		}
-
-		Transform child = animatorObject.transform.Find(path);
-
-		if (child != null) {
-			return child.gameObject;
-		} else {
-			return null;
-		}
-	}
-
-	string ChildPath(GameObject obj, bool sep = false) {
-		if (animatorObject == null) {
-			throw new UnityException("Please assign Referenced Animator (Root) first!");
-		}
-
-		if (obj == animatorObject.gameObject) {
-			return "";
-		} else {
-			if (obj.transform.parent == null) {
-				throw new UnityException("Object must belong to " + animatorObject.ToString() + "!");
-			} else {
-				return ChildPath(obj.transform.parent.gameObject, true) + obj.name + (sep ? "/" : "");
 			}
 		}
 	}
