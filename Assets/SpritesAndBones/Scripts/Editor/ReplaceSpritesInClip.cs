@@ -86,7 +86,7 @@ public class ReplaceSpritesInClip : EditorWindow
 			EditorGUILayout.BeginHorizontal();
 			originalSpriteText = EditorGUILayout.TextField(originalSpriteText, GUILayout.Width(columnWidth));
 			replaceSpriteText = EditorGUILayout.TextField(replaceSpriteText, GUILayout.Width(columnWidth));
-			if (GUILayout.Button("Replace All Sprotes")) {
+			if (GUILayout.Button("Replace All Sprites")) {
 				changeAllSprites = true;
 			}
 
