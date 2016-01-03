@@ -50,6 +50,10 @@ public class AnimationHierarchyEditor : EditorWindow {
 
 	private string sOriginalRoot = "Root";
 	private string sNewRoot = "SomeNewObject/Root";
+	private string originalPathText = "";
+	private string replacePathText = "";
+
+	private bool changeAllPaths = false;
 
 	void OnGUI() {
 		if (Event.current.type == EventType.ValidateCommand) {
@@ -105,6 +109,22 @@ public class AnimationHierarchyEditor : EditorWindow {
 			}
 
 			EditorGUILayout.EndHorizontal();
+			
+			EditorGUILayout.BeginHorizontal();
+			
+			GUILayout.Label("Original Path Text:", GUILayout.Width(columnWidth));
+			GUILayout.Label("Replacement Path Text:", GUILayout.Width(columnWidth));
+
+			EditorGUILayout.EndHorizontal();
+
+			EditorGUILayout.BeginHorizontal();
+			originalPathText = EditorGUILayout.TextField(originalPathText, GUILayout.Width(columnWidth));
+			replacePathText = EditorGUILayout.TextField(replacePathText, GUILayout.Width(columnWidth));
+			if (GUILayout.Button("Replace All Paths")) {
+				changeAllPaths = true;
+			}
+
+			EditorGUILayout.EndHorizontal();
 
 			EditorGUILayout.BeginHorizontal();
 			GUILayout.Label("Reference path:", GUILayout.Width(columnWidth));
@@ -119,6 +139,7 @@ public class AnimationHierarchyEditor : EditorWindow {
 				{
 					GUICreatePathItem(path);
 				}
+				changeAllPaths = false;
 			}
 			
 			GUILayout.Space(40);
@@ -140,11 +161,13 @@ public class AnimationHierarchyEditor : EditorWindow {
 		if ( tempPathOverrides.ContainsKey(path) ) pathOverride = tempPathOverrides[path];
 		
 		EditorGUILayout.BeginHorizontal();
-		
+		if (originalPathText != "" && changeAllPaths) {
+			pathOverride = pathOverride.Replace(originalPathText, replacePathText);
+		}
 		pathOverride = EditorGUILayout.TextField(pathOverride, GUILayout.Width(columnWidth));
 		if ( pathOverride != path ) tempPathOverrides[path] = pathOverride;
 
-		if (GUILayout.Button("Change", GUILayout.Width(60))) {
+		if (GUILayout.Button("Change", GUILayout.Width(60)) || changeAllPaths) {
 			newPath = pathOverride;
 			tempPathOverrides.Remove(path);
 		}
