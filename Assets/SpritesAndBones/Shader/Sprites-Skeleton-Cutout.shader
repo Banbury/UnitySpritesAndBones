@@ -28,7 +28,7 @@ Shader "Sprites/Skeleton-CutOut"
 		Blend One OneMinusSrcAlpha
 
 		CGPROGRAM
-		#pragma surface surf Lambert alpha addshadow vertex:vert  alphatest:_Cutoff fullforwardshadows
+		#pragma surface surf Lambert alpha:blend addshadow vertex:vert fullforwardshadows
 		#pragma multi_compile DUMMY PIXELSNAP_ON
 
 		sampler2D _MainTex;
