@@ -1,7 +1,7 @@
 ﻿/*
 The MIT License (MIT)
 
-Copyright (c) 2014 Banbury & Play-Em
+Copyright (c) 2014 - 2016 Banbury & Play-Em
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@ using UnityToolbag;
 [RequireComponent(typeof(MeshFilter))]
 [RequireComponent(typeof(SkinnedMeshRenderer))]
 [RequireComponent(typeof(SortingLayerExposed))]
-[ExecuteInEditMode()]
+[ExecuteInEditMode]
 public class Skin2D : MonoBehaviour {
 
 	public Sprite sprite;
@@ -47,7 +47,11 @@ public class Skin2D : MonoBehaviour {
     private SkinnedMeshRenderer skinnedMeshRenderer;
     private GameObject lastSelected = null;
 
+	// Prevent the bone weights from being recalculated
 	public bool lockBoneWeights = false;
+
+	// The referenced material for this skin
+	public Material referenceMaterial;
 
     #if UNITY_EDITOR
         [MenuItem("Sprites And Bones/Skin 2D")]
@@ -63,6 +67,8 @@ public class Skin2D : MonoBehaviour {
 					spriteMesh.spriteRenderer = spriteRenderer;
 					spriteMesh.CreateSpriteMesh();
 					Texture2D spriteTexture = UnityEditor.Sprites.SpriteUtility.GetSpriteTexture(spriteRenderer.sprite, false);
+
+					// Copy the sprite material
 					Material spriteMaterial = new Material(spriteRenderer.sharedMaterial);
 					spriteMaterial.CopyPropertiesFromMaterial(spriteRenderer.sharedMaterial);
 					spriteMaterial.mainTexture = spriteTexture;
@@ -74,8 +80,19 @@ public class Skin2D : MonoBehaviour {
 					skin = o.GetComponent<SkinnedMeshRenderer>();
 					MeshFilter filter = o.GetComponent<MeshFilter>();
 					skin.material = spriteMaterial;
+
+					// Save out the material from the sprite so we have a default material
+					if(!Directory.Exists("Assets/Materials")) {
+						AssetDatabase.CreateFolder("Assets", "Materials");
+						AssetDatabase.Refresh();
+					}
+					AssetDatabase.CreateAsset(spriteMaterial, "Assets/Materials/" + spriteMaterial.mainTexture.name + ".mat");
+					Debug.Log("Created material " + spriteMaterial.mainTexture.name + " for " + skin.gameObject.name);
+					skin2D.referenceMaterial = spriteMaterial;
 					skin.sortingLayerName = sortLayerName;
 					skin.sortingOrder = sortOrder;
+
+					// Create the mesh from the selection
 					filter.mesh = (Mesh)Selection.activeObject;
 					if (filter.sharedMesh != null && skin.sharedMesh == null) {
 						skin.sharedMesh = filter.sharedMesh;
@@ -115,12 +132,31 @@ public class Skin2D : MonoBehaviour {
 
     // Update is called once per frame
     void Update () {
-        if (MeshFilter.sharedMesh != null && GetComponent<SkinnedMeshRenderer>().sharedMesh == null) {
-            GetComponent<SkinnedMeshRenderer>().sharedMesh = MeshFilter.sharedMesh;
+        if (MeshFilter.sharedMesh != null && SkinnedMeshRenderer.sharedMesh == null) {
+            SkinnedMeshRenderer.sharedMesh = MeshFilter.sharedMesh;
         }
 		if (GetComponent<SortingLayerExposed>() == null) {
             gameObject.AddComponent<SortingLayerExposed>();
         }
+
+		// Ensure there is a reference material for the renderer
+		if (referenceMaterial == null) {
+			if (SkinnedMeshRenderer.sharedMaterial != null) {
+				if (SkinnedMeshRenderer.sharedMaterial.name.Contains("(Instance)")) {
+					string materialName = SkinnedMeshRenderer.sharedMaterial.name.Replace("(Instance)", "");
+					Material material = AssetDatabase.LoadAssetAtPath("Assets/Materials/" + materialName + ".mat", typeof(Material)) as Material;
+					referenceMaterial = material;
+				} 
+				else {
+					referenceMaterial = SkinnedMeshRenderer.sharedMaterial;
+				}
+			}
+		}
+
+		// Make sure the renderer is using a material if it is nullified
+		if (SkinnedMeshRenderer.sharedMaterial == null) {
+			SkinnedMeshRenderer.sharedMaterial = referenceMaterial;
+		}
     }
 
     private MeshFilter MeshFilter {
@@ -309,10 +345,27 @@ public class Skin2D : MonoBehaviour {
 
         string path = "Assets/Prefabs/" + skeleton.gameObject.name + "/" + gameObject.name + ".prefab";
 
-        Object obj = PrefabUtility.CreateEmptyPrefab(path);
+		// Need to create a new Mesh because replacing the prefab will erase the sharedMesh 
+		// on the SkinnedMeshRenderer if it is linked to the prefab
+        Mesh mesh = new Mesh();
+		mesh.name = "Generated Mesh";
+		mesh.vertices = SkinnedMeshRenderer.sharedMesh.vertices;
+		mesh.triangles = SkinnedMeshRenderer.sharedMesh.triangles;
+		mesh.normals = SkinnedMeshRenderer.sharedMesh.normals;
+		mesh.uv = SkinnedMeshRenderer.sharedMesh.uv;
+		mesh.uv2 = SkinnedMeshRenderer.sharedMesh.uv2;
+		mesh.bounds = SkinnedMeshRenderer.sharedMesh.bounds;
 
-        AssetDatabase.AddObjectToAsset(GetComponent<SkinnedMeshRenderer>().sharedMesh, obj);
+		// Create a new prefab erasing the old one
+		Object obj = PrefabUtility.CreateEmptyPrefab(path);
 
+		// Reassign the Mesh to the SkinnedMeshRenderer
+		SkinnedMeshRenderer.sharedMesh = mesh;
+
+		// Add the mesh back to the prefab
+        AssetDatabase.AddObjectToAsset(SkinnedMeshRenderer.sharedMesh, obj);
+
+		// Replace the prefab
         PrefabUtility.ReplacePrefab(gameObject, obj, ReplacePrefabOptions.ConnectToPrefab);
     }
 
