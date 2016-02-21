@@ -142,8 +142,8 @@ public class Skin2D : MonoBehaviour {
 		// Ensure there is a reference material for the renderer
 		if (referenceMaterial == null) {
 			if (SkinnedMeshRenderer.sharedMaterial != null) {
-				if (SkinnedMeshRenderer.sharedMaterial.name.Contains("(Instance)")) {
-					string materialName = SkinnedMeshRenderer.sharedMaterial.name.Replace("(Instance)", "");
+				if (SkinnedMeshRenderer.sharedMaterial.name.Contains(" (Instance)")) {
+					string materialName = SkinnedMeshRenderer.sharedMaterial.name.Replace(" (Instance)", "");
 					Material material = AssetDatabase.LoadAssetAtPath("Assets/Materials/" + materialName + ".mat", typeof(Material)) as Material;
 					referenceMaterial = material;
 				} 
@@ -356,11 +356,29 @@ public class Skin2D : MonoBehaviour {
 		mesh.uv2 = SkinnedMeshRenderer.sharedMesh.uv2;
 		mesh.bounds = SkinnedMeshRenderer.sharedMesh.bounds;
 
+		// Ensure there is a reference material for the renderer
+		if (referenceMaterial == null) {
+			if (SkinnedMeshRenderer.sharedMaterial.name.Contains(" (Instance)")) {
+				string materialName = SkinnedMeshRenderer.sharedMaterial.name.Replace(" (Instance)", "");
+				Debug.Log(materialName);
+				Material material = AssetDatabase.LoadAssetAtPath("Assets/Materials/" + materialName + ".mat", typeof(Material)) as Material;
+				referenceMaterial = material;
+			} 
+			else {
+				referenceMaterial = SkinnedMeshRenderer.sharedMaterial;
+			}
+		}
+
 		// Create a new prefab erasing the old one
 		Object obj = PrefabUtility.CreateEmptyPrefab(path);
 
 		// Reassign the Mesh to the SkinnedMeshRenderer
 		SkinnedMeshRenderer.sharedMesh = mesh;
+
+		// Make sure the renderer is using a material
+		if (referenceMaterial != null) {
+			SkinnedMeshRenderer.sharedMaterial = referenceMaterial;
+		}
 
 		// Add the mesh back to the prefab
         AssetDatabase.AddObjectToAsset(SkinnedMeshRenderer.sharedMesh, obj);
