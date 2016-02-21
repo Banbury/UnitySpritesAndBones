@@ -189,7 +189,7 @@ public class Skeleton : MonoBehaviour {
 					{
 						InverseKinematics ik = bones[i].GetComponent<InverseKinematics>();
 
-						if (ik != null && !editMode && ik.enabled && ik.influence > 0) {
+						if (ik != null && !editMode && ik.enabled && ik.influence > 0 && ik.gameObject.activeInHierarchy) {
 							ik.resolveSK2D();
 						}
 					}
