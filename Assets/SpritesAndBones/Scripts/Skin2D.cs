@@ -152,6 +152,13 @@ public class Skin2D : MonoBehaviour {
 				}
 			}
 		}
+		else {
+			if (referenceMaterial.name.Contains(" (Instance)")) {
+				string materialName = referenceMaterial.name.Replace(" (Instance)", "");
+				Material material = AssetDatabase.LoadAssetAtPath("Assets/Materials/" + materialName + ".mat", typeof(Material)) as Material;
+				referenceMaterial = material;
+			}
+		}
 
 		// Make sure the renderer is using a material if it is nullified
 		if (SkinnedMeshRenderer.sharedMaterial == null) {
@@ -366,6 +373,13 @@ public class Skin2D : MonoBehaviour {
 			} 
 			else {
 				referenceMaterial = SkinnedMeshRenderer.sharedMaterial;
+			}
+		}
+		else {
+			if (referenceMaterial.name.Contains(" (Instance)")) {
+				string materialName = referenceMaterial.name.Replace(" (Instance)", "");
+				Material material = AssetDatabase.LoadAssetAtPath("Assets/Materials/" + materialName + ".mat", typeof(Material)) as Material;
+				referenceMaterial = material;
 			}
 		}
 
