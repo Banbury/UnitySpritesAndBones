@@ -435,7 +435,7 @@ public class Bone : MonoBehaviour {
 			}
 		}
 
-		if (transform.localEulerAngles.x == 0.0f && transform.localEulerAngles.y == 180.0f || transform.localEulerAngles.x == 180.0f && transform.localEulerAngles.y == 0.0f)
+		if ((int)transform.localEulerAngles.x == 0 && (int)transform.localEulerAngles.y == 180 || (int)transform.localEulerAngles.x == 180 && (int)transform.localEulerAngles.y == 0)
 		{
 			normal = 1;
 		}
@@ -492,7 +492,7 @@ public class Bone : MonoBehaviour {
 			}
 		}
 
-		if (transform.localEulerAngles.x == 0.0f && transform.localEulerAngles.y == 180.0f || transform.localEulerAngles.x == 180.0f && transform.localEulerAngles.y == 0.0f)
+		if ((int)transform.localEulerAngles.x == 0 && (int)transform.localEulerAngles.y == 180 || (int)transform.localEulerAngles.x == 180 && (int)transform.localEulerAngles.y == 0)
 		{
 			normal = 1;
 		}
@@ -510,19 +510,19 @@ public class Bone : MonoBehaviour {
 		{
 			//find all SkinnedMeshRenderer elements
 			skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>(true);
-			foreach(SkinnedMeshRenderer skin in skins) {
-				if (skeleton.spriteShadowsShader != null && skin.material.shader == skeleton.spriteShadowsShader)
+			for( int i = 0; i < skins.Length; i++) {
+				if (skeleton.spriteShadowsShader != null && skins[i].material.shader == skeleton.spriteShadowsShader)
 				{
-					renderers[skin.transform] = skin.transform.position.z;
+					renderers[skins[i].transform] = skins[i].transform.position.z;
 				}
 			}
 
 			//find all SpriteRenderer elements
 			spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>(true);
-			foreach(SpriteRenderer spriteRenderer in spriteRenderers) {
-				if (skeleton.spriteShadowsShader != null && spriteRenderer.material.shader == skeleton.spriteShadowsShader)
+			for( int j = 0; j < spriteRenderers.Length; j++) {
+				if (skeleton.spriteShadowsShader != null && spriteRenderers[j].material.shader == skeleton.spriteShadowsShader)
 				{
-					renderers[spriteRenderer.transform] = spriteRenderer.transform.position.z;
+					renderers[spriteRenderers[j].transform] = spriteRenderers[j].transform.position.z;
 				}
 			}
 		}
@@ -535,24 +535,24 @@ public class Bone : MonoBehaviour {
 		{
 			//find all SkinnedMeshRenderer elements
 			skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>(true);
-			foreach(SkinnedMeshRenderer skin in skins) {
-				if (skeleton.spriteShadowsShader != null && skin.material.shader == skeleton.spriteShadowsShader)
+			for( int i = 0; i < skins.Length; i++) {
+				if (skeleton.spriteShadowsShader != null && skins[i].material.shader == skeleton.spriteShadowsShader)
 				{
 					if (!skeleton.useSharedMaterial) {
 						#if UNITY_EDITOR
-						Undo.RecordObject(skin.material, "Change Render Normals");
+						Undo.RecordObject(skins[i].material, "Change Render Normals");
 						#endif
-						skin.material.SetVector("_Normal", new Vector3(0, 0, normal));
+						skins[i].material.SetVector("_Normal", new Vector3(0, 0, normal));
 						#if UNITY_EDITOR
-						EditorUtility.SetDirty (skin.material);
+						EditorUtility.SetDirty (skins[i].material);
 						#endif
 					} else {
 						#if UNITY_EDITOR
-						Undo.RecordObject(skin.sharedMaterial, "Change Render Normals");
+						Undo.RecordObject(skins[i].sharedMaterial, "Change Render Normals");
 						#endif
-						skin.sharedMaterial.SetVector("_Normal", new Vector3(0, 0, normal));
+						skins[i].sharedMaterial.SetVector("_Normal", new Vector3(0, 0, normal));
 						#if UNITY_EDITOR
-						EditorUtility.SetDirty (skin.sharedMaterial);
+						EditorUtility.SetDirty (skins[i].sharedMaterial);
 						#endif
 					}
 				}
@@ -560,24 +560,24 @@ public class Bone : MonoBehaviour {
 
 			//find all SpriteRenderer elements
 			spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>(true);
-			foreach(SpriteRenderer spriteRenderer in spriteRenderers) {
-				if (skeleton.spriteShadowsShader != null && spriteRenderer.material.shader == skeleton.spriteShadowsShader)
+			for( int j = 0; j < spriteRenderers.Length; j++) {
+				if (skeleton.spriteShadowsShader != null && spriteRenderers[j].material.shader == skeleton.spriteShadowsShader)
 				{
 					if (!skeleton.useSharedMaterial) {
 						#if UNITY_EDITOR
-						Undo.RecordObject(spriteRenderer.material, "Change Render Normals");
+						Undo.RecordObject(spriteRenderers[j].material, "Change Render Normals");
 						#endif
-						spriteRenderer.material.SetVector("_Normal", new Vector3(0, 0, normal));
+						spriteRenderers[j].material.SetVector("_Normal", new Vector3(0, 0, normal));
 						#if UNITY_EDITOR
-						EditorUtility.SetDirty (spriteRenderer.material);
+						EditorUtility.SetDirty (spriteRenderers[j].material);
 						#endif
 					} else {
 						#if UNITY_EDITOR
-						Undo.RecordObject(spriteRenderer.sharedMaterial, "Change Render Normals");
+						Undo.RecordObject(spriteRenderers[j].sharedMaterial, "Change Render Normals");
 						#endif
-						spriteRenderer.sharedMaterial.SetVector("_Normal", new Vector3(0, 0, normal));
+						spriteRenderers[j].sharedMaterial.SetVector("_Normal", new Vector3(0, 0, normal));
 						#if UNITY_EDITOR
-						EditorUtility.SetDirty (spriteRenderer.sharedMaterial);
+						EditorUtility.SetDirty (spriteRenderers[j].sharedMaterial);
 						#endif
 					}
 				}

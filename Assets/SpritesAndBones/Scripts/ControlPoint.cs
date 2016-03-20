@@ -49,8 +49,23 @@ public class ControlPoint : MonoBehaviour {
     public static void CreateControlPoints(SkinnedMeshRenderer skin) {
         if (skin.sharedMesh != null)
 		{
+			Skin2D skin2D = skin.GetComponent<Skin2D>();
+			if (skin2D != null) {
+				skin2D.controlPoints = new ControlPoints.Point[skin.sharedMesh.vertices.Length];
+				if (skin2D.points == null) {
+					skin2D.points = skin2D.gameObject.AddComponent<ControlPoints>();
+				}
+			}
 			for (int i = 0; i < skin.sharedMesh.vertices.Length; i++)
 			{
+				Vector3 originalPos = skin.sharedMesh.vertices[i];
+
+				if (skin2D != null) {
+					skin2D.controlPoints[i] = new ControlPoints.Point(originalPos);
+					skin2D.controlPoints[i].index = i;
+					skin2D.points.SetPoint(skin2D.controlPoints[i]);
+				}
+
 				GameObject b = new GameObject(skin.name + " Control Point");
 				// Unparent the skin temporarily before adding the control point
 				Transform skinParent = skin.transform.parent;
@@ -113,32 +128,7 @@ public class ControlPoint : MonoBehaviour {
 					Gizmos.color = Color.green;
 				}
 				else {
-					skeleton = transform.root.GetComponentInChildren<Skeleton>();
-					if (skeleton != null)
-					{
-						if (gameObject.name.ToUpper().EndsWith(" R") || 
-						gameObject.name.ToUpper().EndsWith(".R") || 
-						gameObject.name.ToUpper().EndsWith("_R") || 
-						gameObject.name.ToUpper().EndsWith("RIGHT"))
-						{
-							Gizmos.color = skeleton.colorRight;
-						}
-						else if (gameObject.name.ToUpper().EndsWith(" L") || 
-						gameObject.name.ToUpper().EndsWith(".L") || 
-						gameObject.name.ToUpper().EndsWith("_L") || 
-						gameObject.name.ToUpper().EndsWith("LEFT"))
-						{
-							Gizmos.color = skeleton.colorLeft;
-						}
-						else
-						{
-							Gizmos.color = color;
-						}
-					}
-					else
-					{
-						Gizmos.color = color;
-					}
+					Gizmos.color = color;
 				}
 				Gizmos.DrawSphere(gameObject.transform.position, size);
 			}

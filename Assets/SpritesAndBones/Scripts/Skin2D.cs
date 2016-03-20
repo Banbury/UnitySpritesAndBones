@@ -43,8 +43,8 @@ public class Skin2D : MonoBehaviour {
     public Bone2DWeights boneWeights;
 
     private Material lineMaterial;
-    private MeshFilter meshFilter;
-    private SkinnedMeshRenderer skinnedMeshRenderer;
+    private MeshFilter _meshFilter;
+    private SkinnedMeshRenderer _skinnedMeshRenderer;
     private GameObject lastSelected = null;
 
 	// Prevent the bone weights from being recalculated
@@ -52,6 +52,10 @@ public class Skin2D : MonoBehaviour {
 
 	// The referenced material for this skin
 	public Material referenceMaterial;
+
+	public ControlPoints.Point[] controlPoints;
+
+	public ControlPoints points;
 
     #if UNITY_EDITOR
         [MenuItem("Sprites And Bones/Skin 2D")]
@@ -119,36 +123,35 @@ public class Skin2D : MonoBehaviour {
     // Use this for initialization
     void Start() {
 #if UNITY_EDITOR
-        CalculateVertexColors();
+		if (GetComponent<SortingLayerExposed>() == null) {
+            gameObject.AddComponent<SortingLayerExposed>();
+        }
+		if (!Application.isPlaying) {
+			CalculateVertexColors();
+		}
 #endif
 		if (Application.isPlaying) {
-			Mesh oldMesh = GetComponent<SkinnedMeshRenderer>().sharedMesh;
+			Mesh oldMesh = skinnedMeshRenderer.sharedMesh;
 			if (oldMesh != null) {
 				Mesh newMesh = (Mesh)Object.Instantiate(oldMesh);
-				GetComponent<SkinnedMeshRenderer>().sharedMesh = newMesh;
+				skinnedMeshRenderer.sharedMesh = newMesh;
 			}
 		}
     }
 
     // Update is called once per frame
     void Update () {
-        if (MeshFilter.sharedMesh != null && SkinnedMeshRenderer.sharedMesh == null) {
-            SkinnedMeshRenderer.sharedMesh = MeshFilter.sharedMesh;
-        }
-		if (GetComponent<SortingLayerExposed>() == null) {
-            gameObject.AddComponent<SortingLayerExposed>();
-        }
-
+		#if UNITY_EDITOR
 		// Ensure there is a reference material for the renderer
 		if (referenceMaterial == null) {
-			if (SkinnedMeshRenderer.sharedMaterial != null) {
-				if (SkinnedMeshRenderer.sharedMaterial.name.Contains(" (Instance)")) {
-					string materialName = SkinnedMeshRenderer.sharedMaterial.name.Replace(" (Instance)", "");
+			if (skinnedMeshRenderer.sharedMaterial != null) {
+				if (skinnedMeshRenderer.sharedMaterial.name.Contains(" (Instance)")) {
+					string materialName = skinnedMeshRenderer.sharedMaterial.name.Replace(" (Instance)", "");
 					Material material = AssetDatabase.LoadAssetAtPath("Assets/Materials/" + materialName + ".mat", typeof(Material)) as Material;
 					referenceMaterial = material;
 				} 
 				else {
-					referenceMaterial = SkinnedMeshRenderer.sharedMaterial;
+					referenceMaterial = skinnedMeshRenderer.sharedMaterial;
 				}
 			}
 		}
@@ -161,24 +164,45 @@ public class Skin2D : MonoBehaviour {
 		}
 
 		// Make sure the renderer is using a material if it is nullified
-		if (SkinnedMeshRenderer.sharedMaterial == null) {
-			SkinnedMeshRenderer.sharedMaterial = referenceMaterial;
+		if (skinnedMeshRenderer.sharedMaterial == null) {
+			skinnedMeshRenderer.sharedMaterial = referenceMaterial;
 		}
+		#endif
     }
 
-    private MeshFilter MeshFilter {
+	// Update is called once per frame
+	void LateUpdate () {
+		if (skinnedMeshRenderer != null && skinnedMeshRenderer.sharedMesh != null 
+		&& controlPoints != null && controlPoints.Length > 0)
+		{
+			for (int i = 0; i < controlPoints.Length; i++) {
+				if (points != null) {
+					if (points.GetPoint(controlPoints[i]) != skinnedMeshRenderer.sharedMesh.vertices[i])
+					{
+						Vector3[] vertices = new Vector3[skinnedMeshRenderer.sharedMesh.vertices.Length];
+						System.Array.Copy(skinnedMeshRenderer.sharedMesh.vertices, vertices, skinnedMeshRenderer.sharedMesh.vertices.Length);
+						vertices[i] = points.GetPoint(controlPoints[i]);
+						skinnedMeshRenderer.sharedMesh.vertices = vertices;
+						skinnedMeshRenderer.sharedMesh.RecalculateBounds();
+					}
+				}
+			}
+		}
+	}
+
+    private MeshFilter meshFilter {
         get {
-            if (meshFilter == null)
-                meshFilter = GetComponent<MeshFilter>();
-            return meshFilter;
+            if (_meshFilter == null)
+                _meshFilter = GetComponent<MeshFilter>();
+            return _meshFilter;
         }
     }
 
-    private SkinnedMeshRenderer SkinnedMeshRenderer {
+    private SkinnedMeshRenderer skinnedMeshRenderer {
         get {
-            if (skinnedMeshRenderer == null)
-                skinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
-            return skinnedMeshRenderer;
+            if (_skinnedMeshRenderer == null)
+                _skinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
+            return _skinnedMeshRenderer;
         }
     }
 
@@ -196,12 +220,39 @@ public class Skin2D : MonoBehaviour {
 #if UNITY_EDITOR
     void OnDrawGizmos() {
 
-        if (Application.isEditor && MeshFilter.sharedMesh != null) {
+        if (Application.isEditor && meshFilter.sharedMesh != null) {
             CalculateVertexColors();
             GL.wireframe = true;
             LineMaterial.SetPass(0);
-            Graphics.DrawMeshNow(MeshFilter.sharedMesh, transform.position, transform.rotation);
+            Graphics.DrawMeshNow(meshFilter.sharedMesh, transform.position, transform.rotation);
             GL.wireframe = false;
+        }
+
+    }
+
+    void CreateOrReplaceAsset (Mesh mesh, string path)
+    {
+        var meshAsset = AssetDatabase.LoadAssetAtPath (path, typeof(Mesh)) as Mesh;
+        if (meshAsset == null) {
+            meshAsset = new Mesh ();
+			// Hack to display mesh once saved
+			CombineInstance[] combine = new CombineInstance[1];
+			combine[0].mesh = mesh;
+			combine[0].transform = Matrix4x4.identity;
+			meshAsset.CombineMeshes(combine);
+
+            EditorUtility.CopySerialized (mesh, meshAsset);
+            AssetDatabase.CreateAsset (meshAsset, path);
+        } else {
+            meshAsset.Clear();
+			// Hack to display mesh once saved
+			CombineInstance[] combine = new CombineInstance[1];
+			combine[0].mesh = mesh;
+			combine[0].transform = Matrix4x4.identity;
+			meshAsset.CombineMeshes(combine);
+
+			EditorUtility.CopySerialized (mesh, meshAsset);
+            AssetDatabase.SaveAssets ();
         }
 
     }
@@ -212,19 +263,20 @@ public class Skin2D : MonoBehaviour {
 
     public void CalculateBoneWeights(Bone[] bones, bool weightToParent) {
 		if (!lockBoneWeights) {
-			if(MeshFilter.sharedMesh == null)
+			if(meshFilter.sharedMesh == null)
 			{
 				Debug.Log("No Shared Mesh.");
 				return;
 			}
 			Mesh mesh = new Mesh();
-			mesh.name = "Generated Mesh";
-			mesh.vertices = MeshFilter.sharedMesh.vertices;
-			mesh.triangles = MeshFilter.sharedMesh.triangles;
-			mesh.normals = MeshFilter.sharedMesh.normals;
-			mesh.uv = MeshFilter.sharedMesh.uv;
-			mesh.uv2 = MeshFilter.sharedMesh.uv2;
-			mesh.bounds = MeshFilter.sharedMesh.bounds;
+			mesh.name = meshFilter.sharedMesh.name;
+			mesh.name = mesh.name.Replace(".Mesh", ".SkinnedMesh");
+			mesh.vertices = meshFilter.sharedMesh.vertices;
+			mesh.triangles = meshFilter.sharedMesh.triangles;
+			mesh.normals = meshFilter.sharedMesh.normals;
+			mesh.uv = meshFilter.sharedMesh.uv;
+			mesh.uv2 = meshFilter.sharedMesh.uv2;
+			mesh.bounds = meshFilter.sharedMesh.bounds;
 
 			if (bones != null && mesh != null) {
 				boneWeights = new Bone2DWeights();
@@ -268,15 +320,22 @@ public class Skin2D : MonoBehaviour {
 
 				mesh.bindposes = bindPoses;
 
-				var skinRenderer = GetComponent<SkinnedMeshRenderer>();
-				if (skinRenderer.sharedMesh != null && !AssetDatabase.Contains(skinRenderer.sharedMesh.GetInstanceID()))
-					Object.DestroyImmediate(skinRenderer.sharedMesh);
-				skinRenderer.bones = bonesArr;
-				skinRenderer.sharedMesh = mesh;
-				EditorUtility.SetDirty(skinRenderer.gameObject);
-				if (PrefabUtility.GetPrefabType(skinRenderer.gameObject) != PrefabType.None) {
-					AssetDatabase.SaveAssets();
+				skinnedMeshRenderer.bones = bonesArr;
+
+				// Check if the Meshes directory exists, if not, create it.
+				if(!Directory.Exists("Assets/Meshes")) {
+					AssetDatabase.CreateFolder("Assets", "Meshes");
+					AssetDatabase.Refresh();
 				}
+				string path = "Assets/Meshes/" + mesh.name + ".asset";
+				CreateOrReplaceAsset (mesh, path);
+				AssetDatabase.Refresh();
+
+				Mesh generatedMesh = AssetDatabase.LoadAssetAtPath (path, typeof(Mesh)) as Mesh;
+
+				skinnedMeshRenderer.sharedMesh = generatedMesh;
+				EditorUtility.SetDirty(skinnedMeshRenderer.gameObject);
+				AssetDatabase.SaveAssets();
 			}
 		}
     }
@@ -284,13 +343,13 @@ public class Skin2D : MonoBehaviour {
     private void CalculateVertexColors() {
         GameObject go = Selection.activeGameObject;
 
-        if (go == lastSelected || MeshFilter.sharedMesh == null) {
+        if (go == lastSelected || meshFilter.sharedMesh == null) {
             return;
         }
 
         lastSelected = go;
 
-        Mesh m = SkinnedMeshRenderer.sharedMesh;
+        Mesh m = skinnedMeshRenderer.sharedMesh;
 
         Color[] colors = new Color[m.vertexCount];
 
@@ -302,7 +361,7 @@ public class Skin2D : MonoBehaviour {
             Bone bone = go.GetComponent<Bone>();
 
             if (bone != null) {
-                if (SkinnedMeshRenderer.bones.Any(b => b.gameObject.GetInstanceID() == bone.gameObject.GetInstanceID())) {
+                if (skinnedMeshRenderer.bones.Any(b => b.gameObject.GetInstanceID() == bone.gameObject.GetInstanceID())) {
                     for (int i = 0; i < colors.Length; i++) {
                         float value = 0;
 
@@ -322,7 +381,7 @@ public class Skin2D : MonoBehaviour {
             }
         }
 
-        MeshFilter.sharedMesh.colors = colors;
+        meshFilter.sharedMesh.colors = colors;
     }
 
     public void SaveAsPrefab() {
@@ -355,24 +414,44 @@ public class Skin2D : MonoBehaviour {
 		// Need to create a new Mesh because replacing the prefab will erase the sharedMesh 
 		// on the SkinnedMeshRenderer if it is linked to the prefab
         Mesh mesh = new Mesh();
-		mesh.name = "Generated Mesh";
-		mesh.vertices = SkinnedMeshRenderer.sharedMesh.vertices;
-		mesh.triangles = SkinnedMeshRenderer.sharedMesh.triangles;
-		mesh.normals = SkinnedMeshRenderer.sharedMesh.normals;
-		mesh.uv = SkinnedMeshRenderer.sharedMesh.uv;
-		mesh.uv2 = SkinnedMeshRenderer.sharedMesh.uv2;
-		mesh.bounds = SkinnedMeshRenderer.sharedMesh.bounds;
+		mesh.name = meshFilter.sharedMesh.name.Replace(".Mesh", ".SkinnedMesh");
+		mesh.vertices = skinnedMeshRenderer.sharedMesh.vertices;
+		mesh.triangles = skinnedMeshRenderer.sharedMesh.triangles;
+		mesh.normals = skinnedMeshRenderer.sharedMesh.normals;
+		mesh.uv = skinnedMeshRenderer.sharedMesh.uv;
+		mesh.uv2 = skinnedMeshRenderer.sharedMesh.uv2;
+		mesh.bounds = skinnedMeshRenderer.sharedMesh.bounds;
+
+		// Check if the Meshes directory exists, if not, create it.
+		if(!Directory.Exists("Assets/Meshes")) {
+			AssetDatabase.CreateFolder("Assets", "Meshes");
+			AssetDatabase.Refresh();
+		}
+		string meshPath = "Assets/Meshes/" + mesh.name + ".asset";
+		Mesh generatedMesh = AssetDatabase.LoadMainAssetAtPath (meshPath) as Mesh;
+		if (generatedMesh == null) {
+			generatedMesh = new Mesh();
+			// Hack to display mesh once saved
+			CombineInstance[] combine = new CombineInstance[1];
+			combine[0].mesh = mesh;
+			combine[0].transform = Matrix4x4.identity;
+			generatedMesh.CombineMeshes(combine);
+
+			EditorUtility.CopySerialized(mesh, generatedMesh);
+			AssetDatabase.CreateAsset(generatedMesh, meshPath);
+			AssetDatabase.Refresh();
+		}
 
 		// Ensure there is a reference material for the renderer
 		if (referenceMaterial == null) {
-			if (SkinnedMeshRenderer.sharedMaterial.name.Contains(" (Instance)")) {
-				string materialName = SkinnedMeshRenderer.sharedMaterial.name.Replace(" (Instance)", "");
+			if (skinnedMeshRenderer.sharedMaterial.name.Contains(" (Instance)")) {
+				string materialName = skinnedMeshRenderer.sharedMaterial.name.Replace(" (Instance)", "");
 				Debug.Log(materialName);
 				Material material = AssetDatabase.LoadAssetAtPath("Assets/Materials/" + materialName + ".mat", typeof(Material)) as Material;
 				referenceMaterial = material;
 			} 
 			else {
-				referenceMaterial = SkinnedMeshRenderer.sharedMaterial;
+				referenceMaterial = skinnedMeshRenderer.sharedMaterial;
 			}
 		}
 		else {
@@ -386,19 +465,21 @@ public class Skin2D : MonoBehaviour {
 		// Create a new prefab erasing the old one
 		Object obj = PrefabUtility.CreateEmptyPrefab(path);
 
-		// Reassign the Mesh to the SkinnedMeshRenderer
-		SkinnedMeshRenderer.sharedMesh = mesh;
+		// Make sure the skinned mesh renderer is using the stored generated mesh
+		skinnedMeshRenderer.sharedMesh = generatedMesh;
 
 		// Make sure the renderer is using a material
 		if (referenceMaterial != null) {
-			SkinnedMeshRenderer.sharedMaterial = referenceMaterial;
+			skinnedMeshRenderer.sharedMaterial = referenceMaterial;
 		}
 
-		// Add the mesh back to the prefab
-        AssetDatabase.AddObjectToAsset(SkinnedMeshRenderer.sharedMesh, obj);
+		// Add the mesh back to the prefab ** No Longer Using this as prefabs are less stable this way **
+        // AssetDatabase.AddObjectToAsset(skinnedMeshRenderer.sharedMesh, obj);
 
 		// Replace the prefab
         PrefabUtility.ReplacePrefab(gameObject, obj, ReplacePrefabOptions.ConnectToPrefab);
+		EditorUtility.SetDirty(skinnedMeshRenderer.gameObject);
+		AssetDatabase.SaveAssets();
     }
 
 	public void RecalculateBoneWeights() {
@@ -419,15 +500,81 @@ public class Skin2D : MonoBehaviour {
     }
 
 	public void ResetControlPointPositions() {
-		ControlPoint[] controlPoints = GetComponentsInChildren<ControlPoint>();
-		if (controlPoints != null)
-		{
-			foreach (ControlPoint controlPoint in controlPoints)
-			{
-				controlPoint.ResetPosition();
+		ControlPoint[] cps = GetComponentsInChildren<ControlPoint>();
+		if (cps != null && cps.Length > 0) {
+			for (int n = 0; n < cps.Length; n++) {
+				cps[n].ResetPosition();
 				// Debug.Log("Reset Control Point Positions for " + gameObject.name);
 			}
 		}
+		if (controlPoints != null && controlPoints.Length > 0) {
+			for (int i = 0; i < controlPoints.Length; i++) {
+				controlPoints[i].ResetPosition();
+				points.SetPoint(controlPoints[i]);
+			}
+		}
     }
+
+    public void CreateControlPoints(SkinnedMeshRenderer skin) {
+        if (skin.sharedMesh != null)
+		{
+			controlPoints = new ControlPoints.Point[skin.sharedMesh.vertices.Length];
+			if (points == null) {
+				points = gameObject.AddComponent<ControlPoints>();
+			}
+			for (int i = 0; i < skin.sharedMesh.vertices.Length; i++)
+			{
+				Vector3 originalPos = skin.sharedMesh.vertices[i];
+
+				controlPoints[i] = new ControlPoints.Point(originalPos);
+				controlPoints[i].index = i;
+				points.SetPoint(controlPoints[i]);
+
+				GameObject b = new GameObject(skin.name + " Control Point");
+				// Unparent the skin temporarily before adding the control point
+				Transform skinParent = skin.transform.parent;
+				skin.transform.parent = null;
+
+				// Reset the rotation before creating the mesh so the UV's will align properly
+				Quaternion localRotation = skin.transform.localRotation;
+				skin.transform.localRotation = Quaternion.identity;
+
+				b.transform.position = new Vector3(skin.transform.position.x + (skin.sharedMesh.vertices[i].x * skin.transform.localScale.x), skin.transform.position.y + (skin.sharedMesh.vertices[i].y * skin.transform.localScale.y), skin.transform.position.z + (skin.sharedMesh.vertices[i].z * skin.transform.localScale.z));
+				b.transform.parent = skin.transform;
+				ControlPoint[] cps = b.transform.parent.transform.GetComponentsInChildren<ControlPoint>();
+				if (cps != null && cps.Length > 0)
+				{
+					b.gameObject.name = b.gameObject.name + cps.Length;
+				}
+				Undo.RegisterCreatedObjectUndo(b, "Add control point");
+				ControlPoint controlPoint = b.AddComponent<ControlPoint>();
+				controlPoint.index = i;
+				controlPoint.skin = skin;
+				controlPoint.originalPosition = b.transform.localPosition;
+
+				// Reset the rotations of the object
+				skin.transform.localRotation = localRotation;
+				skin.transform.parent = skinParent;
+			}
+		}
+    }
+
+	public void RemoveControlPoints() {
+		ControlPoint[] cps = GetComponentsInChildren<ControlPoint>();
+		if (cps != null && cps.Length > 0)
+		{
+			for (int i = 0; i < cps.Length; i++) {
+				DestroyImmediate(cps[i].gameObject);
+			}
+		}
+
+		controlPoints = null;
+
+		if (points != null) {
+			DestroyImmediate(points);
+		}
+
+		points = null;
+	}
 #endif
 }
