@@ -322,12 +322,24 @@ public class Skin2D : MonoBehaviour {
 
 				skinnedMeshRenderer.bones = bonesArr;
 
-				// Check if the Meshes directory exists, if not, create it.
-				if(!Directory.Exists("Assets/Meshes")) {
-					AssetDatabase.CreateFolder("Assets", "Meshes");
-					AssetDatabase.Refresh();
+				Skeleton[] skeletons = transform.root.gameObject.GetComponentsInChildren<Skeleton>(true);
+				Skeleton skeleton = null;
+				foreach (Skeleton s in skeletons)
+				{
+					if (transform.IsChildOf(s.transform))
+					{
+						skeleton = s;
+					}
 				}
-				string path = "Assets/Meshes/" + mesh.name + ".asset";
+
+				DirectoryInfo meshSkelDir = new DirectoryInfo("Assets/Meshes/SkinnedMeshes/" + skeleton.gameObject.name);
+				if (Directory.Exists(meshSkelDir.FullName) == false)
+				{
+					Directory.CreateDirectory(meshSkelDir.FullName);
+				}
+
+				string path = "Assets/Meshes/SkinnedMeshes/" + skeleton.gameObject.name + "/" + mesh.name + ".asset";
+
 				CreateOrReplaceAsset (mesh, path);
 				AssetDatabase.Refresh();
 
@@ -422,12 +434,12 @@ public class Skin2D : MonoBehaviour {
 		mesh.uv2 = skinnedMeshRenderer.sharedMesh.uv2;
 		mesh.bounds = skinnedMeshRenderer.sharedMesh.bounds;
 
-		// Check if the Meshes directory exists, if not, create it.
-		if(!Directory.Exists("Assets/Meshes")) {
-			AssetDatabase.CreateFolder("Assets", "Meshes");
-			AssetDatabase.Refresh();
-		}
-		string meshPath = "Assets/Meshes/" + mesh.name + ".asset";
+        DirectoryInfo meshSkelDir = new DirectoryInfo("Assets/Meshes/SkinnedMeshes/" + skeleton.gameObject.name);
+		if (Directory.Exists(meshSkelDir.FullName) == false)
+        {
+            Directory.CreateDirectory(meshSkelDir.FullName);
+        }
+		string meshPath = "Assets/Meshes/SkinnedMeshes/" + skeleton.gameObject.name + "/" + mesh.name + ".asset";
 		Mesh generatedMesh = AssetDatabase.LoadMainAssetAtPath (meshPath) as Mesh;
 		if (generatedMesh == null) {
 			generatedMesh = new Mesh();

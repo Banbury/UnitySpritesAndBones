@@ -209,6 +209,30 @@ public class SkeletonEditor : Editor {
 			}
 			Debug.Log("Reset all control point names.");
 		}
+
+		EditorGUILayout.Separator();
+
+		EditorGUILayout.LabelField("Replace Control Points with Vertices", EditorStyles.boldLabel);
+
+		if(GUILayout.Button("Replace Control Points")) {
+			Skin2D[] skins = skeleton.gameObject.GetComponentsInChildren<Skin2D>(true);
+			foreach (Skin2D skin in skins) {
+				ControlPoint[] cps = skin.gameObject.GetComponentsInChildren<ControlPoint>(true);
+				if (cps != null && cps.Length > 0) {
+					bool skinActive = skin.gameObject.activeSelf;
+					skin.gameObject.SetActive(true);
+					skin.ResetControlPointPositions();
+					skin.RemoveControlPoints();
+					skin.CreateControlPoints(skin.GetComponent<SkinnedMeshRenderer>());
+					skin.gameObject.SetActive(skinActive);
+				}
+			}
+			ControlPoint[] controlPoints = skeleton.gameObject.GetComponentsInChildren<ControlPoint>(true);
+			for(int i = 0; i < controlPoints.Length; i++) {
+				DestroyImmediate(controlPoints[i].gameObject);
+			}
+			Debug.Log("Replaced all control points.");
+		}
     }
 
     void OnSceneGUI() {

@@ -175,7 +175,7 @@ public class InverseKinematics : MonoBehaviour {
 		float angle = Vector3.Angle (a, b);
 
 		// Use skeleton as root, change dir if the rotation is flipped
-		Vector3 dir = (skeleton && (int)skeleton.transform.localRotation.eulerAngles.y == 180 && (int)skeleton.transform.localRotation.eulerAngles.x == 0) ? Vector3.forward : Vector3.back;
+		Vector3 dir = (skeleton && skeleton.transform.localRotation.eulerAngles.y == 180.0f && skeleton.transform.localRotation.eulerAngles.x == 0.0f) ? Vector3.forward : Vector3.back;
 		float sign = Mathf.Sign (Vector3.Dot (dir, Vector3.Cross (a, b)));
 		angle = angle * sign;
 		// Flip sign if character is turned around
