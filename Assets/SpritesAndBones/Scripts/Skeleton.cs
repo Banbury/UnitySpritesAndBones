@@ -432,7 +432,7 @@ public class Skeleton : MonoBehaviour {
 							EditorUtility.SetDirty (skin2Ds[s].points);
 							#endif
 							hasControlPoint = true;
-							Debug.Log("Found " + pose.controlPoints[l].name + " set to " + index + skin2Ds[s].points.GetPoint(skin2Ds[s].controlPoints[index]));
+							// Debug.Log("Found " + pose.controlPoints[l].name + " set to " + index + skin2Ds[s].points.GetPoint(skin2Ds[s].controlPoints[index]));
 						}
 					}
 				}

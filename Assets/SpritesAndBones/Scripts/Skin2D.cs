@@ -521,6 +521,9 @@ public class Skin2D : MonoBehaviour {
 		}
 		if (controlPoints != null && controlPoints.Length > 0) {
 			for (int i = 0; i < controlPoints.Length; i++) {
+				if (controlPoints[i].originalPosition != meshFilter.sharedMesh.vertices[i]) {
+					controlPoints[i].originalPosition = meshFilter.sharedMesh.vertices[i];
+				}
 				controlPoints[i].ResetPosition();
 				points.SetPoint(controlPoints[i]);
 			}

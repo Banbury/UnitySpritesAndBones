@@ -200,14 +200,18 @@ public class SkeletonEditor : Editor {
 
 		EditorGUILayout.Separator();
 
-		EditorGUILayout.LabelField("Reset Skins' Control Point Names", EditorStyles.boldLabel);
+		EditorGUILayout.LabelField("Reset Skins' Control Points", EditorStyles.boldLabel);
 
-		if(GUILayout.Button("Reset Control Point Names")) {
+		if(GUILayout.Button("Reset Control Points")) {
 			ControlPoint[] cps = skeleton.gameObject.GetComponentsInChildren<ControlPoint>(true);
-			foreach (ControlPoint cp in cps) {
-				cp.Rename();
+			Skin2D[] skins = skeleton.gameObject.GetComponentsInChildren<Skin2D>(true);
+			foreach (Skin2D skin in skins) {
+				bool skinActive = skin.gameObject.activeSelf;
+				skin.gameObject.SetActive(true);
+				skin.ResetControlPointPositions();
+				skin.gameObject.SetActive(skinActive);
 			}
-			Debug.Log("Reset all control point names.");
+			Debug.Log("Reset all control points.");
 		}
 
 		EditorGUILayout.Separator();

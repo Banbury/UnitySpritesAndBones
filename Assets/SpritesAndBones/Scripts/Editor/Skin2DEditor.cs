@@ -76,6 +76,9 @@ public class Skin2DEditor : Editor {
 
         if (skin.points != null && skin.controlPoints != null && skin.controlPoints.Length > 0 
 		&& selectedIndex != -1 && GUILayout.Button("Reset Selected Control Point")) {
+			if (skin.controlPoints[selectedIndex].originalPosition != skin.GetComponent<MeshFilter>().sharedMesh.vertices[selectedIndex]) {
+				skin.controlPoints[selectedIndex].originalPosition = skin.GetComponent<MeshFilter>().sharedMesh.vertices[selectedIndex];
+			}
             skin.controlPoints[selectedIndex].ResetPosition();
 			skin.points.SetPoint(skin.controlPoints[selectedIndex]);
         }
@@ -93,7 +96,15 @@ public class Skin2DEditor : Editor {
 				AssetDatabase.CreateFolder("Assets", "Meshes");
 				AssetDatabase.Refresh();
 			}
-			ScriptableObjectUtility.CreateAsset(skin.GetComponent<SkinnedMeshRenderer>().sharedMesh, "Meshes/" + skin.gameObject.name + ".Mesh");
+			Mesh mesh = new Mesh();
+			mesh.name = skin.GetComponent<SkinnedMeshRenderer>().sharedMesh.name.Replace(".SkinnedMesh", ".Mesh");;
+			mesh.vertices = skin.GetComponent<SkinnedMeshRenderer>().sharedMesh.vertices;
+			mesh.triangles = skin.GetComponent<SkinnedMeshRenderer>().sharedMesh.triangles;
+			mesh.normals = skin.GetComponent<SkinnedMeshRenderer>().sharedMesh.normals;
+			mesh.uv = skin.GetComponent<SkinnedMeshRenderer>().sharedMesh.uv;
+			mesh.uv2 = skin.GetComponent<SkinnedMeshRenderer>().sharedMesh.uv2;
+			mesh.bounds = skin.GetComponent<SkinnedMeshRenderer>().sharedMesh.bounds;
+			ScriptableObjectUtility.CreateAsset(mesh, "Meshes/" + skin.gameObject.name + ".Mesh");
 			#endif
         }
 
