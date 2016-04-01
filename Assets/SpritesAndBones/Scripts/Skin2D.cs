@@ -345,6 +345,10 @@ public class Skin2D : MonoBehaviour {
 
 				Mesh generatedMesh = AssetDatabase.LoadAssetAtPath (path, typeof(Mesh)) as Mesh;
 
+				// Ensure it has bindPoses and weights
+				generatedMesh.boneWeights = unitweights;
+				generatedMesh.bindposes = bindPoses;
+
 				skinnedMeshRenderer.sharedMesh = generatedMesh;
 				EditorUtility.SetDirty(skinnedMeshRenderer.gameObject);
 				AssetDatabase.SaveAssets();
@@ -433,6 +437,8 @@ public class Skin2D : MonoBehaviour {
 		mesh.uv = skinnedMeshRenderer.sharedMesh.uv;
 		mesh.uv2 = skinnedMeshRenderer.sharedMesh.uv2;
 		mesh.bounds = skinnedMeshRenderer.sharedMesh.bounds;
+		mesh.bindposes = skinnedMeshRenderer.sharedMesh.bindposes;
+		mesh.boneWeights = skinnedMeshRenderer.sharedMesh.boneWeights;
 
         DirectoryInfo meshSkelDir = new DirectoryInfo("Assets/Meshes/SkinnedMeshes/" + skeleton.gameObject.name);
 		if (Directory.Exists(meshSkelDir.FullName) == false)
