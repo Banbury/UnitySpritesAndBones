@@ -57,6 +57,8 @@ public class Skin2D : MonoBehaviour {
 
 	public ControlPoints points;
 
+	static public bool showMeshOutline = true;
+
     #if UNITY_EDITOR
         [MenuItem("Sprites And Bones/Skin 2D")]
         public static void Create ()
@@ -126,7 +128,7 @@ public class Skin2D : MonoBehaviour {
 		if (GetComponent<SortingLayerExposed>() == null) {
             gameObject.AddComponent<SortingLayerExposed>();
         }
-		if (!Application.isPlaying) {
+		if (!Application.isPlaying && showMeshOutline) {
 			CalculateVertexColors();
 		}
 #endif
@@ -220,7 +222,7 @@ public class Skin2D : MonoBehaviour {
 #if UNITY_EDITOR
     void OnDrawGizmos() {
 
-        if (Application.isEditor && meshFilter.sharedMesh != null) {
+        if (Application.isEditor && meshFilter.sharedMesh != null && showMeshOutline) {
             CalculateVertexColors();
             GL.wireframe = true;
             LineMaterial.SetPass(0);

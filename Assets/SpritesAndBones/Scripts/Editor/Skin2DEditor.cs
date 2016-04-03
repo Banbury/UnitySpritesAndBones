@@ -47,6 +47,12 @@ public class Skin2DEditor : Editor {
 
         EditorGUILayout.Separator();
 
+        if (GUILayout.Button("Toggle Mesh Outline")) {
+            Skin2D.showMeshOutline = !Skin2D.showMeshOutline;
+        }
+
+        EditorGUILayout.Separator();
+
         if (skin.GetComponent<SkinnedMeshRenderer>().sharedMesh != null && GUILayout.Button("Save as Prefab")) {
             skin.SaveAsPrefab();
         }
