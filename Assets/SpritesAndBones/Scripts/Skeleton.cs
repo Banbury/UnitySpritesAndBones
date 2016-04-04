@@ -419,7 +419,7 @@ public class Skeleton : MonoBehaviour {
 					for( int s = 0; s < skin2Ds.Length; s++) {
 						if (skin2Ds[s].points != null && skin2Ds[s].controlPoints != null 
 						&& skin2Ds[s].controlPoints.Length > 0 
-						&& pose.controlPoints[l].name == skin2Ds[s].name + "Control Point" + l){
+						&& pose.controlPoints[l].name.StartsWith(skin2Ds[s].name + " Control Point")){
 							#if UNITY_EDITOR
 							Undo.RecordObject(skin2Ds[s], "Assign Pose");
 							Undo.RecordObject(skin2Ds[s].points, "Assign Pose");
