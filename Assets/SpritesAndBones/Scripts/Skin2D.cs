@@ -57,7 +57,9 @@ public class Skin2D : MonoBehaviour {
 
 	public ControlPoints points;
 
-	static public bool showMeshOutline = true;
+	static public bool showMeshOutline = false;
+
+	private Vector3[] vertices;
 
     #if UNITY_EDITOR
         [MenuItem("Sprites And Bones/Skin 2D")]
@@ -179,16 +181,14 @@ public class Skin2D : MonoBehaviour {
 		{
 			for (int i = 0; i < controlPoints.Length; i++) {
 				if (points != null) {
-					if (points.GetPoint(controlPoints[i]) != skinnedMeshRenderer.sharedMesh.vertices[i])
-					{
-						Vector3[] vertices = new Vector3[skinnedMeshRenderer.sharedMesh.vertices.Length];
-						System.Array.Copy(skinnedMeshRenderer.sharedMesh.vertices, vertices, skinnedMeshRenderer.sharedMesh.vertices.Length);
-						vertices[i] = points.GetPoint(controlPoints[i]);
-						skinnedMeshRenderer.sharedMesh.vertices = vertices;
-						skinnedMeshRenderer.sharedMesh.RecalculateBounds();
+					if (vertices == null || vertices.Length != skinnedMeshRenderer.sharedMesh.vertexCount) {
+						vertices = new Vector3[skinnedMeshRenderer.sharedMesh.vertexCount];
+						vertices = skinnedMeshRenderer.sharedMesh.vertices;
 					}
+					vertices[i] = points.GetPoint(controlPoints[i]);
 				}
 			}
+			skinnedMeshRenderer.sharedMesh.vertices = vertices;
 		}
 	}
 

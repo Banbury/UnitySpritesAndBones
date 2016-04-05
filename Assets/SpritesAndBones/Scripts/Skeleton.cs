@@ -108,6 +108,7 @@ public class Skeleton : MonoBehaviour {
 	public bool hasChildPositionsSaved = false;
 
 	private Bone[] bones;
+	private InverseKinematics[] iks;
 	private Dictionary<Transform, float> renderers = new Dictionary<Transform, float>();
 
 	private SkinnedMeshRenderer[] skins;
@@ -197,16 +198,11 @@ public class Skeleton : MonoBehaviour {
 
     private void EditorUpdate() {
 		if (IK_Enabled) {
-			if (bones != null)
+			if (iks != null)
 			{
-				for (int i=0; i<bones.Length; i++) {
-					if (bones[i] != null)
-					{
-						InverseKinematics ik = bones[i].GetComponent<InverseKinematics>();
-
-						if (ik != null && !editMode && ik.enabled && ik.influence > 0 && ik.gameObject.activeInHierarchy) {
-							ik.resolveSK2D();
-						}
+				for (int i=0; i < iks.Length; i++) {
+					if (iks[i] != null && !editMode && iks[i].enabled && iks[i].influence > 0 && iks[i].gameObject.activeInHierarchy) {
+						iks[i].resolveSK2D();
 					}
 				}
 			}
@@ -227,6 +223,7 @@ public class Skeleton : MonoBehaviour {
 
 		if (bones == null || bones != null && bones.Length <= 0 || Application.isEditor){
 			bones = gameObject.GetComponentsInChildren<Bone>(true);
+			iks = gameObject.GetComponentsInChildren<InverseKinematics>(true);
 		}
 
 		#if UNITY_EDITOR
