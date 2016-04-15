@@ -144,12 +144,12 @@ public class Skin2DEditor : Editor {
 			Handles.color = handleColor;
 
 			for(int i = 0; i < skin.controlPoints.Length; i++) {
-				if (Handles.Button(skin.controlPoints[i].position, Quaternion.identity, selectDistance, selectDistance, Handles.CircleCap)) {
+				if (Handles.Button(skin.points.GetPoint(skin.controlPoints[i]), Quaternion.identity, selectDistance, selectDistance, Handles.CircleCap)) {
 					selectedIndex = i;
 				}
 				if (selectedIndex == i) {
 					EditorGUI.BeginChangeCheck();
-					skin.controlPoints[i].position = Handles.DoPositionHandle(skin.controlPoints[i].position, Quaternion.identity);
+					skin.controlPoints[i].position = Handles.DoPositionHandle(skin.points.GetPoint(skin.controlPoints[i]), Quaternion.identity);
 					if (EditorGUI.EndChangeCheck()) {
 						skin.points.SetPoint(skin.controlPoints[i]);
 						Undo.RecordObject(skin, "Changed Control Point");
