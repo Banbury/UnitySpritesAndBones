@@ -86,9 +86,9 @@ public class Bone : MonoBehaviour {
 
     public Vector2 Head {
         get {
-            Vector3 v = gameObject.transform.up * length;
-            v.Scale(gameObject.transform.root.localScale);
-            return gameObject.transform.position + v;
+            Vector3 v = Vector3.up * length;
+			v = transform.TransformPoint(v);
+			return v;
         }
     }
 

@@ -203,7 +203,6 @@ public class SkeletonEditor : Editor {
 		EditorGUILayout.LabelField("Reset Skins' Control Points", EditorStyles.boldLabel);
 
 		if(GUILayout.Button("Reset Control Points")) {
-			ControlPoint[] cps = skeleton.gameObject.GetComponentsInChildren<ControlPoint>(true);
 			Skin2D[] skins = skeleton.gameObject.GetComponentsInChildren<Skin2D>(true);
 			foreach (Skin2D skin in skins) {
 				bool skinActive = skin.gameObject.activeSelf;
