@@ -35,6 +35,10 @@ Screenshots:
 Forum thread:
 * http://forum.unity3d.com/threads/219915-Release-Free-Unity-Sprites-And-Bones-2D-skeleton-animation
 
+
+## Tutorial read the 2DSkeletalAnimation.pdf for an explanation of how to set up and use this tool.
+
+
 Demo of how to use sprites and bones with this fork:
 
 * https://www.youtube.com/watch?feature=player_embedded&v=9QK4h9IocZU
