@@ -154,7 +154,7 @@ public class AnimationEventCopier : EditorWindow {
 				}
 
 				newEvents = addedEvents.ToArray();
-				AnimationUtility.SetAnimationEvents(animationClip, null);
+				// AnimationUtility.SetAnimationEvents(animationClip, null);
 				AnimationUtility.SetAnimationEvents(animationClip, newEvents);
 
 				// Update the progress meter

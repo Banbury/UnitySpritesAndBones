@@ -108,15 +108,13 @@ public class Skin2D : MonoBehaviour {
 					// Recalculate the bone weights for the new mesh
 					skin2D.RecalculateBoneWeights();
 				}
-				else
-				{
+				else {
 					o = new GameObject ("Skin2D");
 					Undo.RegisterCreatedObjectUndo (o, "Create Skin2D");
 					o.AddComponent<Skin2D> ();
 				}
 			}
-			else
-			{
+			else {
 				GameObject o = new GameObject ("Skin2D");
                 Undo.RegisterCreatedObjectUndo (o, "Create Skin2D");
                 o.AddComponent<Skin2D> ();
@@ -179,7 +177,9 @@ public class Skin2D : MonoBehaviour {
 		if (skinnedMeshRenderer != null && skinnedMeshRenderer.sharedMesh != null 
 		&& controlPoints != null && controlPoints.Length > 0)
 		{
-			for (int i = 0; i < controlPoints.Length; i++) {
+			int i;
+			int count = controlPoints.Length;
+			for (i = 0; i < count; i++) {
 				if (points != null) {
 					if (vertices == null || vertices.Length != skinnedMeshRenderer.sharedMesh.vertexCount) {
 						vertices = new Vector3[skinnedMeshRenderer.sharedMesh.vertexCount];
@@ -194,16 +194,18 @@ public class Skin2D : MonoBehaviour {
 
     private MeshFilter meshFilter {
         get {
-            if (_meshFilter == null)
+            if (_meshFilter == null) {
                 _meshFilter = GetComponent<MeshFilter>();
+			}
             return _meshFilter;
         }
     }
 
     private SkinnedMeshRenderer skinnedMeshRenderer {
         get {
-            if (_skinnedMeshRenderer == null)
+            if (_skinnedMeshRenderer == null) {
                 _skinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
+			}
             return _skinnedMeshRenderer;
         }
     }
@@ -245,7 +247,8 @@ public class Skin2D : MonoBehaviour {
 
             EditorUtility.CopySerialized (mesh, meshAsset);
             AssetDatabase.CreateAsset (meshAsset, path);
-        } else {
+        } 
+		else {
             meshAsset.Clear();
 			// Hack to display mesh once saved
 			CombineInstance[] combine = new CombineInstance[1];
@@ -265,8 +268,7 @@ public class Skin2D : MonoBehaviour {
 
     public void CalculateBoneWeights(Bone[] bones, bool weightToParent) {
 		if (!lockBoneWeights) {
-			if(meshFilter.sharedMesh == null)
-			{
+			if(meshFilter.sharedMesh == null) {
 				Debug.Log("No Shared Mesh.");
 				return;
 			}
@@ -292,12 +294,10 @@ public class Skin2D : MonoBehaviour {
 					bone.gameObject.SetActive(true);
 					foreach (Vector3 v in mesh.vertices) {
 						float influence;
-						if (!weightToParent || weightToParent && bone.transform != transform.parent)
-						{
+						if (!weightToParent || weightToParent && bone.transform != transform.parent) {
 							influence = bone.GetInfluence(v + transform.position);
 						}
-						else
-						{
+						else {
 							influence = 1.0f;
 						}
 
@@ -326,8 +326,7 @@ public class Skin2D : MonoBehaviour {
 
 				Skeleton[] skeletons = transform.root.gameObject.GetComponentsInChildren<Skeleton>(true);
 				Skeleton skeleton = null;
-				foreach (Skeleton s in skeletons)
-				{
+				foreach (Skeleton s in skeletons) {
 					if (transform.IsChildOf(s.transform))
 					{
 						skeleton = s;
@@ -335,8 +334,7 @@ public class Skin2D : MonoBehaviour {
 				}
 
 				DirectoryInfo meshSkelDir = new DirectoryInfo("Assets/Meshes/SkinnedMeshes/" + skeleton.gameObject.name);
-				if (Directory.Exists(meshSkelDir.FullName) == false)
-				{
+				if (Directory.Exists(meshSkelDir.FullName) == false) {
 					Directory.CreateDirectory(meshSkelDir.FullName);
 				}
 
@@ -505,28 +503,19 @@ public class Skin2D : MonoBehaviour {
 	public void RecalculateBoneWeights() {
 		Skeleton[] skeletons = transform.root.gameObject.GetComponentsInChildren<Skeleton>(true);
 		Skeleton skeleton = null;
-		foreach (Skeleton s in skeletons)
-		{
+		foreach (Skeleton s in skeletons) {
 			if (transform.IsChildOf(s.transform))
 			{
 				skeleton = s;
 			}
 		}
-		if (skeleton != null)
-		{
+		if (skeleton != null) {
 			skeleton.CalculateWeights(true);
 			// Debug.Log("Calculated weights for " + gameObject.name);
 		}
     }
 
 	public void ResetControlPointPositions() {
-		ControlPoint[] cps = GetComponentsInChildren<ControlPoint>();
-		if (cps != null && cps.Length > 0) {
-			for (int n = 0; n < cps.Length; n++) {
-				cps[n].ResetPosition();
-				// Debug.Log("Reset Control Point Positions for " + gameObject.name);
-			}
-		}
 		if (controlPoints != null && controlPoints.Length > 0) {
 			for (int i = 0; i < controlPoints.Length; i++) {
 				if (controlPoints[i].originalPosition != meshFilter.sharedMesh.vertices[i]) {
@@ -545,52 +534,17 @@ public class Skin2D : MonoBehaviour {
 			if (points == null) {
 				points = gameObject.AddComponent<ControlPoints>();
 			}
-			for (int i = 0; i < skin.sharedMesh.vertices.Length; i++)
-			{
+			for (int i = 0; i < skin.sharedMesh.vertices.Length; i++) {
 				Vector3 originalPos = skin.sharedMesh.vertices[i];
 
 				controlPoints[i] = new ControlPoints.Point(originalPos);
 				controlPoints[i].index = i;
 				points.SetPoint(controlPoints[i]);
-
-				GameObject b = new GameObject(skin.name + " Control Point");
-				// Unparent the skin temporarily before adding the control point
-				Transform skinParent = skin.transform.parent;
-				skin.transform.parent = null;
-
-				// Reset the rotation before creating the mesh so the UV's will align properly
-				Quaternion localRotation = skin.transform.localRotation;
-				skin.transform.localRotation = Quaternion.identity;
-
-				b.transform.position = new Vector3(skin.transform.position.x + (skin.sharedMesh.vertices[i].x * skin.transform.localScale.x), skin.transform.position.y + (skin.sharedMesh.vertices[i].y * skin.transform.localScale.y), skin.transform.position.z + (skin.sharedMesh.vertices[i].z * skin.transform.localScale.z));
-				b.transform.parent = skin.transform;
-				ControlPoint[] cps = b.transform.parent.transform.GetComponentsInChildren<ControlPoint>();
-				if (cps != null && cps.Length > 0)
-				{
-					b.gameObject.name = b.gameObject.name + cps.Length;
-				}
-				Undo.RegisterCreatedObjectUndo(b, "Add control point");
-				ControlPoint controlPoint = b.AddComponent<ControlPoint>();
-				controlPoint.index = i;
-				controlPoint.skin = skin;
-				controlPoint.originalPosition = b.transform.localPosition;
-
-				// Reset the rotations of the object
-				skin.transform.localRotation = localRotation;
-				skin.transform.parent = skinParent;
 			}
 		}
     }
 
 	public void RemoveControlPoints() {
-		ControlPoint[] cps = GetComponentsInChildren<ControlPoint>();
-		if (cps != null && cps.Length > 0)
-		{
-			for (int i = 0; i < cps.Length; i++) {
-				DestroyImmediate(cps[i].gameObject);
-			}
-		}
-
 		controlPoints = null;
 
 		if (points != null) {

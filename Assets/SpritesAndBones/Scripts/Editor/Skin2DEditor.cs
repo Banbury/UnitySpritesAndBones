@@ -32,6 +32,8 @@ using System.Collections;
 [CustomEditor(typeof(Skin2D))]
 public class Skin2DEditor : Editor {
     private Skin2D skin;
+	private SkinnedMeshRenderer skinnedMeshRenderer;
+	private Mesh skinnedMesh;
 
     private float baseSelectDistance = 0.1f;
     private float changedBaseSelectDistance = 0.1f;
@@ -40,6 +42,8 @@ public class Skin2DEditor : Editor {
 
     void OnEnable() {
         skin = (Skin2D)target;
+		skinnedMeshRenderer = skin.GetComponent<SkinnedMeshRenderer>();
+		skinnedMesh = skinnedMeshRenderer.sharedMesh;
     }
 
     public override void OnInspectorGUI() {
@@ -82,9 +86,6 @@ public class Skin2DEditor : Editor {
 
         if (skin.points != null && skin.controlPoints != null && skin.controlPoints.Length > 0 
 		&& selectedIndex != -1 && GUILayout.Button("Reset Selected Control Point")) {
-			if (skin.controlPoints[selectedIndex].originalPosition != skin.GetComponent<MeshFilter>().sharedMesh.vertices[selectedIndex]) {
-				skin.controlPoints[selectedIndex].originalPosition = skin.GetComponent<MeshFilter>().sharedMesh.vertices[selectedIndex];
-			}
             skin.controlPoints[selectedIndex].ResetPosition();
 			skin.points.SetPoint(skin.controlPoints[selectedIndex]);
         }
@@ -130,7 +131,7 @@ public class Skin2DEditor : Editor {
     }
 
 	void OnSceneGUI() {
-		if (skin != null && skin.GetComponent<SkinnedMeshRenderer>().sharedMesh != null 
+		if (skin != null && skinnedMeshRenderer != null && skinnedMesh != null 
 		&& skin.controlPoints != null && skin.controlPoints.Length > 0 && skin.points != null) {
 			Event e = Event.current;
 
@@ -142,9 +143,18 @@ public class Skin2DEditor : Editor {
 
 			#region Draw vertex handles
 			Handles.color = handleColor;
+			Mesh mesh = new Mesh();
+			skinnedMeshRenderer.BakeMesh(mesh);
+			Vector3[] vertices = new Vector3[mesh.vertexCount];
+	 
+			for (int i = 0; i < mesh.vertexCount; i++)
+			{
+				vertices[i] = mesh.vertices[i];
+			}
 
 			for(int i = 0; i < skin.controlPoints.Length; i++) {
-				if (Handles.Button(skin.points.GetPoint(skin.controlPoints[i]), Quaternion.identity, selectDistance, selectDistance, Handles.CircleCap)) {
+				// if (Handles.Button(skin.points.GetPoint(skin.controlPoints[i]), Quaternion.identity, selectDistance, selectDistance, Handles.CircleCap)) {
+				if (Handles.Button(vertices[i], Quaternion.identity, selectDistance, selectDistance, Handles.CircleCap)) {
 					selectedIndex = i;
 				}
 				if (selectedIndex == i) {
