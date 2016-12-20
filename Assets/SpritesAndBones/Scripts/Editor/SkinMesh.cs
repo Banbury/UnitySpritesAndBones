@@ -147,7 +147,7 @@ public class SkinMesh : EditorWindow {
 				EditorUtility.SetDirty(this);
 			}
 
-			EditorUtility.SetSelectedWireframeHidden(spriteRenderer, true);
+			EditorUtility.SetSelectedRenderState(spriteRenderer, EditorSelectedRenderState.Hidden);
 
 			if (GUILayout.Button("Update Custom Mesh")) {
 				if (spriteRenderer != null) UpdateMesh();
@@ -283,7 +283,6 @@ public class SkinMesh : EditorWindow {
         mesh.uv = uv.ToArray();
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
-        mesh.Optimize();
 
         //GameObject go = new GameObject();
         //MeshFilter mf = go.AddComponent<MeshFilter>();
