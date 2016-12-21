@@ -5,6 +5,6 @@ using UnityEngine;
 [ExecuteInEditMode()]
 public class Perspective2DSortMode : MonoBehaviour {
 	void Awake () {
-		camera.transparencySortMode = TransparencySortMode.Orthographic;
+		GetComponent<Camera>().transparencySortMode = TransparencySortMode.Orthographic;
 	}
 }
