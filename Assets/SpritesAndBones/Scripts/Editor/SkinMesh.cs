@@ -279,7 +279,7 @@ public class SkinMesh : EditorWindow {
         }
 
         mesh.MarkDynamic();
-		mesh.vertices = scaled;
+		    mesh.vertices = scaled;
         mesh.uv = uv.ToArray();
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
