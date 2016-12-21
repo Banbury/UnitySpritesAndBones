@@ -34,7 +34,12 @@ public class InverseKinematics : MonoBehaviour {
     public float influence = 1.0f;
     public int chainLength = 0;
     public Transform target;
-	private Skeleton skeleton = null;
+	private Skeleton _skeleton = null;
+
+	public Skeleton skeleton {
+		get { return _skeleton; }
+		set { skeleton = value; }
+	}
 
     public Transform RootBone {
         get {
@@ -101,13 +106,14 @@ public class InverseKinematics : MonoBehaviour {
 				if (!nodeCache.ContainsKey(node.Transform))
 					nodeCache.Add(node.Transform, node);
 		}
-		if (skeleton == null || skeleton != null && !transform.IsChildOf(skeleton.transform)) {
+		if (_skeleton == null || _skeleton != null && !transform.IsChildOf(_skeleton.transform)) {
 			Skeleton[] skeletons = transform.root.gameObject.GetComponentsInChildren<Skeleton>(true);
 			foreach (Skeleton s in skeletons)
 			{
 				if (transform.IsChildOf(s.transform))
 				{
-					skeleton = s;
+					_skeleton = s;
+					break;
 				}
 			}
 		}
@@ -143,8 +149,13 @@ public class InverseKinematics : MonoBehaviour {
 
 				// If you want to flip the bone on the y axis invert the angle
 				float yAngle = Utils.ClampAngle(bone.rotation.eulerAngles.y);
+
+				// If the skeleton is rotated then make sure the angle is modified accordingly
+				int yModifier = (_skeleton && _skeleton.transform.localRotation.eulerAngles.y == 180.0f 
+								&& _skeleton.transform.localRotation.eulerAngles.x == 0.0f) ? 1 : -1;
+
 				if (yAngle > 90 && yAngle < 270)
-				angle *= -1;
+				angle *= yModifier;
 
 				// "Slows" down the IK solving
 				angle *= damping;
@@ -175,7 +186,7 @@ public class InverseKinematics : MonoBehaviour {
 		float angle = Vector3.Angle (a, b);
 
 		// Use skeleton as root, change dir if the rotation is flipped
-		Vector3 dir = (skeleton && skeleton.transform.localRotation.eulerAngles.y == 180.0f && skeleton.transform.localRotation.eulerAngles.x == 0.0f) ? Vector3.forward : Vector3.back;
+		Vector3 dir = (_skeleton && _skeleton.transform.localRotation.eulerAngles.y == 180.0f && _skeleton.transform.localRotation.eulerAngles.x == 0.0f) ? Vector3.forward : Vector3.back;
 		float sign = Mathf.Sign (Vector3.Dot (dir, Vector3.Cross (a, b)));
 		angle = angle * sign;
 		// Flip sign if character is turned around
@@ -194,9 +205,10 @@ public class InverseKinematics : MonoBehaviour {
 	            return angle;
 	
 	        //Return nearest limit if not in bounds
-	        return (Mathf.Abs(angle - from) < Mathf.Abs(angle - to) && Mathf.Abs(angle - from) < Mathf.Abs((angle + 360) - to)) || (Mathf.Abs(angle - from - 360) < Mathf.Abs(angle - to) && Mathf.Abs(angle - from - 360) < Mathf.Abs((angle + 360) - to)) ? from : to;
-    	
-    		
+	        return (Mathf.Abs(angle - from) < Mathf.Abs(angle - to) 
+				&& Mathf.Abs(angle - from) < Mathf.Abs((angle + 360) - to)) 
+				|| (Mathf.Abs(angle - from - 360) < Mathf.Abs(angle - to) 
+				&& Mathf.Abs(angle - from - 360) < Mathf.Abs((angle + 360) - to)) ? from : to;
     	}
 
 	private bool IsNaNRot(Quaternion q) 

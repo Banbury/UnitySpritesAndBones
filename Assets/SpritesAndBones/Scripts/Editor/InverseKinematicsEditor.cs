@@ -76,7 +76,7 @@ public class InverseKinematicsEditor : Editor {
         }
 
 		//set the helper as a child of the skeleton
-		o.transform.parent = ik.transform.root.GetComponentInChildren<Skeleton>().transform;
+		o.transform.parent = ik.skeleton.transform;
 
 		//set the helper as the target
 		ik.target = o.transform;

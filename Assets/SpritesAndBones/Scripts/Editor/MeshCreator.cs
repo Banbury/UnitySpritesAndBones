@@ -62,7 +62,7 @@ public class MeshCreator : EditorWindow {
     private string meshName = "GeneratedMesh";
     private bool previewMode = false;
     private bool hideGizmos = false;
-    private Material previewMaterial = new Material(Shader.Find("Unlit/Transparent"));
+    private Material previewMaterial;
 
     private Mesh generatedMesh = null;
 	public Mesh customLoadMesh;
@@ -489,6 +489,9 @@ public class MeshCreator : EditorWindow {
         previewObject.transform.localScale = spriteRenderer.transform.localScale;
 
         previewMF.mesh = GetMesh();
+		if (previewMaterial == null) {
+			previewMaterial = new Material(Shader.Find("Unlit/Transparent"));
+		}
         mr.sharedMaterial = previewMaterial;
         mr.sharedMaterial.mainTexture = spriteRenderer.sprite.texture;
 
