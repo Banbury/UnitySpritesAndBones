@@ -42,6 +42,8 @@ public class ControlPoint : MonoBehaviour {
 	[HideInInspector]
     public SkinnedMeshRenderer skin;
 
+	private Skeleton skeleton;
+
     #if UNITY_EDITOR
     public static void CreateControlPoints(SkinnedMeshRenderer skin) {
         if (skin.sharedMesh != null)
@@ -110,13 +112,21 @@ public class ControlPoint : MonoBehaviour {
 					Gizmos.color = Color.green;
 				}
 				else {
-					if (gameObject.name.ToUpper().EndsWith("R") || gameObject.name.ToUpper().EndsWith("RIGHT"))
+					skeleton = transform.root.GetComponentInChildren<Skeleton>();
+					if (skeleton != null)
 					{
-						Gizmos.color = new Color(255.0f/255.0f, 128.0f/255.0f, 0f, 255.0f/255.0f);
-					}
-					else if (gameObject.name.ToUpper().EndsWith("L") || gameObject.name.ToUpper().EndsWith("LEFT"))
-					{
-						Gizmos.color = Color.magenta;
+						if (gameObject.name.ToUpper().EndsWith("R") || gameObject.name.ToUpper().EndsWith("RIGHT"))
+						{
+							Gizmos.color = skeleton.colorRight;
+						}
+						else if (gameObject.name.ToUpper().EndsWith("L") || gameObject.name.ToUpper().EndsWith("LEFT"))
+						{
+							Gizmos.color = skeleton.colorLeft;
+						}
+						else
+						{
+							Gizmos.color = color;
+						}
 					}
 					else
 					{

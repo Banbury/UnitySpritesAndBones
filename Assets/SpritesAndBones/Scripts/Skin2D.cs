@@ -31,6 +31,7 @@ using System.Linq;
 
 [RequireComponent(typeof(MeshFilter))]
 [RequireComponent(typeof(SkinnedMeshRenderer))]
+[RequireComponent(typeof(SortingLayerExposed))]
 [ExecuteInEditMode()]
 public class Skin2D : MonoBehaviour {
 
@@ -59,12 +60,16 @@ public class Skin2D : MonoBehaviour {
 					Material spriteMaterial = new Material(spriteRenderer.sharedMaterial);
 					spriteMaterial.CopyPropertiesFromMaterial(spriteRenderer.sharedMaterial);
 					spriteMaterial.mainTexture = spriteTexture;
+					string sortLayerName = spriteRenderer.sortingLayerName;
+					int sortOrder = spriteRenderer.sortingOrder;
 					DestroyImmediate(spriteRenderer);
 					Skin2D skin2D = o.AddComponent<Skin2D>();
 					skin2D.sprite = thisSprite;
 					skin = o.GetComponent<SkinnedMeshRenderer>();
 					MeshFilter filter = o.GetComponent<MeshFilter>();
 					skin.material = spriteMaterial;
+					skin.sortingLayerName = sortLayerName;
+					skin.sortingOrder = sortOrder;
 					filter.mesh = (Mesh)Selection.activeObject;
 					if (filter.sharedMesh != null && skin.sharedMesh == null) {
 						skin.sharedMesh = filter.sharedMesh;
@@ -124,6 +129,9 @@ public class Skin2D : MonoBehaviour {
     void Update () {
         if (MeshFilter.sharedMesh != null && GetComponent<SkinnedMeshRenderer>().sharedMesh == null) {
             GetComponent<SkinnedMeshRenderer>().sharedMesh = MeshFilter.sharedMesh;
+        }
+		if (GetComponent<SortingLayerExposed>() == null) {
+            gameObject.AddComponent<SortingLayerExposed>();
         }
     }
 
