@@ -82,7 +82,7 @@ public class SkinMakerEditor : Editor {
         Handles.color = Color.green;
 
         for (int i = 0; i < skin.controlPoints.Length; i++) {
-            Vector3 hp = Handles.FreeMoveHandle(skin.transform.position + skin.controlPoints[i], Quaternion.identity, 0.05f, Vector3.zero, Handles.RectangleCap);
+            Vector3 hp = Handles.FreeMoveHandle(skin.transform.position + skin.controlPoints[i], Quaternion.identity, 0.05f, Vector3.zero, Handles.RectangleHandleCap);
             if (Vector3.Distance(hp, p) < 0.05f) {
                 selCtrl = i;
             }

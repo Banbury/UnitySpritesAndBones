@@ -28,6 +28,7 @@ using UnityEditor;
 #endif
 using System.Collections;
 
+[SelectionBase]
 public class Helper : MonoBehaviour
 {
 	//Enum to select what kind of shape to draw for the helper

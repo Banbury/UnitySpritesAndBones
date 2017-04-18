@@ -323,7 +323,7 @@ public class MeshCreator : EditorWindow {
                         Quaternion.identity,
                         selectDistance,
                         Vector3.zero,
-                        Handles.CircleCap
+                        Handles.CircleHandleCap
                     );
         }
         #endregion
@@ -331,7 +331,7 @@ public class MeshCreator : EditorWindow {
         #region Draw holes
         Handles.color = holeColor;
         foreach(var hole in holes)
-            Handles.RectangleCap(0, hole, Quaternion.identity, selectDistance);
+            Handles.RectangleHandleCap(0, hole, Quaternion.identity, selectDistance, EventType.Repaint);
         #endregion
 
         #region Draw defined segments
@@ -380,7 +380,7 @@ public class MeshCreator : EditorWindow {
                         Quaternion.identity,
                         selectDistance,
                         Vector3.zero,
-                        Handles.CircleCap
+                        Handles.CircleHandleCap
                     );
             generatedMesh.vertices[i] = spriteRenderer.transform.InverseTransformPoint(meshVertices[i]);
         }
