@@ -61,6 +61,9 @@ public class Skin2D : MonoBehaviour {
 
 	private Vector3[] vertices;
 
+	[HideInInspector]
+	public bool editingPoints = false;
+
     #if UNITY_EDITOR
         [MenuItem("Sprites And Bones/Skin 2D")]
         public static void Create ()
@@ -174,7 +177,7 @@ public class Skin2D : MonoBehaviour {
 
 	// Update is called once per frame
 	void LateUpdate () {
-		if (skinnedMeshRenderer != null && skinnedMeshRenderer.sharedMesh != null 
+		if (!editingPoints && skinnedMeshRenderer != null && skinnedMeshRenderer.sharedMesh != null 
 		&& controlPoints != null && controlPoints.Length > 0)
 		{
 			int i;

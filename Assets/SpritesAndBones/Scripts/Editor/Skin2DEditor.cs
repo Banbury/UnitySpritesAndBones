@@ -140,6 +140,12 @@ public class Skin2DEditor : Editor {
 			Ray r = HandleUtility.GUIPointToWorldRay(e.mousePosition);
 			Vector2 mousePos = r.origin;
 			float selectDistance = HandleUtility.GetHandleSize(mousePos) * baseSelectDistance;
+			if (e.type == EventType.MouseDrag) {
+				skin.editingPoints = true;
+			}
+			else if (e.type == EventType.MouseUp) {
+				skin.editingPoints = false;
+			}
 
 			#region Draw vertex handles
 			Handles.color = handleColor;
@@ -152,6 +158,9 @@ public class Skin2DEditor : Editor {
 				vertices[i] = mesh.vertices[i];
 			}
 
+			Vector3[] newVertices = new Vector3[skinnedMeshRenderer.sharedMesh.vertexCount];
+			newVertices = skinnedMeshRenderer.sharedMesh.vertices;
+
 			for(int i = 0; i < skin.controlPoints.Length; i++) {
 				// if (Handles.Button(skin.points.GetPoint(skin.controlPoints[i]), Quaternion.identity, selectDistance, selectDistance, Handles.CircleHandleCap)) {
 				if (Handles.Button(vertices[i], Quaternion.identity, selectDistance, selectDistance, Handles.CircleHandleCap)) {
@@ -159,7 +168,8 @@ public class Skin2DEditor : Editor {
 				}
 				if (selectedIndex == i) {
 					EditorGUI.BeginChangeCheck();
-					skin.controlPoints[i].position = Handles.DoPositionHandle(skin.points.GetPoint(skin.controlPoints[i]), Quaternion.identity);
+					Vector3 offset = vertices[i] - skin.transform.TransformPoint(skin.points.GetPoint(skin.controlPoints[i]));
+					skin.controlPoints[i].position = skin.transform.InverseTransformPoint(Handles.DoPositionHandle(skin.transform.TransformPoint(skin.points.GetPoint(skin.controlPoints[i])) + offset, Quaternion.identity) - offset);
 					if (EditorGUI.EndChangeCheck()) {
 						skin.points.SetPoint(skin.controlPoints[i]);
 						Undo.RecordObject(skin, "Changed Control Point");
@@ -167,6 +177,12 @@ public class Skin2DEditor : Editor {
 						EditorUtility.SetDirty(this);
 					}
 				}
+				if (skin.editingPoints) {
+					newVertices[i] = skin.points.GetPoint(skin.controlPoints[i]);
+				}
+			}
+			if (skin.editingPoints) {
+				skinnedMeshRenderer.sharedMesh.vertices = newVertices;
 			}
 			#endregion
 		}
