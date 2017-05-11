@@ -396,7 +396,7 @@ public class SkinMesh : EditorWindow {
 						Quaternion.identity, 
 						size, 
 						Vector3.zero, 
-						Handles.CircleCap
+						Handles.CircleHandleCap
 					);
 
 					points[i] = point;
@@ -430,7 +430,7 @@ public class SkinMesh : EditorWindow {
 		Vector3 worldPos = r.origin - spriteRenderer.transform.position;
 		List<Vector2> newPoints = new List<Vector2>(points);
 		float size = GetHandleSize(worldPos, 0.5f);
-		if (Handles.Button(worldPos, Quaternion.identity, size, size, Handles.CircleCap)) {
+		if (Handles.Button(worldPos, Quaternion.identity, size, size, Handles.CircleHandleCap)) {
 			newPoints.Add(new Vector3(worldPos.x, worldPos.y, 0));
 			Undo.RecordObject(this, "added polygon point");
 			points = newPoints.ToArray();
@@ -451,7 +451,7 @@ public class SkinMesh : EditorWindow {
 				GUI.SetNextControlName("remove polygon point " + i);
 				Vector3 mid = (p1 + p2) * 0.5f;
 				float size = GetHandleSize(mid, 0.5f);
-				if (Handles.Button(mid, Quaternion.identity, size, size, Handles.CircleCap)) {
+				if (Handles.Button(mid, Quaternion.identity, size, size, Handles.CircleHandleCap)) {
 					newPoints.Insert(n, new Vector3(mid.x, mid.y, mid.z));
 					Undo.RecordObject(this, "added polygon point");
 					points = newPoints.ToArray();
@@ -480,7 +480,7 @@ public class SkinMesh : EditorWindow {
 				Handles.color = Color.red;
 				float size = GetHandleSize(points[i], 1);
 				GUI.SetNextControlName("remove pretty poly point " + i);
-				if (Handles.Button(points[i], Quaternion.identity, size, size, Handles.CircleCap)) {
+				if (Handles.Button(points[i], Quaternion.identity, size, size, Handles.CircleHandleCap)) {
 					RemovePoint(i);
 					break;
 				}
