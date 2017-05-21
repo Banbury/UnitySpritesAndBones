@@ -84,6 +84,11 @@ public class Bone : MonoBehaviour {
 	private SkinnedMeshRenderer[] skins;
 	private SpriteRenderer[] spriteRenderers;
 
+	private int spriteNormal;
+	private MaterialPropertyBlock propertyBlock;
+	private Vector3 frontNormal;
+	private Vector3 reverseNormal;
+
     public Vector2 Head {
         get {
             Vector3 v = Vector3.up * length;
@@ -212,6 +217,11 @@ public class Bone : MonoBehaviour {
 	void Start () {
         if (gameObject.transform.parent != null)
             parent = gameObject.transform.parent.GetComponent<Bone>();
+
+		spriteNormal = Shader.PropertyToID("_Normal");
+		propertyBlock = new MaterialPropertyBlock();
+		frontNormal = new Vector3(0, 0, -1);
+		reverseNormal = new Vector3(0, 0, 1);
 	}
 	
 	// Update is called once per frame
@@ -538,22 +548,13 @@ public class Bone : MonoBehaviour {
 			for( int i = 0; i < skins.Length; i++) {
 				if (skeleton.spriteShadowsShader != null && skins[i].material.shader == skeleton.spriteShadowsShader)
 				{
-					if (!skeleton.useSharedMaterial) {
-						#if UNITY_EDITOR
-						Undo.RecordObject(skins[i].material, "Change Render Normals");
-						#endif
-						skins[i].material.SetVector("_Normal", new Vector3(0, 0, normal));
-						#if UNITY_EDITOR
-						EditorUtility.SetDirty (skins[i].material);
-						#endif
-					} else {
-						#if UNITY_EDITOR
-						Undo.RecordObject(skins[i].sharedMaterial, "Change Render Normals");
-						#endif
-						skins[i].sharedMaterial.SetVector("_Normal", new Vector3(0, 0, normal));
-						#if UNITY_EDITOR
-						EditorUtility.SetDirty (skins[i].sharedMaterial);
-						#endif
+					if (normal == -1) {
+						propertyBlock.SetVector(spriteNormal, frontNormal);
+						skins[i].SetPropertyBlock(propertyBlock);
+					}
+					else {
+						propertyBlock.SetVector(spriteNormal, reverseNormal);
+						skins[i].SetPropertyBlock(propertyBlock);
 					}
 				}
 			}
@@ -563,22 +564,13 @@ public class Bone : MonoBehaviour {
 			for( int j = 0; j < spriteRenderers.Length; j++) {
 				if (skeleton.spriteShadowsShader != null && spriteRenderers[j].material.shader == skeleton.spriteShadowsShader)
 				{
-					if (!skeleton.useSharedMaterial) {
-						#if UNITY_EDITOR
-						Undo.RecordObject(spriteRenderers[j].material, "Change Render Normals");
-						#endif
-						spriteRenderers[j].material.SetVector("_Normal", new Vector3(0, 0, normal));
-						#if UNITY_EDITOR
-						EditorUtility.SetDirty (spriteRenderers[j].material);
-						#endif
-					} else {
-						#if UNITY_EDITOR
-						Undo.RecordObject(spriteRenderers[j].sharedMaterial, "Change Render Normals");
-						#endif
-						spriteRenderers[j].sharedMaterial.SetVector("_Normal", new Vector3(0, 0, normal));
-						#if UNITY_EDITOR
-						EditorUtility.SetDirty (spriteRenderers[j].sharedMaterial);
-						#endif
+					if (normal == -1) {
+						propertyBlock.SetVector(spriteNormal, frontNormal);
+						spriteRenderers[j].SetPropertyBlock(propertyBlock);
+					}
+					else {
+						propertyBlock.SetVector(spriteNormal, reverseNormal);
+						spriteRenderers[j].SetPropertyBlock(propertyBlock);
 					}
 				}
 			}

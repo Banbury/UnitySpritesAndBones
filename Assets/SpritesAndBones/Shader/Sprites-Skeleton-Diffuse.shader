@@ -3,8 +3,8 @@ Shader "Sprites/Skeleton-Diffuse"
 	Properties
 	{
 		[PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
-		_Color ("Tint", Color) = (1,1,1,1)
-		_Normal ("Normal", vector) = (0,0,-1, 0) // Normals set by script
+		[PerRendererData] _Color ("Tint", Color) = (1,1,1,1)
+		[PerRendererData] _Normal ("Normal", vector) = (0,0,-1, 0) // Normals set by script
 		[MaterialToggle] PixelSnap ("Pixel snap", Float) = 0
 	}
 
@@ -28,6 +28,7 @@ Shader "Sprites/Skeleton-Diffuse"
 		CGPROGRAM
 		#pragma surface surf Lambert vertex:vert
 		#pragma multi_compile DUMMY PIXELSNAP_ON
+		#pragma multi_compile_instancing
 
 		sampler2D _MainTex;
 		fixed4 _Color;
