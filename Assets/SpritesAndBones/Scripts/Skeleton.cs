@@ -658,6 +658,10 @@ public class Skeleton : MonoBehaviour {
 	{
 		//find all SkinnedMeshRenderer elements
 		skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+		spriteColor = Shader.PropertyToID("_Color");
+		if ( propertyBlock == null ) {
+			propertyBlock = new MaterialPropertyBlock();
+		}
 		for( int i = 0; i < skins.Length; i++) {
 			if (spriteShadowsShader != null && skins[i].material.shader == spriteShadowsShader)
 			{
