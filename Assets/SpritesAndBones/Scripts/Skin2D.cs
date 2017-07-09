@@ -61,6 +61,9 @@ public class Skin2D : MonoBehaviour {
 
 	private Vector3[] vertices;
 
+	// Reference to the original mesh for the skinned mesh renderer
+	public Mesh referenceMesh;
+
 	[HideInInspector]
 	public bool editingPoints = false;
 
@@ -107,6 +110,7 @@ public class Skin2D : MonoBehaviour {
 					filter.mesh = (Mesh)Selection.activeObject;
 					if (filter.sharedMesh != null && skin.sharedMesh == null) {
 						skin.sharedMesh = filter.sharedMesh;
+						skin2D.referenceMesh = skin.sharedMesh;
 					}
 					// Recalculate the bone weights for the new mesh
 					skin2D.RecalculateBoneWeights();
@@ -128,17 +132,27 @@ public class Skin2D : MonoBehaviour {
     // Use this for initialization
     void Start() {
 #if UNITY_EDITOR
+		// Add a SortingLayerExposed component so we can sort the SkinnedMeshRenderer order
 		if (GetComponent<SortingLayerExposed>() == null) {
             gameObject.AddComponent<SortingLayerExposed>();
         }
+
+		// Show outlines for the mesh if toggled
 		if (!Application.isPlaying && showMeshOutline) {
 			CalculateVertexColors();
 		}
+
+		// Make sure there is an original mesh to instantiate from
+		if (!Application.isPlaying && referenceMesh == null) {
+			referenceMesh = skinnedMeshRenderer.sharedMesh;
+		}
 #endif
+
+		// Always use a clone of the original mesh when the application is playing
 		if (Application.isPlaying) {
-			Mesh oldMesh = skinnedMeshRenderer.sharedMesh;
-			if (oldMesh != null) {
-				Mesh newMesh = (Mesh)Object.Instantiate(oldMesh);
+			referenceMesh = skinnedMeshRenderer.sharedMesh;
+			if (referenceMesh != null) {
+				Mesh newMesh = (Mesh)Object.Instantiate(referenceMesh);
 				skinnedMeshRenderer.sharedMesh = newMesh;
 			}
 		}
@@ -171,6 +185,45 @@ public class Skin2D : MonoBehaviour {
 		// Make sure the renderer is using a material if it is nullified
 		if (skinnedMeshRenderer.sharedMaterial == null) {
 			skinnedMeshRenderer.sharedMaterial = referenceMaterial;
+		}
+
+		// Ensure there is a reference material for the renderer
+		if (referenceMesh == null) {
+			if (skinnedMeshRenderer.sharedMesh.name.Contains("(Clone)")) {
+				string meshName = skinnedMeshRenderer.sharedMesh.name.Replace("(Clone)", "");
+				Debug.Log(meshName);
+
+				Skeleton[] skeletons = transform.root.gameObject.GetComponentsInChildren<Skeleton>(true);
+				Skeleton skeleton = null;
+				foreach (Skeleton s in skeletons) {
+					if (transform.IsChildOf(s.transform))
+					{
+						skeleton = s;
+					}
+				}
+
+				referenceMesh = AssetDatabase.LoadAssetAtPath ("Assets/Meshes/SkinnedMeshes/" + skeleton.gameObject.name + "/" + meshName + ".asset", typeof(Mesh)) as Mesh;
+			} 
+			else {
+				referenceMesh = skinnedMeshRenderer.sharedMesh;
+			}
+		}
+
+		// Use a clone of the mesh when we are animating so we do not alter the original skin
+		if (AnimationMode.InAnimationMode() 
+		&& skinnedMeshRenderer.sharedMesh != null 
+		&& referenceMesh != null 
+		&& skinnedMeshRenderer.sharedMesh == referenceMesh) {
+			Mesh newMesh = (Mesh)Object.Instantiate(referenceMesh);
+			skinnedMeshRenderer.sharedMesh = newMesh;
+		}
+
+		// Revert to the reference mesh when we are finished animating
+		if (!AnimationMode.InAnimationMode() 
+		&& skinnedMeshRenderer.sharedMesh != null 
+		&& referenceMesh != null 
+		&& skinnedMeshRenderer.sharedMesh != referenceMesh) {
+			skinnedMeshRenderer.sharedMesh = referenceMesh;
 		}
 		#endif
     }
@@ -353,6 +406,7 @@ public class Skin2D : MonoBehaviour {
 				generatedMesh.bindposes = bindPoses;
 
 				skinnedMeshRenderer.sharedMesh = generatedMesh;
+				referenceMesh = generatedMesh;
 				EditorUtility.SetDirty(skinnedMeshRenderer.gameObject);
 				AssetDatabase.SaveAssets();
 			}
@@ -488,6 +542,8 @@ public class Skin2D : MonoBehaviour {
 
 		// Make sure the skinned mesh renderer is using the stored generated mesh
 		skinnedMeshRenderer.sharedMesh = generatedMesh;
+
+		referenceMesh = generatedMesh;
 
 		// Make sure the renderer is using a material
 		if (referenceMaterial != null) {
