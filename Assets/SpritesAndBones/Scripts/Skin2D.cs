@@ -210,7 +210,7 @@ public class Skin2D : MonoBehaviour {
 		}
 
 		// Use a clone of the mesh when we are animating so we do not alter the original skin
-		if (AnimationMode.InAnimationMode() 
+		if (!Application.isPlaying && AnimationMode.InAnimationMode() 
 		&& skinnedMeshRenderer.sharedMesh != null 
 		&& referenceMesh != null 
 		&& skinnedMeshRenderer.sharedMesh == referenceMesh) {
@@ -219,7 +219,7 @@ public class Skin2D : MonoBehaviour {
 		}
 
 		// Revert to the reference mesh when we are finished animating
-		if (!AnimationMode.InAnimationMode() 
+		if (!Application.isPlaying && !AnimationMode.InAnimationMode() 
 		&& skinnedMeshRenderer.sharedMesh != null 
 		&& referenceMesh != null 
 		&& skinnedMeshRenderer.sharedMesh != referenceMesh) {
