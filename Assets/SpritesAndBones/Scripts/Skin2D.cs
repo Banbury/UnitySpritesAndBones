@@ -68,100 +68,88 @@ public class Skin2D : MonoBehaviour {
 	public bool editingPoints = false;
 
     #if UNITY_EDITOR
-        [MenuItem("Sprites And Bones/Skin 2D")]
-        public static void Create ()
-        {
-			if (Selection.activeGameObject != null) {
-				GameObject o = Selection.activeGameObject;
-				SkinnedMeshRenderer skin = o.GetComponent<SkinnedMeshRenderer>();
-				SpriteRenderer spriteRenderer = o.GetComponent<SpriteRenderer>();
-				if (skin == null && spriteRenderer != null) {
-					Sprite thisSprite = spriteRenderer.sprite;
-					SpriteMesh spriteMesh = new SpriteMesh();
-					spriteMesh.spriteRenderer = spriteRenderer;
-					spriteMesh.CreateSpriteMesh();
-					Texture2D spriteTexture = UnityEditor.Sprites.SpriteUtility.GetSpriteTexture(spriteRenderer.sprite, false);
+	[MenuItem("Sprites And Bones/Skin 2D")]
+	public static void Create () {
+		if (Selection.activeGameObject != null) {
+			GameObject o = Selection.activeGameObject;
+			SkinnedMeshRenderer skin = o.GetComponent<SkinnedMeshRenderer>();
+			SpriteRenderer spriteRenderer = o.GetComponent<SpriteRenderer>();
+			if (skin == null && spriteRenderer != null) {
+				Sprite thisSprite = spriteRenderer.sprite;
+				SpriteMesh spriteMesh = new SpriteMesh();
+				spriteMesh.spriteRenderer = spriteRenderer;
+				spriteMesh.CreateSpriteMesh();
+				Texture2D spriteTexture = UnityEditor.Sprites.SpriteUtility.GetSpriteTexture(spriteRenderer.sprite, false);
 
-					// Copy the sprite material
-					Material spriteMaterial = new Material(spriteRenderer.sharedMaterial);
-					spriteMaterial.CopyPropertiesFromMaterial(spriteRenderer.sharedMaterial);
-					spriteMaterial.mainTexture = spriteTexture;
-					string sortLayerName = spriteRenderer.sortingLayerName;
-					int sortOrder = spriteRenderer.sortingOrder;
-					DestroyImmediate(spriteRenderer);
-					Skin2D skin2D = o.AddComponent<Skin2D>();
-					skin2D.sprite = thisSprite;
-					skin = o.GetComponent<SkinnedMeshRenderer>();
-					MeshFilter filter = o.GetComponent<MeshFilter>();
-					skin.material = spriteMaterial;
+				// Copy the sprite material
+				Material spriteMaterial = new Material(spriteRenderer.sharedMaterial);
+				spriteMaterial.CopyPropertiesFromMaterial(spriteRenderer.sharedMaterial);
+				spriteMaterial.mainTexture = spriteTexture;
+				string sortLayerName = spriteRenderer.sortingLayerName;
+				int sortOrder = spriteRenderer.sortingOrder;
+				DestroyImmediate(spriteRenderer);
+				Skin2D skin2D = o.AddComponent<Skin2D>();
+				skin2D.sprite = thisSprite;
+				skin = o.GetComponent<SkinnedMeshRenderer>();
+				MeshFilter filter = o.GetComponent<MeshFilter>();
+				skin.material = spriteMaterial;
 
-					// Save out the material from the sprite so we have a default material
-					if(!Directory.Exists("Assets/Materials")) {
-						AssetDatabase.CreateFolder("Assets", "Materials");
-						AssetDatabase.Refresh();
-					}
-					AssetDatabase.CreateAsset(spriteMaterial, "Assets/Materials/" + spriteMaterial.mainTexture.name + ".mat");
-					Debug.Log("Created material " + spriteMaterial.mainTexture.name + " for " + skin.gameObject.name);
-					skin2D.referenceMaterial = spriteMaterial;
-					skin.sortingLayerName = sortLayerName;
-					skin.sortingOrder = sortOrder;
-
-					// Create the mesh from the selection
-					filter.mesh = (Mesh)Selection.activeObject;
-					if (filter.sharedMesh != null && skin.sharedMesh == null) {
-						skin.sharedMesh = filter.sharedMesh;
-						skin2D.referenceMesh = skin.sharedMesh;
-					}
-					// Recalculate the bone weights for the new mesh
-					skin2D.RecalculateBoneWeights();
+				// Save out the material from the sprite so we have a default material
+				if(!Directory.Exists("Assets/Materials")) {
+					AssetDatabase.CreateFolder("Assets", "Materials");
+					AssetDatabase.Refresh();
 				}
-				else {
-					o = new GameObject ("Skin2D");
-					Undo.RegisterCreatedObjectUndo (o, "Create Skin2D");
-					o.AddComponent<Skin2D> ();
+				AssetDatabase.CreateAsset(spriteMaterial, "Assets/Materials/" + spriteMaterial.mainTexture.name + ".mat");
+				Debug.Log("Created material " + spriteMaterial.mainTexture.name + " for " + skin.gameObject.name);
+				skin2D.referenceMaterial = spriteMaterial;
+				skin.sortingLayerName = sortLayerName;
+				skin.sortingOrder = sortOrder;
+
+				// Create the mesh from the selection
+				filter.mesh = (Mesh)Selection.activeObject;
+				if (filter.sharedMesh != null && skin.sharedMesh == null) {
+					skin.sharedMesh = filter.sharedMesh;
+					skin2D.referenceMesh = skin.sharedMesh;
 				}
+				// Recalculate the bone weights for the new mesh
+				skin2D.RecalculateBoneWeights();
 			}
 			else {
-				GameObject o = new GameObject ("Skin2D");
-                Undo.RegisterCreatedObjectUndo (o, "Create Skin2D");
-                o.AddComponent<Skin2D> ();
-			}
-        }
-    #endif
-    
-    // Use this for initialization
-    void Start() {
-#if UNITY_EDITOR
-		// Add a SortingLayerExposed component so we can sort the SkinnedMeshRenderer order
-		if (GetComponent<SortingLayerExposed>() == null) {
-            gameObject.AddComponent<SortingLayerExposed>();
-        }
-
-		// Show outlines for the mesh if toggled
-		if (!Application.isPlaying && showMeshOutline) {
-			CalculateVertexColors();
-		}
-
-		// Make sure there is an original mesh to instantiate from
-		if (!Application.isPlaying && referenceMesh == null) {
-			referenceMesh = skinnedMeshRenderer.sharedMesh;
-		}
-#endif
-
-		// Always use a clone of the original mesh when the application is playing
-		if (Application.isPlaying) {
-			referenceMesh = skinnedMeshRenderer.sharedMesh;
-			if (referenceMesh != null) {
-				Mesh newMesh = (Mesh)Object.Instantiate(referenceMesh);
-				skinnedMeshRenderer.sharedMesh = newMesh;
+				o = new GameObject ("Skin2D");
+				Undo.RegisterCreatedObjectUndo (o, "Create Skin2D");
+				o.AddComponent<Skin2D> ();
 			}
 		}
-    }
+		else {
+			GameObject o = new GameObject ("Skin2D");
+			Undo.RegisterCreatedObjectUndo (o, "Create Skin2D");
+			o.AddComponent<Skin2D> ();
+		}
+	}
 
-    // Update is called once per frame
-    void Update () {
-		#if UNITY_EDITOR
-		// Ensure there is a reference material for the renderer
+	public void AssignReferenceMesh() {
+		if (referenceMesh == null) {
+			if (skinnedMeshRenderer.sharedMesh.name.Contains("(Clone)")) {
+				string meshName = skinnedMeshRenderer.sharedMesh.name.Replace("(Clone)", "");
+				Debug.Log(meshName);
+
+				Skeleton[] skeletons = transform.root.gameObject.GetComponentsInChildren<Skeleton>(true);
+				Skeleton skeleton = null;
+				foreach (Skeleton s in skeletons) {
+					if (transform.IsChildOf(s.transform)) {
+						skeleton = s;
+					}
+				}
+
+				referenceMesh = AssetDatabase.LoadAssetAtPath ("Assets/Meshes/SkinnedMeshes/" + skeleton.gameObject.name + "/" + meshName + ".asset", typeof(Mesh)) as Mesh;
+			} 
+			else {
+				referenceMesh = skinnedMeshRenderer.sharedMesh;
+			}
+		}
+	}
+
+	void AssignReferenceMaterial() {
 		if (referenceMaterial == null) {
 			if (skinnedMeshRenderer.sharedMaterial != null) {
 				if (skinnedMeshRenderer.sharedMaterial.name.Contains(" (Instance)")) {
@@ -181,6 +169,45 @@ public class Skin2D : MonoBehaviour {
 				referenceMaterial = material;
 			}
 		}
+	}
+    #endif
+    
+    // Use this for initialization
+    void Start() {
+#if UNITY_EDITOR
+		// Add a SortingLayerExposed component so we can sort the SkinnedMeshRenderer order
+		if (GetComponent<SortingLayerExposed>() == null) {
+            gameObject.AddComponent<SortingLayerExposed>();
+        }
+
+		// Show outlines for the mesh if toggled
+		if (!Application.isPlaying && showMeshOutline) {
+			CalculateVertexColors();
+		}
+
+		// Make sure there is an original mesh to instantiate from
+		if (!Application.isPlaying && referenceMesh == null) {
+			AssignReferenceMesh();
+		}
+#endif
+
+		// Always use a clone of the original mesh when the application is playing
+		if (Application.isPlaying) {
+			if (skinnedMeshRenderer.sharedMesh != null && referenceMesh == null) {
+				referenceMesh = skinnedMeshRenderer.sharedMesh;
+			}
+			if (referenceMesh != null) {
+				Mesh newMesh = (Mesh)Object.Instantiate(referenceMesh);
+				skinnedMeshRenderer.sharedMesh = newMesh;
+			}
+		}
+    }
+
+    // Update is called once per frame
+    void Update () {
+		#if UNITY_EDITOR
+		// Ensure there is a reference material for the renderer
+		AssignReferenceMaterial();
 
 		// Make sure the renderer is using a material if it is nullified
 		if (skinnedMeshRenderer.sharedMaterial == null) {
@@ -189,24 +216,14 @@ public class Skin2D : MonoBehaviour {
 
 		// Ensure there is a reference material for the renderer
 		if (referenceMesh == null) {
-			if (skinnedMeshRenderer.sharedMesh.name.Contains("(Clone)")) {
-				string meshName = skinnedMeshRenderer.sharedMesh.name.Replace("(Clone)", "");
-				Debug.Log(meshName);
+			AssignReferenceMesh();
+		}
 
-				Skeleton[] skeletons = transform.root.gameObject.GetComponentsInChildren<Skeleton>(true);
-				Skeleton skeleton = null;
-				foreach (Skeleton s in skeletons) {
-					if (transform.IsChildOf(s.transform))
-					{
-						skeleton = s;
-					}
-				}
-
-				referenceMesh = AssetDatabase.LoadAssetAtPath ("Assets/Meshes/SkinnedMeshes/" + skeleton.gameObject.name + "/" + meshName + ".asset", typeof(Mesh)) as Mesh;
-			} 
-			else {
-				referenceMesh = skinnedMeshRenderer.sharedMesh;
-			}
+		// Ensure SkinnedMeshRenderer has a sharedMesh if there is a referenceMesh
+		if (skinnedMeshRenderer != null 
+		&& skinnedMeshRenderer.sharedMesh == null 
+		&& referenceMesh != null) {
+			skinnedMeshRenderer.sharedMesh = referenceMesh;
 		}
 
 		// Use a clone of the mesh when we are animating so we do not alter the original skin
@@ -219,7 +236,7 @@ public class Skin2D : MonoBehaviour {
 		}
 
 		// Revert to the reference mesh when we are finished animating
-		if (!Application.isPlaying && !AnimationMode.InAnimationMode() 
+		else if (!Application.isPlaying && !AnimationMode.InAnimationMode() 
 		&& skinnedMeshRenderer.sharedMesh != null 
 		&& referenceMesh != null 
 		&& skinnedMeshRenderer.sharedMesh != referenceMesh) {
@@ -227,6 +244,19 @@ public class Skin2D : MonoBehaviour {
 		}
 		#endif
     }
+
+	void OnDisable() {
+		#if UNITY_EDITOR
+		AssignReferenceMesh();
+
+		if (!Application.isPlaying && !AnimationMode.InAnimationMode() 
+		&& skinnedMeshRenderer.sharedMesh != null 
+		&& referenceMesh != null 
+		&& skinnedMeshRenderer.sharedMesh != referenceMesh) {
+			skinnedMeshRenderer.sharedMesh = referenceMesh;
+		}
+		#endif
+	}
 
 	// Update is called once per frame
 	void LateUpdate () {
@@ -248,7 +278,7 @@ public class Skin2D : MonoBehaviour {
 		}
 	}
 
-    private MeshFilter meshFilter {
+    public MeshFilter meshFilter {
         get {
             if (_meshFilter == null) {
                 _meshFilter = GetComponent<MeshFilter>();
@@ -257,7 +287,7 @@ public class Skin2D : MonoBehaviour {
         }
     }
 
-    private SkinnedMeshRenderer skinnedMeshRenderer {
+    public SkinnedMeshRenderer skinnedMeshRenderer {
         get {
             if (_skinnedMeshRenderer == null) {
                 _skinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
@@ -290,9 +320,8 @@ public class Skin2D : MonoBehaviour {
 
     }
 
-    void CreateOrReplaceAsset (Mesh mesh, string path)
-    {
-        var meshAsset = AssetDatabase.LoadAssetAtPath (path, typeof(Mesh)) as Mesh;
+    void CreateOrReplaceAsset (Mesh mesh, string path) {
+        Mesh meshAsset = AssetDatabase.LoadAssetAtPath (path, typeof(Mesh)) as Mesh;
         if (meshAsset == null) {
             meshAsset = new Mesh ();
 			// Hack to display mesh once saved
@@ -315,7 +344,6 @@ public class Skin2D : MonoBehaviour {
 			EditorUtility.CopySerialized (mesh, meshAsset);
             AssetDatabase.SaveAssets ();
         }
-
     }
 
     public void CalculateBoneWeights(Bone[] bones) {
@@ -461,24 +489,20 @@ public class Skin2D : MonoBehaviour {
 
 		// Check if the Prefabs directory exists, if not, create it.
         DirectoryInfo prefabDir = new DirectoryInfo("Assets/Prefabs");
-		if (Directory.Exists(prefabDir.FullName) == false)
-        {
+		if (Directory.Exists(prefabDir.FullName) == false) {
             Directory.CreateDirectory(prefabDir.FullName);
         }
 
 		Skeleton[] skeletons = transform.root.gameObject.GetComponentsInChildren<Skeleton>(true);
 		Skeleton skeleton = null;
-		foreach (Skeleton s in skeletons)
-		{
-			if (transform.IsChildOf(s.transform))
-			{
+		foreach (Skeleton s in skeletons) {
+			if (transform.IsChildOf(s.transform)) {
 				skeleton = s;
 			}
 		}
 
         DirectoryInfo prefabSkelDir = new DirectoryInfo("Assets/Prefabs/" + skeleton.gameObject.name);
-		if (Directory.Exists(prefabSkelDir.FullName) == false)
-        {
+		if (Directory.Exists(prefabSkelDir.FullName) == false) {
             Directory.CreateDirectory(prefabSkelDir.FullName);
         }
 
@@ -498,12 +522,14 @@ public class Skin2D : MonoBehaviour {
 		mesh.boneWeights = skinnedMeshRenderer.sharedMesh.boneWeights;
 
         DirectoryInfo meshSkelDir = new DirectoryInfo("Assets/Meshes/SkinnedMeshes/" + skeleton.gameObject.name);
-		if (Directory.Exists(meshSkelDir.FullName) == false)
-        {
+
+		if (Directory.Exists(meshSkelDir.FullName) == false) {
             Directory.CreateDirectory(meshSkelDir.FullName);
         }
+
 		string meshPath = "Assets/Meshes/SkinnedMeshes/" + skeleton.gameObject.name + "/" + mesh.name + ".asset";
 		Mesh generatedMesh = AssetDatabase.LoadMainAssetAtPath (meshPath) as Mesh;
+
 		if (generatedMesh == null) {
 			generatedMesh = new Mesh();
 			// Hack to display mesh once saved
@@ -518,24 +544,7 @@ public class Skin2D : MonoBehaviour {
 		}
 
 		// Ensure there is a reference material for the renderer
-		if (referenceMaterial == null) {
-			if (skinnedMeshRenderer.sharedMaterial.name.Contains(" (Instance)")) {
-				string materialName = skinnedMeshRenderer.sharedMaterial.name.Replace(" (Instance)", "");
-				Debug.Log(materialName);
-				Material material = AssetDatabase.LoadAssetAtPath("Assets/Materials/" + materialName + ".mat", typeof(Material)) as Material;
-				referenceMaterial = material;
-			} 
-			else {
-				referenceMaterial = skinnedMeshRenderer.sharedMaterial;
-			}
-		}
-		else {
-			if (referenceMaterial.name.Contains(" (Instance)")) {
-				string materialName = referenceMaterial.name.Replace(" (Instance)", "");
-				Material material = AssetDatabase.LoadAssetAtPath("Assets/Materials/" + materialName + ".mat", typeof(Material)) as Material;
-				referenceMaterial = material;
-			}
-		}
+		AssignReferenceMaterial();
 
 		// Create a new prefab erasing the old one
 		Object obj = PrefabUtility.CreateEmptyPrefab(path);

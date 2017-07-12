@@ -48,11 +48,9 @@ public class Skeleton : MonoBehaviour {
 	[HideInInspector]
 	private bool _flipY = false;
 
-	public bool flipY
-	{
+	public bool flipY {
 		get { return _flipY; }
-		set
-		{
+		set {
 			_flipY = value;
 			FlipY();
 		}
@@ -61,11 +59,10 @@ public class Skeleton : MonoBehaviour {
 	[SerializeField] 
 	[HideInInspector]
 	private bool _flipX = false;
-	public bool flipX
-	{
+
+	public bool flipX {
 		get { return _flipX; }
-		set
-		{
+		set {
 			_flipX = value;
 			FlipX();
 		}
@@ -75,11 +72,9 @@ public class Skeleton : MonoBehaviour {
 	[HideInInspector]
 	private bool _useShadows = false;
 
-	public bool useShadows
-	{
+	public bool useShadows {
 		get { return _useShadows; }
-		set
-		{
+		set {
 			_useShadows = value;
 			UseShadows();
 		}
@@ -89,11 +84,9 @@ public class Skeleton : MonoBehaviour {
 	[HideInInspector]
 	private bool _useZSorting = false;
 
-	public bool useZSorting
-	{
+	public bool useZSorting {
 		get { return _useZSorting; }
-		set
-		{
+		set {
 			_useZSorting = value;
 			UseZSorting();
 		}
@@ -123,24 +116,25 @@ public class Skeleton : MonoBehaviour {
 	private Vector3 frontNormal;
 	private Vector3 reverseNormal;
 
+	private bool recordMode = false;
+
 #if UNITY_EDITOR
-		[MenuItem("Sprites And Bones/Skeleton")]
-		public static void Create ()
-		{
-			Undo.IncrementCurrentGroup ();
+	[MenuItem("Sprites And Bones/Skeleton")]
+	public static void Create() {
+		Undo.IncrementCurrentGroup ();
 
-			GameObject o = new GameObject ("Skeleton");
-			Undo.RegisterCreatedObjectUndo (o, "Create skeleton");
-			o.AddComponent<Skeleton> ();
+		GameObject o = new GameObject ("Skeleton");
+		Undo.RegisterCreatedObjectUndo (o, "Create skeleton");
+		o.AddComponent<Skeleton> ();
 
-			GameObject b = new GameObject ("Bone");
-			Undo.RegisterCreatedObjectUndo (b, "Create Skeleton");
-			b.AddComponent<Bone> ();
+		GameObject b = new GameObject ("Bone");
+		Undo.RegisterCreatedObjectUndo (b, "Create Skeleton");
+		b.AddComponent<Bone> ();
 
-			b.transform.parent = o.transform;
+		b.transform.parent = o.transform;
 
-			Undo.CollapseUndoOperations (Undo.GetCurrentGroup ());
-		}
+		Undo.CollapseUndoOperations (Undo.GetCurrentGroup ());
+	}
 #endif
 
     // Use this for initialization
@@ -148,16 +142,20 @@ public class Skeleton : MonoBehaviour {
 		// Set Default Shaders
 		spriteShader = Shader.Find("Sprites/Default");
 		spriteShadowsShader = Shader.Find("Sprites/Skeleton-CutOut");
+
+		// Set MaterialPropertyBlock
 		spriteColor = Shader.PropertyToID("_Color");
 		spriteNormal = Shader.PropertyToID("_Normal");
 		propertyBlock = new MaterialPropertyBlock();
+
+		// Normals for Sprites
 		frontNormal = new Vector3(0, 0, -1);
 		reverseNormal = new Vector3(0, 0, 1);
 
 		// Initialize Z-Sorting and Shadows
 		skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>(true);
-		for( int i = 0; i < skins.Length; i++)
-		{
+
+		for( int i = 0; i < skins.Length; i++) {
 			if (skins[i].transform.localPosition.z != 0) {
 				_useZSorting = true;
 			}
@@ -167,8 +165,8 @@ public class Skeleton : MonoBehaviour {
 		}
 
 		spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>(true);
-		for( int n = 0; n < spriteRenderers.Length; n++)
-		{
+
+		for( int n = 0; n < spriteRenderers.Length; n++){
 			if (spriteRenderers[n].transform.localPosition.z != 0) {
 				_useZSorting = true;
 			}
@@ -185,9 +183,12 @@ public class Skeleton : MonoBehaviour {
 
 			// Instance the materials for the skeleton on play
 			useSharedMaterial = false;
+
+			// Default normal value
 			int normal = -1;
-			if ((int)transform.localEulerAngles.x == 0 && (int)transform.localEulerAngles.y == 180 || (int)transform.localEulerAngles.x == 180 && (int)transform.localEulerAngles.y == 0)
-			{
+
+			if ((int)transform.localEulerAngles.x == 0 && (int)transform.localEulerAngles.y == 180 
+			|| (int)transform.localEulerAngles.x == 180 && (int)transform.localEulerAngles.y == 0) {
 				normal = 1;
 				// Debug.Log("Changing normals for " + name);
 			}
@@ -204,15 +205,29 @@ public class Skeleton : MonoBehaviour {
 
     void OnDisable() {
 		EditorApplication.update -= EditorUpdate;
+
+		// Sets the skins to use reference mesh on disable
+		if (!Application.isPlaying && !AnimationMode.InAnimationMode() && skin2Ds != null) {
+			for (int i = 0; i < skin2Ds.Length; i++) {
+				skin2Ds[i].AssignReferenceMesh();
+
+				if (skin2Ds[i].skinnedMeshRenderer.sharedMesh != null 
+				&& skin2Ds[i].referenceMesh != null 
+				&& skin2Ds[i].skinnedMeshRenderer.sharedMesh != skin2Ds[i].referenceMesh) {
+					skin2Ds[i].skinnedMeshRenderer.sharedMesh = skin2Ds[i].referenceMesh;
+				}
+			}
+		}
     }
 #endif
 
     private void EditorUpdate() {
 		if (IK_Enabled) {
-			if (iks != null)
-			{
-				for (int i=0; i < iks.Length; i++) {
-					if (iks[i] != null && !editMode && iks[i].enabled && iks[i].influence > 0 && iks[i].gameObject.activeInHierarchy) {
+			if (iks != null) {
+				for (int i = 0; i < iks.Length; i++) {
+					if (iks[i] != null && !editMode 
+					&& iks[i].enabled && iks[i].influence > 0 
+					&& iks[i].gameObject.activeInHierarchy) {
 						iks[i].resolveSK2D();
 					}
 				}
@@ -223,12 +238,11 @@ public class Skeleton : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		// Get Shaders if they are null
-		if (spriteShader == null)
-		{
+		if (spriteShader == null) {
 			spriteShader = Shader.Find("Sprites/Default");
 		}
-		if (spriteShadowsShader == null)
-		{
+
+		if (spriteShadowsShader == null) {
 			spriteShadowsShader = Shader.Find("Sprites/Skeleton-CutOut");
 		}
 
@@ -238,19 +252,38 @@ public class Skeleton : MonoBehaviour {
 		}
 
 		#if UNITY_EDITOR
-			EditorUpdate();
+			// EditorUpdate();
+
+			// Check to see if the Animation Mode is in Record
+			if (!Application.isPlaying && AnimationMode.InAnimationMode() && skin2Ds != null) {
+				recordMode = true;
+			}
+
+			// If the Animation Window was recording, set skins back to use reference mesh
+			if (!Application.isPlaying && !AnimationMode.InAnimationMode() && skin2Ds != null && recordMode) {
+				for (int i = 0; i < skin2Ds.Length; i++) {
+					skin2Ds[i].AssignReferenceMesh();
+
+					if (skin2Ds[i].skinnedMeshRenderer.sharedMesh != null 
+					&& skin2Ds[i].referenceMesh != null 
+					&& skin2Ds[i].skinnedMeshRenderer.sharedMesh != skin2Ds[i].referenceMesh) {
+						skin2Ds[i].skinnedMeshRenderer.sharedMesh = skin2Ds[i].referenceMesh;
+					}
+				}
+
+				recordMode = false;
+			}
 		#endif
 	}
 
 	void LateUpdate () {
 
 	#if !UNITY_EDITOR
-		EditorUpdate();
+		// EditorUpdate();
 	#endif
         if (Application.isEditor && bones != null) {
             for (int i=0; i<bones.Length; i++) {
-                if (bones[i] != null)
-				{
+                if (bones[i] != null) {
 					bones[i].editMode = editMode;
 					bones[i].showInfluence = showBoneInfluence;
 				}
@@ -263,11 +296,15 @@ public class Skeleton : MonoBehaviour {
         Gizmos.DrawIcon(transform.position, "man_icon.png", true);
     }
 
+	// Create a pose, include disabled objects or not
     public Pose CreatePose(bool includeDisabled) {
         Pose pose = ScriptableObject.CreateInstance<Pose>();
 
         var bones = GetComponentsInChildren<Bone>(includeDisabled);
+
+		/// WILL BE DEPRECIATED IN FUTURE RELEASE AS CONTROL POINT IS NO LONGER SUPPORTED ///
         var cps = GetComponentsInChildren<ControlPoint>(includeDisabled);
+
         var skin2Ds = GetComponentsInChildren<Skin2D>(includeDisabled);
 
         List<RotationValue> rotations = new List<RotationValue>();
@@ -284,6 +321,7 @@ public class Skeleton : MonoBehaviour {
             }
         }
 
+		/// WILL BE DEPRECIATED IN FUTURE RELEASE AS CONTROL POINT IS NO LONGER SUPPORTED ///
         // Use bone parent name + control point name for the search
         foreach (ControlPoint cp in cps) {
             controlPoints.Add(new PositionValue(cp.name, cp.transform.localPosition));
@@ -314,31 +352,38 @@ public class Skeleton : MonoBehaviour {
         return CreatePose(true);
     }
 
+	// Save a pose to a file
     public void SavePose(string poseFileName) {
 		if(!Directory.Exists("Assets/Poses")) {
 			AssetDatabase.CreateFolder("Assets", "Poses");
 			AssetDatabase.Refresh();
 		}
+
 		if (poseFileName != null && poseFileName.Trim() != "") {
             ScriptableObjectUtility.CreateAsset(CreatePose(), "Poses/" + poseFileName);
-        } else {
+        }
+		else {
             ScriptableObjectUtility.CreateAsset(CreatePose());
         }
     }
 #endif
 
+	// Restore a saved pose for the Skeleton
     public void RestorePose(Pose pose) {
         var bones = GetComponentsInChildren<Bone>();
+
+		/// WILL BE DEPRECIATED IN FUTURE RELEASE AS ControlPoint IS NO LONGER SUPPORTED ///
         var cps = GetComponentsInChildren<ControlPoint>();
+
         var skin2Ds = GetComponentsInChildren<Skin2D>();
+
 		#if UNITY_EDITOR
         Undo.RegisterCompleteObjectUndo(bones, "Assign Pose");
         Undo.RegisterCompleteObjectUndo(cps, "Assign Pose");
         Undo.RegisterCompleteObjectUndo(skin2Ds, "Assign Pose");
 		#endif
 
-        if (bones.Length > 0)
-		{
+        if (bones.Length > 0) {
 			for( int i = 0; i < pose.rotations.Length; i++) {
 				bool hasRot = false;
 				for( int b = 0; b < bones.Length; b++) {
@@ -346,7 +391,10 @@ public class Skeleton : MonoBehaviour {
 						#if UNITY_EDITOR
 						Undo.RecordObject(bones[b].transform, "Assign Pose");
 						#endif
+
+						// Set the bone rotation to the pose rotation
 						bones[b].transform.localRotation = pose.rotations[i].rotation;
+
 						#if UNITY_EDITOR
 						EditorUtility.SetDirty (bones[b].transform);
 						#endif
@@ -365,7 +413,10 @@ public class Skeleton : MonoBehaviour {
 						#if UNITY_EDITOR
 						Undo.RecordObject(bones[o].transform, "Assign Pose");
 						#endif
+
+						// Set the bone position to the pose position
 						bones[o].transform.localPosition = pose.positions[j].position;
+
 						#if UNITY_EDITOR
 						EditorUtility.SetDirty (bones[o].transform);
 						#endif
@@ -387,7 +438,10 @@ public class Skeleton : MonoBehaviour {
 							#if UNITY_EDITOR
 							Undo.RecordObject(ik.target, "Assign Pose");
 							#endif
+
+							// Set IK position to the pose IK target position
 							ik.target.transform.localPosition = pose.targets[k].position;
+
 							#if UNITY_EDITOR
 							EditorUtility.SetDirty (ik.target.transform);
 							#endif
@@ -407,14 +461,18 @@ public class Skeleton : MonoBehaviour {
         if (pose.controlPoints.Length > 0) {
 			for( int l = 0; l < pose.controlPoints.Length; l++) {
 				bool hasControlPoint = false;
-				if (cps.Length > 0)
-				{
+
+				/// WILL BE DEPRECIATED IN FUTURE RELEASE AS CONTROL POINT IS NO LONGER SUPPORTED ///
+				if (cps.Length > 0) {
 					for( int c = 0; c < cps.Length; c++) {
 						if (cps[c].name == pose.controlPoints[l].name) {
 							#if UNITY_EDITOR
 							Undo.RecordObject(cps[c].transform, "Assign Pose");
 							#endif
+
+							// Set the control point transform position to the control point position
 							cps[c].transform.localPosition = pose.controlPoints[l].position;
+
 							#if UNITY_EDITOR
 							EditorUtility.SetDirty (cps[c].transform);
 							#endif
@@ -422,8 +480,9 @@ public class Skeleton : MonoBehaviour {
 						}
 					}
 				}
-				if (skin2Ds.Length > 0)
-				{
+
+				// Move control points in Skin2D component
+				if (skin2Ds.Length > 0) {
 					for( int s = 0; s < skin2Ds.Length; s++) {
 						if (skin2Ds[s].points != null && skin2Ds[s].controlPoints != null 
 						&& skin2Ds[s].controlPoints.Length > 0 
@@ -432,14 +491,19 @@ public class Skeleton : MonoBehaviour {
 							Undo.RecordObject(skin2Ds[s], "Assign Pose");
 							Undo.RecordObject(skin2Ds[s].points, "Assign Pose");
 							#endif
+
+							// Get control point index by name in pose
 							int index = GetControlPointIndex(pose.controlPoints[l].name);
 							skin2Ds[s].controlPoints[index].position = pose.controlPoints[l].position;
 							skin2Ds[s].points.SetPoint(skin2Ds[s].controlPoints[index]);
+
 							#if UNITY_EDITOR
 							EditorUtility.SetDirty (skin2Ds[s]);
 							EditorUtility.SetDirty (skin2Ds[s].points);
 							#endif
+
 							hasControlPoint = true;
+
 							// Debug.Log("Found " + pose.controlPoints[l].name + " set to " + index + skin2Ds[s].points.GetPoint(skin2Ds[s].controlPoints[index]));
 						}
 					}
@@ -457,16 +521,20 @@ public class Skeleton : MonoBehaviour {
 		string cpName = controlPointName.Substring(index + 1);
 		cpName = cpName.Replace("Point", "");
 		int cpIndex = 0;
+
 		if (cpName != "") {
 			cpIndex = int.Parse(cpName);
 		}
+
 		return cpIndex;
 	}
 
+	// Set the base pose for the Skeleton
     public void SetBasePose(Pose pose) {
         basePose = pose;
     }
 
+	// Set the Edit mode to manipulate the bones and IK
     public void SetEditMode(bool edit) {
 #if UNITY_EDITOR
         if (!editMode && edit) {
@@ -491,18 +559,19 @@ public class Skeleton : MonoBehaviour {
     }
 
 #if UNITY_EDITOR
-	public void CalculateWeights ()
-	{
+	// Calculate Bone Weights for skeletons for all bones
+	public void CalculateWeights() {
 		CalculateWeights(false);
 	}
 
-	public void CalculateWeights (bool weightToParent)
-	{
+	// Calulate the bone weights to the parent only?
+	public void CalculateWeights(bool weightToParent) {
 		if(bones == null || bones.Length == 0) {
 			Debug.Log("No bones in skeleton");
 			return;
 		}
-		//find all Skin2D elements
+
+		// Find all Skin2D elements
 		skin2Ds = transform.GetComponentsInChildren<Skin2D>(true);
 		for( int i = 0; i < skins.Length; i++) {
 			bool skinActive = skin2Ds[i].gameObject.activeSelf;
@@ -513,132 +582,151 @@ public class Skeleton : MonoBehaviour {
 	}
 #endif
 
-	private void MoveRenderersPositions(){
+	// Move the Renderer transform positions
+	private void MoveRenderersPositions() {
 		foreach (Transform renderer in renderers.Keys){
 			#if UNITY_EDITOR
 			Undo.RecordObject(renderer, "Move Render Position");
 			#endif
+
+			// Move the renderer's transform position to the new position
 			renderer.position = new Vector3(renderer.position.x, renderer.position.y, (float)renderers[renderer]);
+
 			#if UNITY_EDITOR
 			EditorUtility.SetDirty (renderer);
 			#endif
 		}
 	}
 
-	public void FlipY ()
-	{
+	// Flip this Skeleton on the Y axis
+	public void FlipY() {
+		// Default the normal value
 		int normal = -1;
+
 		// Rotate the skeleton's local transform
-		if (!flipY)
-		{
+		if (!flipY) {
 			renderers = new Dictionary<Transform, float>();
+
 			// Get the new positions for the renderers from the rotation of this transform
-			if (useZSorting)
-			{
+			if (useZSorting) {
 				renderers = GetRenderersZ();
 			}
+
 			#if UNITY_EDITOR
 			Undo.RecordObject(transform, "Flip Y");
 			#endif
+
+			// Flip the rotation of the transform
 			transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, 0.0f, transform.localEulerAngles.z);
+
 			#if UNITY_EDITOR
 			EditorUtility.SetDirty (transform);
 			#endif
-			if (useZSorting)
-			{
+			if (useZSorting) {
 				MoveRenderersPositions();
 			}
 		}
-		else
-		{
+		else {
 			renderers = new Dictionary<Transform, float>();
+
 			// Get the new positions for the renderers from the rotation of this transform
-			if (useZSorting)
-			{
+			if (useZSorting) {
 				renderers = GetRenderersZ();
 			}
+
 			// Get the new positions for the renderers from the rotation of this transform
 			#if UNITY_EDITOR
 			Undo.RecordObject(transform, "Flip Y");
 			#endif
+
+			// Flip the rotation of the transform
 			transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, 180.0f, transform.localEulerAngles.z);
+
 			#if UNITY_EDITOR
 			EditorUtility.SetDirty (transform);
 			#endif
-			if (useZSorting)
-			{
+
+			if (useZSorting) {
 				MoveRenderersPositions();
 			}
 		}
 
-		if ((int)transform.localEulerAngles.x == 0 && (int)transform.localEulerAngles.y == 180 || (int)(int)transform.localEulerAngles.x == 180 && (int)transform.localEulerAngles.y == 0)
-		{
+		// Set the normal
+		if ((int)transform.localEulerAngles.x == 0 && (int)transform.localEulerAngles.y == 180 
+		|| (int)(int)transform.localEulerAngles.x == 180 && (int)transform.localEulerAngles.y == 0) {
 			normal = 1;
 		}
 
 		ChangeRendererNormals(normal);
 	}
 
-	public void FlipX ()
-	{
+	// Flip the Skeleton on the X axis
+	public void FlipX () {
+		// Default normal value
 		int normal = -1;
 
 		// Rotate the skeleton's local transform
-		if (!flipX)
-		{
+		if (!flipX) {
 			renderers = new Dictionary<Transform, float>();
+
 			// Get the new positions for the renderers from the rotation of this transform
-			if (useZSorting)
-			{
+			if (useZSorting) {
 				renderers = GetRenderersZ();
 			}
+
 			#if UNITY_EDITOR
 			Undo.RecordObject(transform, "Flip X");
 			#endif
+
+			// Flip the rotation of the transform
 			transform.localEulerAngles = new Vector3(0.0f, transform.localEulerAngles.y, transform.localEulerAngles.z);
+
 			#if UNITY_EDITOR
 			EditorUtility.SetDirty (transform);
 			#endif
-			if (useZSorting)
-			{
+
+			if (useZSorting) {
 				MoveRenderersPositions();
 			}
 		}
-		else
-		{
+		else {
 			renderers = new Dictionary<Transform, float>();
+
 			// Get the new positions for the renderers from the rotation of this transform
-			if (useZSorting)
-			{
+			if (useZSorting) {
 				renderers = GetRenderersZ();
 			}
+
 			#if UNITY_EDITOR
 			Undo.RecordObject(transform, "Flip X");
 			#endif
+
+			// Flip the rotation of the transform
 			transform.localEulerAngles = new Vector3(180.0f, transform.localEulerAngles.y, transform.localEulerAngles.z);
+
 			#if UNITY_EDITOR
 			EditorUtility.SetDirty (transform);
 			#endif
-			if (useZSorting)
-			{
+
+			if (useZSorting) {
 				MoveRenderersPositions();
 			}
 		}
 
-		if ((int)transform.localEulerAngles.x == 0 && (int)transform.localEulerAngles.y == 180 || (int)transform.localEulerAngles.x == 180 && (int)transform.localEulerAngles.y == 0)
-		{
+		// Set the normal
+		if ((int)transform.localEulerAngles.x == 0 && (int)transform.localEulerAngles.y == 180 
+		|| (int)transform.localEulerAngles.x == 180 && (int)transform.localEulerAngles.y == 0) {
 			normal = 1;
 		}
-		
-		ChangeRendererNormals(normal);
 
+		ChangeRendererNormals(normal);
 	}
 
-	public Dictionary<Transform, float> GetRenderersZ()
-	{
+	// Get the renderers for Z sorting
+	public Dictionary<Transform, float> GetRenderersZ() {
 		renderers = new Dictionary<Transform, float>();
-		if (useZSorting)
-		{
+
+		if (useZSorting) {
 			//find all SkinnedMeshRenderer elements
 			skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>(true);
 			for( int i = 0; i < skins.Length; i++) {
@@ -654,17 +742,17 @@ public class Skeleton : MonoBehaviour {
 		return renderers;
 	}
 
-	public void ChangeColors(Color color)
-	{
+	// Change the color of the renderers
+	public void ChangeColors(Color color) {
 		//find all SkinnedMeshRenderer elements
 		skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>(true);
 		spriteColor = Shader.PropertyToID("_Color");
 		if ( propertyBlock == null ) {
 			propertyBlock = new MaterialPropertyBlock();
 		}
+
 		for( int i = 0; i < skins.Length; i++) {
-			if (spriteShadowsShader != null && skins[i].material.shader == spriteShadowsShader)
-			{
+			if (spriteShadowsShader != null && skins[i].material.shader == spriteShadowsShader) {
 				propertyBlock.SetColor(spriteColor, color);
 				skins[i].SetPropertyBlock(propertyBlock);
 			}
@@ -673,23 +761,22 @@ public class Skeleton : MonoBehaviour {
 		//find all SpriteRenderer elements
 		spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>(true);
 		for( int j = 0; j < spriteRenderers.Length; j++) {
-			if (spriteShadowsShader != null && spriteRenderers[j].material.shader == spriteShadowsShader)
-			{
+			if (spriteShadowsShader != null && spriteRenderers[j].material.shader == spriteShadowsShader) {
 				propertyBlock.SetColor(spriteColor, color);
 				spriteRenderers[j].SetPropertyBlock(propertyBlock);
 			}
 		}
 	}
 
-	public void ChangeRendererNormals(int normal)
-	{
-		if (useShadows)
-		{
-			//find all SkinnedMeshRenderer elements
+	// Change the normals for the renderer
+	public void ChangeRendererNormals(int normal) {
+		// Only do this if we are using shadows
+		if (useShadows) {
+			// Find all SkinnedMeshRenderer elements
 			skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+
 			for( int i = 0; i < skins.Length; i++) {
-				if (spriteShadowsShader != null && skins[i].material.shader == spriteShadowsShader)
-				{
+				if (spriteShadowsShader != null && skins[i].material.shader == spriteShadowsShader) {
 					if (normal == -1) {
 						propertyBlock.SetVector(spriteNormal, frontNormal);
 						skins[i].SetPropertyBlock(propertyBlock);
@@ -701,11 +788,10 @@ public class Skeleton : MonoBehaviour {
 				}
 			}
 
-			//find all SpriteRenderer elements
+			// Find all SpriteRenderer elements
 			spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>(true);
 			for( int j = 0; j < spriteRenderers.Length; j++) {
-				if (spriteShadowsShader != null && spriteRenderers[j].material.shader == spriteShadowsShader)
-				{
+				if (spriteShadowsShader != null && spriteRenderers[j].material.shader == spriteShadowsShader) {
 					if (normal == -1) {
 						propertyBlock.SetVector(spriteNormal, frontNormal);
 						spriteRenderers[j].SetPropertyBlock(propertyBlock);
@@ -719,33 +805,36 @@ public class Skeleton : MonoBehaviour {
 		}
 	}
 
-	public void UseShadows ()
-	{
+	// Use shadows for renderers
+	public void UseShadows() {
 		//find all SpriteRenderer elements
 		skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>(true);
 		
 		for( int i = 0; i < skins.Length; i++) {
-			if (useShadows && spriteShadowsShader != null)
-			{
+			if (useShadows && spriteShadowsShader != null) {
 				#if UNITY_EDITOR
 				Undo.RecordObject(skins[i].sharedMaterial.shader, "Use Shadows");
 				#endif
+
 				skins[i].sharedMaterial.shader = spriteShadowsShader;
+
 				#if UNITY_EDITOR
 				EditorUtility.SetDirty (skins[i].sharedMaterial.shader);
 				#endif
 			}
-			else
-			{
+			else {
 				#if UNITY_EDITOR
 				Undo.RecordObject(skins[i].sharedMaterial.shader, "Use Shadows");
 				#endif
+
 				skins[i].sharedMaterial.shader = spriteShader;
+
 				#if UNITY_EDITOR
 				EditorUtility.SetDirty (skins[i].sharedMaterial.shader);
 				#endif
 			}
 
+			// Set the shadow casting mode for using shadows or not
 			if (useShadows){
 				skins[i].shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.TwoSided;
 			}
@@ -755,31 +844,34 @@ public class Skeleton : MonoBehaviour {
 			skins[i].receiveShadows = useShadows;
 		}
 
-		//find all SpriteRenderer elements
+		// Find all SpriteRenderer elements
 		spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>(true);
-		
+
 		for( int j = 0; j < spriteRenderers.Length; j++) {
-			if (useShadows && spriteShadowsShader != null)
-			{
+			if (useShadows && spriteShadowsShader != null) {
 				#if UNITY_EDITOR
 				Undo.RecordObject(spriteRenderers[j].sharedMaterial.shader, "Use Shadows");
 				#endif
+
 				spriteRenderers[j].sharedMaterial.shader = spriteShadowsShader;
+
 				#if UNITY_EDITOR
 				EditorUtility.SetDirty (spriteRenderers[j].sharedMaterial.shader);
 				#endif
 			}
-			else
-			{
+			else {
 				#if UNITY_EDITOR
 				Undo.RecordObject(spriteRenderers[j].sharedMaterial.shader, "Use Shadows");
 				#endif
+
 				spriteRenderers[j].sharedMaterial.shader = spriteShader;
+
 				#if UNITY_EDITOR
 				EditorUtility.SetDirty (spriteRenderers[j].sharedMaterial.shader);
 				#endif
 			}
 
+			// Set the shadow casting mode for using shadows or not
 			if (useShadows){
 				spriteRenderers[j].shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.TwoSided;
 			}
@@ -790,34 +882,37 @@ public class Skeleton : MonoBehaviour {
 		}
 	}
 
-	public void UseZSorting ()
-	{
+	// Use Z sorting for renderers
+	public void UseZSorting() {
 		//find all SpriteRenderer elements
 		skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>(true);
-		
+
 		for( int i = 0; i < skins.Length; i++) {
 			if (useZSorting)
 			{
 				#if UNITY_EDITOR
 				Undo.RecordObject(skins[i].transform, "Use Z Sorting");
 				#endif
+
 				float z = skins[i].sortingOrder / -10000f;
 				skins[i].transform.localPosition = new Vector3(skins[i].transform.localPosition.x, skins[i].transform.localPosition.y, z);
 				skins[i].sortingLayerName = "Default";
 				skins[i].sortingOrder = 0;
+
 				#if UNITY_EDITOR
 				EditorUtility.SetDirty (skins[i].transform);
 				#endif
 			}
-			else
-			{
+			else {
 				#if UNITY_EDITOR
 				Undo.RecordObject(skins[i].transform, "Use Z Sorting");
 				#endif
+
 				int sortLayer = Mathf.RoundToInt(skins[i].transform.localPosition.z * -10000);
 				skins[i].transform.localPosition = new Vector3(skins[i].transform.localPosition.x, skins[i].transform.localPosition.y, 0);
 				skins[i].sortingLayerName = "Default";
 				skins[i].sortingOrder = sortLayer;
+
 				#if UNITY_EDITOR
 				EditorUtility.SetDirty (skins[i].transform);
 				#endif
@@ -828,28 +923,30 @@ public class Skeleton : MonoBehaviour {
 		spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>(true);
 		
 		for( int j = 0; j < spriteRenderers.Length; j++) {
-			if (useZSorting)
-			{
+			if (useZSorting) {
 				#if UNITY_EDITOR
 				Undo.RecordObject(spriteRenderers[j].transform, "Use Z Sorting");
 				#endif
+
 				float z = spriteRenderers[j].sortingOrder / -10000f;
 				spriteRenderers[j].transform.localPosition = new Vector3(spriteRenderers[j].transform.localPosition.x, spriteRenderers[j].transform.localPosition.y, z);
 				spriteRenderers[j].sortingLayerName = "Default";
 				spriteRenderers[j].sortingOrder = 0;
+
 				#if UNITY_EDITOR
 				EditorUtility.SetDirty (spriteRenderers[j].transform);
 				#endif
 			}
-			else
-			{
+			else {
 				#if UNITY_EDITOR
 				Undo.RecordObject(spriteRenderers[j].transform, "Use Z Sorting");
 				#endif
+
 				int sortLayer = Mathf.RoundToInt(spriteRenderers[j].transform.localPosition.z * -10000);
 				spriteRenderers[j].transform.localPosition = new Vector3(spriteRenderers[j].transform.localPosition.x, spriteRenderers[j].transform.localPosition.y, 0);
 				spriteRenderers[j].sortingLayerName = "Default";
 				spriteRenderers[j].sortingOrder = sortLayer;
+
 				#if UNITY_EDITOR
 				EditorUtility.SetDirty (spriteRenderers[j].transform);
 				#endif

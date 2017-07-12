@@ -57,13 +57,13 @@ public class Skin2DEditor : Editor {
 
         EditorGUILayout.Separator();
 
-        if (skin.GetComponent<SkinnedMeshRenderer>().sharedMesh != null && GUILayout.Button("Save as Prefab")) {
+        if (skin.skinnedMeshRenderer.sharedMesh != null && GUILayout.Button("Save as Prefab")) {
             skin.SaveAsPrefab();
         }
 
 		EditorGUILayout.Separator();
 
-        if (skin.GetComponent<SkinnedMeshRenderer>().sharedMesh != null && GUILayout.Button("Recalculate Bone Weights")) {
+        if (skin.skinnedMeshRenderer.sharedMesh != null && GUILayout.Button("Recalculate Bone Weights")) {
             skin.RecalculateBoneWeights();
         }
 
@@ -76,11 +76,11 @@ public class Skin2DEditor : Editor {
             SceneView.RepaintAll();
         }
 
-        if (skin.GetComponent<SkinnedMeshRenderer>().sharedMesh != null && GUILayout.Button("Create Control Points")) {
-            skin.CreateControlPoints(skin.GetComponent<SkinnedMeshRenderer>());
+        if (skin.skinnedMeshRenderer.sharedMesh != null && GUILayout.Button("Create Control Points")) {
+            skin.CreateControlPoints(skin.skinnedMeshRenderer);
         }
 
-        if (skin.GetComponent<SkinnedMeshRenderer>().sharedMesh != null && GUILayout.Button("Reset Control Points")) {
+        if (skin.skinnedMeshRenderer.sharedMesh != null && GUILayout.Button("Reset Control Points")) {
             skin.ResetControlPointPositions();
         }
 
@@ -96,7 +96,7 @@ public class Skin2DEditor : Editor {
 
 		EditorGUILayout.Separator();
 
-        if (skin.GetComponent<SkinnedMeshRenderer>().sharedMesh != null && GUILayout.Button("Generate Mesh Asset")) {
+        if (skin.skinnedMeshRenderer.sharedMesh != null && GUILayout.Button("Generate Mesh Asset")) {
             #if UNITY_EDITOR
 			// Check if the Meshes directory exists, if not, create it.
 			if(!Directory.Exists("Assets/Meshes")) {
@@ -104,22 +104,22 @@ public class Skin2DEditor : Editor {
 				AssetDatabase.Refresh();
 			}
 			Mesh mesh = new Mesh();
-			mesh.name = skin.GetComponent<SkinnedMeshRenderer>().sharedMesh.name.Replace(".SkinnedMesh", ".Mesh");;
-			mesh.vertices = skin.GetComponent<SkinnedMeshRenderer>().sharedMesh.vertices;
-			mesh.triangles = skin.GetComponent<SkinnedMeshRenderer>().sharedMesh.triangles;
-			mesh.normals = skin.GetComponent<SkinnedMeshRenderer>().sharedMesh.normals;
-			mesh.uv = skin.GetComponent<SkinnedMeshRenderer>().sharedMesh.uv;
-			mesh.uv2 = skin.GetComponent<SkinnedMeshRenderer>().sharedMesh.uv2;
-			mesh.bounds = skin.GetComponent<SkinnedMeshRenderer>().sharedMesh.bounds;
+			mesh.name = skin.skinnedMeshRenderer.sharedMesh.name.Replace(".SkinnedMesh", ".Mesh");;
+			mesh.vertices = skin.skinnedMeshRenderer.sharedMesh.vertices;
+			mesh.triangles = skin.skinnedMeshRenderer.sharedMesh.triangles;
+			mesh.normals = skin.skinnedMeshRenderer.sharedMesh.normals;
+			mesh.uv = skin.skinnedMeshRenderer.sharedMesh.uv;
+			mesh.uv2 = skin.skinnedMeshRenderer.sharedMesh.uv2;
+			mesh.bounds = skin.skinnedMeshRenderer.sharedMesh.bounds;
 			ScriptableObjectUtility.CreateAsset(mesh, "Meshes/" + skin.gameObject.name + ".Mesh");
 			#endif
         }
 
-        if (skin.GetComponent<SkinnedMeshRenderer>().sharedMaterial != null && GUILayout.Button("Generate Material Asset")) {
+        if (skin.skinnedMeshRenderer.sharedMaterial != null && GUILayout.Button("Generate Material Asset")) {
             #if UNITY_EDITOR
-			Material material = new Material(skin.GetComponent<SkinnedMeshRenderer>().sharedMaterial);
-			material.CopyPropertiesFromMaterial(skin.GetComponent<SkinnedMeshRenderer>().sharedMaterial);
-			skin.GetComponent<SkinnedMeshRenderer>().sharedMaterial = material;
+			Material material = new Material(skin.skinnedMeshRenderer.sharedMaterial);
+			material.CopyPropertiesFromMaterial(skin.skinnedMeshRenderer.sharedMaterial);
+			skin.skinnedMeshRenderer.sharedMaterial = material;
 			if(!Directory.Exists("Assets/Materials")) {
 				AssetDatabase.CreateFolder("Assets", "Materials");
 				AssetDatabase.Refresh();
@@ -130,7 +130,9 @@ public class Skin2DEditor : Editor {
         }
     }
 
+	// This is for editing control points
 	void OnSceneGUI() {
+		// If we have a skin and control points then update them
 		if (skin != null && skinnedMeshRenderer != null && skinnedMesh != null 
 		&& skin.controlPoints != null && skin.controlPoints.Length > 0 && skin.points != null) {
 			Event e = Event.current;
@@ -139,6 +141,7 @@ public class Skin2DEditor : Editor {
 			EditorGUI.BeginChangeCheck();
 			Ray r = HandleUtility.GUIPointToWorldRay(e.mousePosition);
 			Vector2 mousePos = r.origin;
+
 			float selectDistance = HandleUtility.GetHandleSize(mousePos) * baseSelectDistance;
 			if (e.type == EventType.MouseDrag) {
 				skin.editingPoints = true;
@@ -152,9 +155,8 @@ public class Skin2DEditor : Editor {
 			Mesh mesh = new Mesh();
 			skinnedMeshRenderer.BakeMesh(mesh);
 			Vector3[] vertices = new Vector3[mesh.vertexCount];
-	 
-			for (int i = 0; i < mesh.vertexCount; i++)
-			{
+
+			for (int i = 0; i < mesh.vertexCount; i++) {
 				vertices[i] = mesh.vertices[i];
 			}
 
@@ -162,14 +164,16 @@ public class Skin2DEditor : Editor {
 			newVertices = skinnedMeshRenderer.sharedMesh.vertices;
 
 			for(int i = 0; i < skin.controlPoints.Length; i++) {
-				// if (Handles.Button(skin.points.GetPoint(skin.controlPoints[i]), Quaternion.identity, selectDistance, selectDistance, Handles.CircleHandleCap)) {
 				if (Handles.Button(vertices[i], Quaternion.identity, selectDistance, selectDistance, Handles.CircleHandleCap)) {
 					selectedIndex = i;
 				}
+
 				if (selectedIndex == i) {
 					EditorGUI.BeginChangeCheck();
 					Vector3 offset = vertices[i] - skin.transform.TransformPoint(skin.points.GetPoint(skin.controlPoints[i]));
+
 					skin.controlPoints[i].position = skin.transform.InverseTransformPoint(Handles.DoPositionHandle(skin.transform.TransformPoint(skin.points.GetPoint(skin.controlPoints[i])) + offset, Quaternion.identity) - offset);
+
 					if (EditorGUI.EndChangeCheck()) {
 						skin.points.SetPoint(skin.controlPoints[i]);
 						Undo.RecordObject(skin, "Changed Control Point");
@@ -177,10 +181,12 @@ public class Skin2DEditor : Editor {
 						EditorUtility.SetDirty(this);
 					}
 				}
+
 				if (skin.editingPoints) {
 					newVertices[i] = skin.points.GetPoint(skin.controlPoints[i]);
 				}
 			}
+
 			if (skin.editingPoints) {
 				skinnedMeshRenderer.sharedMesh.vertices = newVertices;
 			}
