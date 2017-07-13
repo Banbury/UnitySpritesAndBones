@@ -48,6 +48,15 @@ public class RemapMeshesEditor : EditorWindow {
 		for(int i = 0; i < children.Length; i++) {
 			if (children[i] != null) {
 				children[i].AssignReferenceMesh();
+
+				if (children[i].skinnedMeshRenderer.sharedMesh == null 
+				&& children[i].referenceMesh != null 
+				|| children[i].skinnedMeshRenderer.sharedMesh != null 
+				&& children[i].referenceMesh != null 
+				&& children[i].skinnedMeshRenderer.sharedMesh != children[i].referenceMesh) {
+					children[i].skinnedMeshRenderer.sharedMesh = children[i].referenceMesh;
+					Debug.Log("Remapped " + children[i].skinnedMeshRenderer.sharedMesh.name);
+				}
 			}
 		}
 		#endif

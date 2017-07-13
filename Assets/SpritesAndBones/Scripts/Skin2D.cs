@@ -129,8 +129,13 @@ public class Skin2D : MonoBehaviour {
 
 	public void AssignReferenceMesh() {
 		if (referenceMesh == null) {
-			if (skinnedMeshRenderer.sharedMesh.name.Contains("(Clone)")) {
-				string meshName = skinnedMeshRenderer.sharedMesh.name.Replace("(Clone)", "");
+			if (skinnedMeshRenderer.sharedMesh == null 
+			|| skinnedMeshRenderer.sharedMesh != null && skinnedMeshRenderer.sharedMesh.name.Contains("(Clone)")) {
+				if (meshFilter == null) {
+					Debug.Log("Need a meshFilter for " + name);
+					return;
+				}
+				string meshName = meshFilter.sharedMesh.name.Replace(".Mesh", ".SkinnedMesh");
 				Debug.Log(meshName);
 
 				Skeleton[] skeletons = transform.root.gameObject.GetComponentsInChildren<Skeleton>(true);
@@ -142,6 +147,11 @@ public class Skin2D : MonoBehaviour {
 				}
 
 				referenceMesh = AssetDatabase.LoadAssetAtPath ("Assets/Meshes/SkinnedMeshes/" + skeleton.gameObject.name + "/" + meshName + ".asset", typeof(Mesh)) as Mesh;
+
+				if (skinnedMeshRenderer.sharedMesh == null) {
+					skinnedMeshRenderer.sharedMesh = referenceMesh;
+					Debug.Log(meshName + " assigned to skin.");
+				}
 			} 
 			else {
 				referenceMesh = skinnedMeshRenderer.sharedMesh;
