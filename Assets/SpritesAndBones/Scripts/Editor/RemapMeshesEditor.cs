@@ -39,7 +39,9 @@ public class RemapMeshesEditor : EditorWindow {
 
 	private GameObject o;
 
-	static public void Remap(GameObject o) {
+	private bool remapMaterials = false;
+
+	static public void Remap(GameObject o, bool remapMat) {
 		#if UNITY_EDITOR
 		Debug.Log("Remapping meshes for " + o.name);
 
@@ -56,6 +58,10 @@ public class RemapMeshesEditor : EditorWindow {
 				&& children[i].skinnedMeshRenderer.sharedMesh != children[i].referenceMesh) {
 					children[i].skinnedMeshRenderer.sharedMesh = children[i].referenceMesh;
 					Debug.Log("Remapped " + children[i].skinnedMeshRenderer.sharedMesh.name);
+				}
+				if (remapMat) {
+					children[i].AssignReferenceMaterial();
+					children[i].skinnedMeshRenderer.sharedMaterial = children[i].referenceMaterial;
 				}
 			}
 		}
@@ -75,12 +81,14 @@ public class RemapMeshesEditor : EditorWindow {
 		EditorGUILayout.ObjectField(o, typeof(GameObject), true);
 		EditorGUI.EndChangeCheck();
 
+		GUILayout.BeginHorizontal ();
         if (o != null) {
 			if (GUILayout.Button("Remap Meshes")) {
                 #if UNITY_EDITOR
-				Remap(o);
+				Remap(o, remapMaterials);
 				#endif
             }
+			remapMaterials = GUILayout.Toggle (remapMaterials, "Remap Materials");
         }
     }
 

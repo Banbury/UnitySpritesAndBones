@@ -159,6 +159,7 @@ public class Skeleton : MonoBehaviour {
 			if (skins[i].transform.localPosition.z != 0) {
 				_useZSorting = true;
 			}
+
 			if (skins[i].receiveShadows) {
 				_useShadows = true;
 			}
@@ -170,6 +171,7 @@ public class Skeleton : MonoBehaviour {
 			if (spriteRenderers[n].transform.localPosition.z != 0) {
 				_useZSorting = true;
 			}
+
 			if (spriteRenderers[n].receiveShadows) {
 				_useShadows = true;
 			}
@@ -190,7 +192,7 @@ public class Skeleton : MonoBehaviour {
 			if ((int)transform.localEulerAngles.x == 0 && (int)transform.localEulerAngles.y == 180 
 			|| (int)transform.localEulerAngles.x == 180 && (int)transform.localEulerAngles.y == 0) {
 				normal = 1;
-				// Debug.Log("Changing normals for " + name);
+				Debug.Log("Changing normals for " + name);
 			}
 
 			ChangeRendererNormals(normal);
@@ -207,7 +209,7 @@ public class Skeleton : MonoBehaviour {
 		EditorApplication.update -= EditorUpdate;
 
 		// Sets the skins to use reference mesh on disable
-		if (!Application.isPlaying && !AnimationMode.InAnimationMode() && skin2Ds != null) {
+		if (!Application.isPlaying && skin2Ds != null && recordMode) {
 			for (int i = 0; i < skin2Ds.Length; i++) {
 				skin2Ds[i].AssignReferenceMesh();
 
@@ -217,6 +219,7 @@ public class Skeleton : MonoBehaviour {
 					skin2Ds[i].skinnedMeshRenderer.sharedMesh = skin2Ds[i].referenceMesh;
 				}
 			}
+			Debug.Log("Reassigned Meshes for skins for " + name);
 		}
     }
 #endif
@@ -255,19 +258,31 @@ public class Skeleton : MonoBehaviour {
 			// EditorUpdate();
 
 			// Check to see if the Animation Mode is in Record
-			if (!Application.isPlaying && AnimationMode.InAnimationMode() && skin2Ds != null) {
+			if (!Application.isPlaying && AnimationMode.InAnimationMode() && !recordMode) {
+				// Default normal value
+				int normal = -1;
+
+				if ((int)transform.localEulerAngles.x == 0 && (int)transform.localEulerAngles.y == 180 
+				|| (int)transform.localEulerAngles.x == 180 && (int)transform.localEulerAngles.y == 0) {
+					normal = 1;
+					// Debug.Log("Changing normals for " + name);
+				}
+
+				ChangeRendererNormals(normal);
 				recordMode = true;
 			}
 
 			// If the Animation Window was recording, set skins back to use reference mesh
-			if (!Application.isPlaying && !AnimationMode.InAnimationMode() && skin2Ds != null && recordMode) {
-				for (int i = 0; i < skin2Ds.Length; i++) {
-					skin2Ds[i].AssignReferenceMesh();
+			if (!Application.isPlaying && !AnimationMode.InAnimationMode() && recordMode) {
+				if (skin2Ds != null) {
+					for (int i = 0; i < skin2Ds.Length; i++) {
+						skin2Ds[i].AssignReferenceMesh();
 
-					if (skin2Ds[i].skinnedMeshRenderer.sharedMesh != null 
-					&& skin2Ds[i].referenceMesh != null 
-					&& skin2Ds[i].skinnedMeshRenderer.sharedMesh != skin2Ds[i].referenceMesh) {
-						skin2Ds[i].skinnedMeshRenderer.sharedMesh = skin2Ds[i].referenceMesh;
+						if (skin2Ds[i].skinnedMeshRenderer.sharedMesh != null 
+						&& skin2Ds[i].referenceMesh != null 
+						&& skin2Ds[i].skinnedMeshRenderer.sharedMesh != skin2Ds[i].referenceMesh) {
+							skin2Ds[i].skinnedMeshRenderer.sharedMesh = skin2Ds[i].referenceMesh;
+						}
 					}
 				}
 
@@ -746,22 +761,31 @@ public class Skeleton : MonoBehaviour {
 	public void ChangeColors(Color color) {
 		//find all SkinnedMeshRenderer elements
 		skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+
 		spriteColor = Shader.PropertyToID("_Color");
+
 		if ( propertyBlock == null ) {
 			propertyBlock = new MaterialPropertyBlock();
 		}
 
 		for( int i = 0; i < skins.Length; i++) {
-			if (spriteShadowsShader != null && skins[i].material.shader == spriteShadowsShader) {
-				propertyBlock.SetColor(spriteColor, color);
-				skins[i].SetPropertyBlock(propertyBlock);
+			if (skins[i].sharedMaterial != null) {
+				if (spriteShadowsShader != null && skins[i].sharedMaterial.shader == spriteShadowsShader) {
+					skins[i].GetPropertyBlock(propertyBlock);
+					propertyBlock.SetColor(spriteColor, color);
+					skins[i].SetPropertyBlock(propertyBlock);
+				}
+			}
+			else {
+				Debug.Log(skins[i].name + " has no material.");
 			}
 		}
 
 		//find all SpriteRenderer elements
 		spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>(true);
 		for( int j = 0; j < spriteRenderers.Length; j++) {
-			if (spriteShadowsShader != null && spriteRenderers[j].material.shader == spriteShadowsShader) {
+			if (spriteShadowsShader != null && spriteRenderers[j].sharedMaterial.shader == spriteShadowsShader) {
+				spriteRenderers[j].GetPropertyBlock(propertyBlock);
 				propertyBlock.SetColor(spriteColor, color);
 				spriteRenderers[j].SetPropertyBlock(propertyBlock);
 			}
@@ -775,8 +799,13 @@ public class Skeleton : MonoBehaviour {
 			// Find all SkinnedMeshRenderer elements
 			skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>(true);
 
+			if ( propertyBlock == null ) {
+				propertyBlock = new MaterialPropertyBlock();
+			}
+
 			for( int i = 0; i < skins.Length; i++) {
-				if (spriteShadowsShader != null && skins[i].material.shader == spriteShadowsShader) {
+				if (spriteShadowsShader != null && skins[i].sharedMaterial.shader == spriteShadowsShader) {
+					skins[i].GetPropertyBlock(propertyBlock);
 					if (normal == -1) {
 						propertyBlock.SetVector(spriteNormal, frontNormal);
 						skins[i].SetPropertyBlock(propertyBlock);
@@ -791,7 +820,8 @@ public class Skeleton : MonoBehaviour {
 			// Find all SpriteRenderer elements
 			spriteRenderers = transform.GetComponentsInChildren<SpriteRenderer>(true);
 			for( int j = 0; j < spriteRenderers.Length; j++) {
-				if (spriteShadowsShader != null && spriteRenderers[j].material.shader == spriteShadowsShader) {
+				spriteRenderers[j].GetPropertyBlock(propertyBlock);
+				if (spriteShadowsShader != null && spriteRenderers[j].sharedMaterial.shader == spriteShadowsShader) {
 					if (normal == -1) {
 						propertyBlock.SetVector(spriteNormal, frontNormal);
 						spriteRenderers[j].SetPropertyBlock(propertyBlock);
@@ -809,7 +839,7 @@ public class Skeleton : MonoBehaviour {
 	public void UseShadows() {
 		//find all SpriteRenderer elements
 		skins = transform.GetComponentsInChildren<SkinnedMeshRenderer>(true);
-		
+
 		for( int i = 0; i < skins.Length; i++) {
 			if (useShadows && spriteShadowsShader != null) {
 				#if UNITY_EDITOR
