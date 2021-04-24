@@ -1,8 +1,6 @@
 Unity Sprites And Bones
 =======================
 
-* Unity Sprites and Bones is no longer being maintained, please get the successor Boner2D from https://github.com/playemgames/Boner2D
-
 This is an addon for Unity 3D to create 2D skeletal sprite animations. With the addon its possible to add bone hierarchies directly in the Unity Editor. Sprites can the parented to the bones. The bones can be animated like any other GameObject in the animator window. Inverse Kinematics is also available and animatable. The bones can also be used to animate any GameObject other than sprites like meshes or particle systems.
 
 ## Features
